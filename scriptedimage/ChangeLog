@@ -1,7 +1,7 @@
 2009-09-04 Petri Damstén <damu@iki.fi>
 
   * Version 0.7 released
-  * Fin urls that have ?
+  * Fix urls that have '?'
 
 2009-00-00 Petri Damstén <damu@iki.fi>
 
