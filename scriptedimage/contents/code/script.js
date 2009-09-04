@@ -93,7 +93,7 @@ function dataUpdated(source, data)
     if (g_src != isrc || isrc == '') {
         g_img.src = isrc;
     } else {
-        g_img.src = isrc + '?' + new Date().getTime();
+        g_img.src = isrc + '#' + new Date().getTime();
     }
     g_src = isrc;
 }
