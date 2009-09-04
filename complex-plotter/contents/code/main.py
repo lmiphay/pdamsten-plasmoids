@@ -29,14 +29,6 @@ from config import ConfigDialog
 from config import DEFAULTCFG
 from uihelper import UiHelper
 
-class ComplexDelegate(QStyledItemDelegate):
-    def __init__(self, parent):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        QStyledItemDelegate.paint(self, painter,option,index);
-
-
 class ComplexPlotter(Applet):
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
@@ -60,7 +52,6 @@ class ComplexPlotter(Applet):
         self.createPlotters()
 
     def createPlotters(self):
-        # TODO delete previous
         self.sources.clear()
         self.plotterData.clear()
         layout = self.applet.layout()
