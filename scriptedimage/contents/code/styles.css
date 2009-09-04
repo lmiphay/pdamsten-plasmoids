@@ -1,0 +1,10 @@
+body {
+    margin: 0px;
+    padding: 0px;
+    /*background-color:#000000;  Should come from webkit css */
+}
+
+img {
+    margin: 0px;
+    padding: 0px;
+}

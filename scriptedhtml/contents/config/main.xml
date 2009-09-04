@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile/>
+  <group>
+      <entry name="htmlUrlRadio" type="Bool">
+          <label>Select to use html URL</label>
+          <default>true</default>
+      </entry>
+      <entry name="htmlUrl" type="Url">
+          <label>HTML URL</label>
+          <default></default>
+      </entry>
+      <entry name="htmlScriptRadio" type="Bool">
+          <label>Select to use html script</label>
+          <default>false</default>
+      </entry>
+      <entry name="htmlScript" type="Url">
+          <label>HTML Script</label>
+          <default></default>
+      </entry>
+      <entry name="interval" type="Int">
+          <label>HTML update interval</label>
+          <default>0</default>
+      </entry>
+      <entry name="intervalUnit" type="Int">
+          <label>HTML update interval unit</label>
+          <default>1</default>
+      </entry>
+  </group>
+</kcfg>

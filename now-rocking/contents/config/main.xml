@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile/>
+  <group>
+      <entry name="artistFont" type="Font">
+          <label>Artist Font</label>
+      </entry>
+      <entry name="titleFont" type="Font">
+          <label>Title Font</label>
+      </entry>
+      <entry name="keepRatio" type="Bool">
+          <label>Keep aspect ratio</label>
+          <default>true</default>
+      </entry>
+      <entry name="allCaps" type="Bool">
+          <label>Use capital letters for artist and title</label>
+          <default>false</default>
+      </entry>
+      <entry name="logo" type="Url">
+          <label>Url of the logo</label>
+          <default></default>
+      </entry>
+  </group>
+</kcfg>
