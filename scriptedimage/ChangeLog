@@ -1,14 +1,8 @@
-2009-09-04 Petri Damstén <damu@iki.fi>
-
-  * Version 0.7 released
+2009-09-04  Version 0.7
   * Fix urls that have '?'
 
-2009-00-00 Petri Damstén <damu@iki.fi>
-
-  * Version 0.6 released
+2009-00-00  Version 0.6
   * Fix picture updating
 
-2009-00-00 Petri Damstén <damu@iki.fi>
-
-  * Version 0.5 released
+2009-00-00  Version 0.5
   * Update for KDE 4.3

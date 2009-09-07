@@ -1,0 +1,7 @@
+2009-07-07  Version 0.4
+  * User specified logo option
+  * Fix Messages.sh for easier translations
+  * Fix button bar creation
+
+2009-00-00  Version 0.3
+  * Keep aspect ratio for cover option
