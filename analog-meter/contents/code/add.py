@@ -52,7 +52,8 @@ class AddDialog(KDialog, UiHelper):
             d = item.data(Qt.UserRole)
             if d.typeName() == 'QString':
                 return (unicode(item.text()),
-                    (u'systemmonitor', unicode(item.data(Qt.UserRole).toString()), u'value'))
+                    (u'systemmonitor', unicode(item.data(Qt.UserRole).toString()), u'value', \
+                     u'min', u'max', u'units'))
             else:
                 return (unicode(item.text()),
                     eval(unicode(item.data(Qt.UserRole).toString())))

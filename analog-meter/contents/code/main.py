@@ -40,14 +40,18 @@ class AnalogMeter(Applet):
         self.applet.dataEngine('systemmonitor').sources()
 
         cg = self.config()
-        self.cfg['header'] = unicode(cg.readEntry('header', '').toString())
+        self.cfg['header'] = unicode(cg.readEntry('header', '{value:1.1f} {unit}').toString())
         self.cfg['sourcename'] = cg.readEntry('sourcename', '').toString()
         self.cfg['font'] = QFont()
         self.cfg['font'].fromString(cg.readEntry('font', 'Sans,8,-1,5,50,0,0,0,0,0').toString())
         self.cfg['fontcolor'] = QColor(cg.readEntry('fontcolor', '#000000').toString())
         self.cfg['interval'] = cg.readEntry('interval', 60000).toInt()[0]
+        self.cfg['min'] = cg.readEntry('min', 0.0).toDouble()[0]
+        self.cfg['max'] = cg.readEntry('max', 100.0).toDouble()[0]
+        self.cfg['autorange'] = cg.readEntry('autorange', True).toBool()
         try:
             self.cfg['source'] = eval(unicode(cg.readEntry('source', '').toString()))
+            assert(len(self.cfg['source'][0]) >= 6)
         except:
             self.cfg['source'] = None
         self.createMeter()
@@ -74,23 +78,35 @@ class AnalogMeter(Applet):
         self.meter.setLabelColor(1, self.cfg['fontcolor'])
         self.meter.setLabelAlignment(1, Qt.AlignCenter)
         self.meter.setLabelFont(1, self.cfg['font'])
+        self.meter.setMinimum(self.cfg['min'])
+        self.meter.setMaximum(self.cfg['max'])
         layout.addItem(self.meter)
         c = self.cfg['source'][0]
-        self.dataEngine(c[0]).connectSource(c[1], self, self.cfg['interval'])
         self.valueName = QString(self.cfg['source'][0][2])
-        #self.minName = QString(self.cfg['source'][0][3])
-        #self.maxName = QString(self.cfg['source'][0][4])
-        #self.unitName = QString(self.cfg['source'][0][5])
+        self.minName = QString(self.cfg['source'][0][3])
+        self.maxName = QString(self.cfg['source'][0][4])
+        self.unitName = QString(self.cfg['source'][0][5])
+        self.dataEngine(c[0]).connectSource(c[1], self, self.cfg['interval'])
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
         if data.has_key(self.valueName):
+            if self.cfg['autorange'] and \
+               data[self.minName].toDouble()[0] != data[self.maxName].toDouble()[0]:
+                if self.meter.minimum() != data[self.minName].toDouble()[0]:
+                    self.meter.setMinimum(data[self.minName].toDouble()[0])
+                if self.meter.maximum() != data[self.maxName].toDouble()[0]:
+                    self.meter.setMaximum(data[self.maxName].toDouble()[0])
             self.meter.setValue(data[self.valueName].toDouble()[0])
+            s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0],
+                                            max = data[self.maxName].toDouble()[0],
+                                            min = data[self.minName].toDouble()[0],
+                                            unit = data[self.unitName].toDouble()[0])
             try:
-                s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0])
-                #d['max'] = data[self.maxName].toDouble()[0]
-                #d['min'] = data[self.minName].toDouble()[0]
-                #d['unit'] = data[self.unitName].toDouble()[0]
+                s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0],
+                                              max = data[self.maxName].toDouble()[0],
+                                              min = data[self.minName].toDouble()[0],
+                                              unit = unicode(data[self.unitName].toString()))
             except:
                 s = i18n('error')
             self.meter.setLabel(1, s)
@@ -100,6 +116,9 @@ class AnalogMeter(Applet):
         cg = self.config()
         self.cfg = self.dlg.data()
         cg.writeEntry('header', self.cfg['header'])
+        cg.writeEntry('autorange', self.cfg['autorange'])
+        cg.writeEntry('min', self.cfg['min'])
+        cg.writeEntry('max', self.cfg['max'])
         cg.writeEntry('sourcename', self.cfg['sourcename'])
         cg.writeEntry('font', self.cfg['font'].toString())
         cg.writeEntry('fontcolor', self.cfg['fontcolor'].name())

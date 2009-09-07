@@ -43,6 +43,8 @@ class ConfigDialog(KConfigDialog, UiHelper):
         self.addPage(self.ui, title, 'settings')
 
         self.connect(self.configureButton, SIGNAL('clicked()'), self.configureClicked)
+        self.connect(self.autorangeCheck, SIGNAL('stateChanged(int)'), self.enableItems)
+        self.enableItems()
 
     def setData(self, data):
         self.headerEdit.setText(data['header'])
@@ -50,6 +52,9 @@ class ConfigDialog(KConfigDialog, UiHelper):
         self.source = data['source']
         self.fontRequester.setFont(data['font'])
         self.fontColorButton.setColor(data['fontcolor'])
+        self.autorangeCheck.setChecked(data['autorange'])
+        self.maxSpin.setValue(data['max'])
+        self.minSpin.setValue(data['min'])
         interval = data['interval']
         a = [1000, 60, 60, 24]
         for i, m in enumerate(a):
@@ -58,6 +63,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
                 self.intervalCombo.setCurrentIndex(i)
                 break
             interval /= m
+        self.enableItems()
 
     def data(self):
         data = {}
@@ -68,6 +74,9 @@ class ConfigDialog(KConfigDialog, UiHelper):
         data['fontcolor'] = self.fontColorButton.color()
         a = [1, 1000, 60 * 1000, 60 * 60 * 1000, 24 * 60 * 60 * 1000]
         data['interval'] = self.intervalSpin.value() * a[self.intervalCombo.currentIndex()]
+        data['autorange'] = self.autorangeCheck.isChecked()
+        data['max'] = self.maxSpin.value()
+        data['min'] = self.minSpin.value()
         return data
 
     def configureClicked(self):
@@ -77,3 +86,9 @@ class ConfigDialog(KConfigDialog, UiHelper):
             if s is not None:
                 self.sourceEdit.setText(s[0])
                 self.source = [s[1]]
+
+    def enableItems(self):
+        self.minLabel.setEnabled(not self.autorangeCheck.isChecked())
+        self.minSpin.setEnabled(not self.autorangeCheck.isChecked())
+        self.maxLabel.setEnabled(not self.autorangeCheck.isChecked())
+        self.maxSpin.setEnabled(not self.autorangeCheck.isChecked())
