@@ -42,6 +42,9 @@ class AnalogMeter(Applet):
         cg = self.config()
         self.cfg['header'] = unicode(cg.readEntry('header', '').toString())
         self.cfg['sourcename'] = cg.readEntry('sourcename', '').toString()
+        self.cfg['font'] = QFont()
+        self.cfg['font'].fromString(cg.readEntry('font', 'Sans,8,-1,5,50,0,0,0,0,0').toString())
+        self.cfg['fontcolor'] = QColor(cg.readEntry('fontcolor', '#000000').toString())
         self.cfg['interval'] = cg.readEntry('interval', 60000).toInt()[0]
         try:
             self.cfg['source'] = eval(unicode(cg.readEntry('source', '').toString()))
@@ -68,23 +71,29 @@ class AnalogMeter(Applet):
         self.meter = Plasma.Meter(self.applet)
         self.meter.setMeterType(Plasma.Meter.AnalogMeter)
         self.meter.setLabel(1, '')
-        self.meter.setLabelColor(1, theme.color(Plasma.Theme.TextColor))
+        self.meter.setLabelColor(1, self.cfg['fontcolor'])
         self.meter.setLabelAlignment(1, Qt.AlignCenter)
-        font = theme.font(Plasma.Theme.DefaultFont)
-        font.setPointSize(8)
-        self.meter.setLabelFont(1, font)
+        self.meter.setLabelFont(1, self.cfg['font'])
         layout.addItem(self.meter)
-        print self.cfg['source'], self.cfg['interval']
-        self.dataEngine(self.cfg['source'][0]).connectSource(
-                self.cfg['source'][1], self, self.cfg['interval'])
+        c = self.cfg['source'][0]
+        self.dataEngine(c[0]).connectSource(c[1], self, self.cfg['interval'])
+        self.valueName = QString(self.cfg['source'][0][2])
+        #self.minName = QString(self.cfg['source'][0][3])
+        #self.maxName = QString(self.cfg['source'][0][4])
+        #self.unitName = QString(self.cfg['source'][0][5])
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
-        print data
-        valueName = self.cfg['source'][2]
-        if data.has_key(valueName):
-            self.meter.setValue(data[valueName].toDouble()[0])
-            # TODO text
+        if data.has_key(self.valueName):
+            self.meter.setValue(data[self.valueName].toDouble()[0])
+            try:
+                s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0])
+                #d['max'] = data[self.maxName].toDouble()[0]
+                #d['min'] = data[self.minName].toDouble()[0]
+                #d['unit'] = data[self.unitName].toDouble()[0]
+            except:
+                s = i18n('error')
+            self.meter.setLabel(1, s)
 
     @pyqtSignature("configAccepted()")
     def configAccepted(self):
@@ -92,6 +101,8 @@ class AnalogMeter(Applet):
         self.cfg = self.dlg.data()
         cg.writeEntry('header', self.cfg['header'])
         cg.writeEntry('sourcename', self.cfg['sourcename'])
+        cg.writeEntry('font', self.cfg['font'].toString())
+        cg.writeEntry('fontcolor', self.cfg['fontcolor'].name())
         cg.writeEntry('source', repr(self.cfg['source']))
         cg.writeEntry('interval', repr(self.cfg['interval']))
         self.createMeter()

@@ -48,6 +48,8 @@ class ConfigDialog(KConfigDialog, UiHelper):
         self.headerEdit.setText(data['header'])
         self.sourceEdit.setText(data['sourcename'])
         self.source = data['source']
+        self.fontRequester.setFont(data['font'])
+        self.fontColorButton.setColor(data['fontcolor'])
         interval = data['interval']
         a = [1000, 60, 60, 24]
         for i, m in enumerate(a):
@@ -62,6 +64,8 @@ class ConfigDialog(KConfigDialog, UiHelper):
         data['header'] = unicode(self.headerEdit.text())
         data['sourcename'] = unicode(self.sourceEdit.text())
         data['source'] = self.source
+        data['font'] = self.fontRequester.font()
+        data['fontcolor'] = self.fontColorButton.color()
         a = [1, 1000, 60 * 1000, 60 * 60 * 1000, 24 * 60 * 60 * 1000]
         data['interval'] = self.intervalSpin.value() * a[self.intervalCombo.currentIndex()]
         return data
