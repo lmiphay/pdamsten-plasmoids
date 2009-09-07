@@ -42,6 +42,11 @@ class ConfigDialog(KConfigDialog, UiHelper):
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.addPage(self.ui, title, 'settings')
 
+        palette = self.sourceEdit.palette()
+        palette.setColor(QPalette.Disabled, QPalette.Text, \
+                palette.color(QPalette.Active, QPalette.Text))
+        self.sourceEdit.setPalette(palette)
+
         self.connect(self.configureButton, SIGNAL('clicked()'), self.configureClicked)
         self.connect(self.autorangeCheck, SIGNAL('stateChanged(int)'), self.enableItems)
         self.enableItems()
