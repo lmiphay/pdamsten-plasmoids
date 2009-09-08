@@ -1,0 +1,134 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-09-08 10:34+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: rc.py:3
+msgid "Form"
+msgstr "Kaavake"
+
+#: rc.py:6
+msgid "Search:"
+msgstr "Hae:"
+
+#: rc.py:9
+msgid "Text"
+msgstr "Teksti"
+
+#: rc.py:12
+msgid ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
+"REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
+"\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Liberation Sans'; font-size:10pt; "
+"font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\">Uses python string "
+"formatting:</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"http://docs."
+"python.org/library/string.html#format-string-syntax\"><span style=\" text-"
+"decoration: underline; color:#0000ff;\">8.1.3. Format String Syntax</span></"
+"a></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\">Available keys are: name, "
+"value, max, min and unit</p></body></html>"
+msgstr ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
+"REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
+"\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Liberation Sans'; font-size:10pt; "
+"font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\">Käyttää pythonin tekstin "
+"muotoilua:</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"http://docs."
+"python.org/library/string.html#format-string-syntax\"><span style=\" text-"
+"decoration: underline; color:#0000ff;\">8.1.3. Format String Syntax</span></"
+"a></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\">Mahdolliset avaimet: name, "
+"value, max, min and unit</p></body></html>"
+
+#: rc.py:21
+msgid "Font:"
+msgstr "Kirjaisintyyli:"
+
+#: rc.py:24
+msgid "Source"
+msgstr "Lähde"
+
+#: rc.py:27
+msgid "Configure"
+msgstr "Muokkaa"
+
+#: rc.py:30
+msgid "Update interval:"
+msgstr "Päivitysväli:"
+
+#: rc.py:33
+msgid "ms"
+msgstr "ms"
+
+#: rc.py:36
+msgid "s"
+msgstr "s"
+
+#: rc.py:39
+msgid "min"
+msgstr "min"
+
+#: rc.py:42
+msgid "h"
+msgstr "h"
+
+#: rc.py:45
+msgid "d"
+msgstr "pv"
+
+#: rc.py:48
+msgid "Range"
+msgstr "Vaihteluväli"
+
+#: rc.py:51
+msgid "Autorange"
+msgstr "Automaattinen"
+
+#: rc.py:54
+msgid "Min:"
+msgstr "Min:"
+
+#: rc.py:57
+msgid "Max:"
+msgstr "Maks:"
+
+#: code/config.py:40
+msgctxt "@title:window"
+msgid "%1 Settings"
+msgstr "%1 Asetukset"
+
+#: code/main.py:73
+msgid "Source not configured"
+msgstr "Lähdettä ei valittu"
+
+#: code/main.py:111
+msgid "error"
+msgstr "virhe"
