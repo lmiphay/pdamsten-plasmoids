@@ -51,11 +51,16 @@ class AddDialog(KDialog, UiHelper):
         if item is not None:
             d = item.data(Qt.UserRole)
             if d.typeName() == 'QString':
-                return (unicode(item.text()),
-                    (u'systemmonitor', unicode(item.data(Qt.UserRole).toString()), u'value', \
-                     u'min', u'max', u'units'))
+                data = {}
+                data['name'] = unicode(item.text())
+                data['dataengine'] = u'systemmonitor'
+                data['source'] = unicode(item.data(Qt.UserRole).toString())
+                data['value'] = u'value'
+                data['min'] = u'min'
+                data['max'] = u'max'
+                data['unit'] = u'units'
+                return data
             else:
-                return (unicode(item.text()),
-                    eval(unicode(item.data(Qt.UserRole).toString())))
+                return eval(unicode(item.data(Qt.UserRole).toString()))
         return None
 

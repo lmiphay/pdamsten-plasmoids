@@ -28,6 +28,10 @@ from PyKDE4.kdeui import *
 from config import ConfigDialog
 from uihelper import UiHelper
 
+def check(b):
+    if not b:
+        raise ValueError('Check failed.')
+
 class AnalogMeter(Applet):
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
@@ -41,7 +45,6 @@ class AnalogMeter(Applet):
 
         cg = self.config()
         self.cfg['header'] = unicode(cg.readEntry('header', '{value:1.1f} {unit}').toString())
-        self.cfg['sourcename'] = cg.readEntry('sourcename', '').toString()
         self.cfg['font'] = QFont()
         self.cfg['font'].fromString(cg.readEntry('font', 'Sans,8,-1,5,50,0,0,0,0,0').toString())
         self.cfg['fontcolor'] = QColor(cg.readEntry('fontcolor', '#000000').toString())
@@ -51,7 +54,7 @@ class AnalogMeter(Applet):
         self.cfg['autorange'] = cg.readEntry('autorange', True).toBool()
         try:
             self.cfg['source'] = eval(unicode(cg.readEntry('source', '').toString()))
-            assert(len(self.cfg['source'][0]) >= 6)
+            check(isinstance(self.cfg['source'], dict))
         except:
             self.cfg['source'] = None
         self.createMeter()
@@ -81,12 +84,12 @@ class AnalogMeter(Applet):
         self.meter.setMinimum(self.cfg['min'])
         self.meter.setMaximum(self.cfg['max'])
         layout.addItem(self.meter)
-        c = self.cfg['source'][0]
-        self.valueName = QString(self.cfg['source'][0][2])
-        self.minName = QString(self.cfg['source'][0][3])
-        self.maxName = QString(self.cfg['source'][0][4])
-        self.unitName = QString(self.cfg['source'][0][5])
-        self.dataEngine(c[0]).connectSource(c[1], self, self.cfg['interval'])
+        c = self.cfg['source']
+        self.valueName = QString(c['value'])
+        self.minName = QString(c['min'])
+        self.maxName = QString(c['max'])
+        self.unitName = QString(c['unit'])
+        self.dataEngine(c['dataengine']).connectSource(c['source'], self, self.cfg['interval'])
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
@@ -98,15 +101,12 @@ class AnalogMeter(Applet):
                 if self.meter.maximum() != data[self.maxName].toDouble()[0]:
                     self.meter.setMaximum(data[self.maxName].toDouble()[0])
             self.meter.setValue(data[self.valueName].toDouble()[0])
-            s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0],
-                                            max = data[self.maxName].toDouble()[0],
-                                            min = data[self.minName].toDouble()[0],
-                                            unit = data[self.unitName].toDouble()[0])
             try:
                 s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0],
                                               max = data[self.maxName].toDouble()[0],
                                               min = data[self.minName].toDouble()[0],
-                                              unit = unicode(data[self.unitName].toString()))
+                                              unit = unicode(data[self.unitName].toString()),
+                                              name = self.cfg['source']['name'])
             except:
                 s = i18n('error')
             self.meter.setLabel(1, s)
@@ -119,7 +119,6 @@ class AnalogMeter(Applet):
         cg.writeEntry('autorange', self.cfg['autorange'])
         cg.writeEntry('min', self.cfg['min'])
         cg.writeEntry('max', self.cfg['max'])
-        cg.writeEntry('sourcename', self.cfg['sourcename'])
         cg.writeEntry('font', self.cfg['font'].toString())
         cg.writeEntry('fontcolor', self.cfg['fontcolor'].name())
         cg.writeEntry('source', repr(self.cfg['source']))

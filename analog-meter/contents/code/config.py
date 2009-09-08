@@ -53,7 +53,8 @@ class ConfigDialog(KConfigDialog, UiHelper):
 
     def setData(self, data):
         self.headerEdit.setText(data['header'])
-        self.sourceEdit.setText(data['sourcename'])
+        if data['source']:
+            self.sourceEdit.setText(data['source']['name'])
         self.source = data['source']
         self.fontRequester.setFont(data['font'])
         self.fontColorButton.setColor(data['fontcolor'])
@@ -73,7 +74,6 @@ class ConfigDialog(KConfigDialog, UiHelper):
     def data(self):
         data = {}
         data['header'] = unicode(self.headerEdit.text())
-        data['sourcename'] = unicode(self.sourceEdit.text())
         data['source'] = self.source
         data['font'] = self.fontRequester.font()
         data['fontcolor'] = self.fontColorButton.color()
@@ -89,8 +89,8 @@ class ConfigDialog(KConfigDialog, UiHelper):
         if dlg.exec_() == QDialog.Accepted:
             s = dlg.selected()
             if s is not None:
-                self.sourceEdit.setText(s[0])
-                self.source = [s[1]]
+                self.sourceEdit.setText(s['name'])
+                self.source = s
 
     def enableItems(self):
         self.minLabel.setEnabled(not self.autorangeCheck.isChecked())
