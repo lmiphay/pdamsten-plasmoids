@@ -43,6 +43,7 @@ class AnalogMeter(Applet):
         # This trickers source list fill so they are ready when needed (e.g. config)
         self.applet.dataEngine('systemmonitor').sources()
 
+        self.setAspectRatioMode(Plasma.Square)
         cg = self.config()
         self.cfg['header'] = unicode(cg.readEntry('header', '{value:1.1f} {unit}').toString())
         self.cfg['font'] = QFont()
@@ -93,6 +94,7 @@ class AnalogMeter(Applet):
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
+        #print data
         if data.has_key(self.valueName):
             if self.cfg['autorange'] and \
                data[self.minName].toDouble()[0] != data[self.maxName].toDouble()[0]:
@@ -136,6 +138,10 @@ class AnalogMeter(Applet):
         self.connect(self.dlg, SIGNAL('okClicked()'), self, SLOT('configAccepted()'))
         self.dlg.setData(self.cfg)
         self.dlg.show()
+
+    def constraintsEvent(self, constraints):
+        if constraints & Plasma.FormFactorConstraint:
+            self.setBackgroundHints(Plasma.Applet.NoBackground)
 
 def CreateApplet(parent):
     return AnalogMeter(parent)
