@@ -185,7 +185,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
         if dlg.exec_() == QDialog.Accepted:
             s = dlg.selected()
             if s is not None:
-                self.addGraph(s[0], '#000000', [s[1]])
+                self.addGraph(s['name'], '#000000', [s])
 
     def addPlotterButtonClicked(self):
         self.addPlotter()

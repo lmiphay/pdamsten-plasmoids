@@ -47,6 +47,18 @@ class ComplexPlotter(Applet):
         self.cfg['plotterheader'] = cg.readEntry('plotterheader', False).toBool()
         try:
             self.cfg['plotters'] = eval(unicode(cg.readEntry('plotters', '').toString()))
+            # Check for 0.1
+            for plotter in self.cfg['plotters']:
+                for graph in plotter['graphs']:
+                    for i, source in enumerate(graph['cfg']):
+                        if isinstance(graph['cfg'][i], tuple):
+                            graph['cfg'][i] = {}
+                            graph['cfg'][i]['dataengine'] = source[0]
+                            graph['cfg'][i]['source'] = source[1]
+                            graph['cfg'][i]['value'] = source[2]
+                            graph['cfg'][i]['max'] = u'max'
+                            graph['cfg'][i]['min'] = u'min'
+                            graph['cfg'][i]['unit'] = u'units'
         except:
             self.cfg['plotters'] = {}
         self.createPlotters()
@@ -114,10 +126,11 @@ class ComplexPlotter(Applet):
             for i, graph in enumerate(plotter['graphs']):
                 p.addPlot(QColor(graph['color']))
                 for c in graph['cfg']:
-                    self.sources[c[1]] = (p, i, QString(c[2]))
+                    self.sources[c['source']] = (p, i, c)
                     self.plotterData[p]['initial'][i] += 1
                     self.plotterData[p]['current'][i] += 1
-                    self.dataEngine(c[0]).connectSource(c[1], self, plotter['cfg']['interval'])
+                    self.dataEngine(c['dataengine']).connectSource(\
+                            c['source'], self, plotter['cfg']['interval'])
             self.plotterData[p]['current'] = list(self.plotterData[p]['initial'])
             p.setThinFrame(False)
             p.setFontColor(QColor())
@@ -125,9 +138,10 @@ class ComplexPlotter(Applet):
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
-        #print self.sources, sourceName
         source = self.sources[unicode(sourceName)]
-        valueName = source[2]
+        cfg = source[2]
+        #print self.sources, sourceName, data, cfg['value']
+        valueName = QString(cfg['value'])
         if data.has_key(valueName):
             plotter = source[0]
             index = source[1]
