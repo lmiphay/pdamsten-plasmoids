@@ -18,6 +18,7 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
@@ -49,6 +50,9 @@ class ConfigDialog(KConfigDialog, UiHelper):
 
         self.connect(self.configureButton, SIGNAL('clicked()'), self.configureClicked)
         self.connect(self.autorangeCheck, SIGNAL('stateChanged(int)'), self.enableItems)
+        self.connect(self.headerEdit, SIGNAL('textChanged(const QString&)'), self.setExample)
+        self.connect(self.fontRequester, SIGNAL('fontSelected(const QFont&)'), self.setExample)
+        self.connect(self.fontColorButton, SIGNAL('changed(const QColor&)'), self.setExample)
         self.enableItems()
 
     def setData(self, data):
@@ -83,6 +87,22 @@ class ConfigDialog(KConfigDialog, UiHelper):
         data['max'] = self.maxSpin.value()
         data['min'] = self.minSpin.value()
         return data
+
+    def setExample(self):
+            try:
+                self.exampleTitleLabel.setText(i18n('e.g.: '))
+                s = unicode(self.headerEdit.text())
+                s = s.format(value = 31.2345, max = 100.0, min = 0.0, unit = u'°C',
+                             name = u'CPU Temp')
+            except:
+                self.exampleTitleLabel.setText(i18n('error: '))
+                (exception_type, value, exception_traceback) = sys.exc_info()
+                s = unicode(value)
+            self.exampleLabel.setText(s)
+            palette = self.exampleLabel.palette()
+            palette.setColor(QPalette.Active, QPalette.WindowText, self.fontColorButton.color())
+            self.exampleLabel.setPalette(palette)
+            self.exampleLabel.setFont(self.fontRequester.font())
 
     def configureClicked(self):
         dlg = AddDialog(self, self.applet)
