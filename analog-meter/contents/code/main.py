@@ -47,7 +47,8 @@ class AnalogMeter(Applet):
         cg = self.config()
         self.cfg['header'] = unicode(cg.readEntry('header', '{value:1.1f} {unit}').toString())
         self.cfg['font'] = QFont()
-        self.cfg['font'].fromString(cg.readEntry('font', 'Sans,8,-1,5,50,0,0,0,0,0').toString())
+        self.cfg['font'].fromString(
+                cg.readEntry('font', 'Sans Serif,8,-1,5,50,0,0,0,0,0').toString())
         self.cfg['fontcolor'] = QColor(cg.readEntry('fontcolor', '#000000').toString())
         self.cfg['interval'] = cg.readEntry('interval', 60000).toInt()[0]
         self.cfg['min'] = cg.readEntry('min', 0.0).toDouble()[0]
