@@ -46,9 +46,9 @@ class AnalogMeter(Applet):
         self.cfg['font'].fromString(
                 U(cg.readEntry('font', 'Sans Serif,8,-1,5,50,0,0,0,0,0')))
         self.cfg['fontcolor'] = QColor(U(cg.readEntry('fontcolor', '#000000')))
-        self.cfg['interval'] = cg.readEntry('interval', 60000).toInt()[0]
-        self.cfg['min'] = cg.readEntry('min', 0.0).toDouble()[0]
-        self.cfg['max'] = cg.readEntry('max', 100.0).toDouble()[0]
+        self.cfg['interval'] = I(cg.readEntry('interval', 60000))
+        self.cfg['min'] = F(cg.readEntry('min', 0.0))
+        self.cfg['max'] = F(cg.readEntry('max', 100.0))
         self.cfg['autorange'] = cg.readEntry('autorange', True).toBool()
         try:
             self.cfg['source'] = eval(U(cg.readEntry('source', '')))
@@ -93,17 +93,16 @@ class AnalogMeter(Applet):
     def dataUpdated(self, sourceName, data):
         #print data
         if data.has_key(self.valueName):
-            if self.cfg['autorange'] and \
-               data[self.minName].toDouble()[0] != data[self.maxName].toDouble()[0]:
-                if self.meter.minimum() != data[self.minName].toDouble()[0]:
-                    self.meter.setMinimum(data[self.minName].toDouble()[0])
-                if self.meter.maximum() != data[self.maxName].toDouble()[0]:
-                    self.meter.setMaximum(data[self.maxName].toDouble()[0])
-            self.meter.setValue(data[self.valueName].toDouble()[0])
+            if self.cfg['autorange'] and F(data[self.minName]) != F(data[self.maxName]):
+                if self.meter.minimum() != F(data[self.minName]):
+                    self.meter.setMinimum(F(data[self.minName]))
+                if self.meter.maximum() != F(data[self.maxName]):
+                    self.meter.setMaximum(F(data[self.maxName]))
+            self.meter.setValue(F(data[self.valueName]))
             try:
-                s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0],
-                                                max = data[self.maxName].toDouble()[0],
-                                                min = data[self.minName].toDouble()[0],
+                s = self.cfg['header'].format(value = F(data[self.valueName]),
+                                                max = F(data[self.maxName]),
+                                                min = F(data[self.minName]),
                                                 unit = U(data[self.unitName]),
                                                 name = self.cfg['source']['name'])
             except:

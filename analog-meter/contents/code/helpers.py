@@ -39,10 +39,23 @@ def U(s):
         return unicode(s.toString())
     elif isinstance(s, QColor):
         return unicode(s.name())
-    elif isinstance(s, QLineEdit) or isinstance(s, KLineEdit) or isinstance(s, QStandardItem):
+    elif isinstance(s, QLineEdit) or isinstance(s, KLineEdit) or \
+         isinstance(s, QStandardItem) or isinstance(s, QListWidgetItem):
         return unicode(s.text())
     else:
         return unicode(s)
+
+def F(f):
+    if isinstance(f, QVariant) or isinstance(i, QString):
+        return float(f.toDouble())
+    else:
+        return float(f)
+
+def I(i):
+    if isinstance(i, QVariant) or isinstance(i, QString):
+        return int(i.toInt())
+    else:
+        return int(i)
 
 class UiHelper():
     applet = None

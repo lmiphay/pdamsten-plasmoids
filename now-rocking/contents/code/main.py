@@ -227,9 +227,7 @@ class Rocking(Applet):
         self.positionWidget.setRange(0, 100)
         self.positionWidget.setValue(50)
         self.positionWidget.setPrefix('position')
-        print '---------------------'
         self.positionWidget.setImage(slidersSvg)
-        print '---------------------'
         self.positionWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.positionWidget.setValue(self.position)
         self.positionWidget.setMaximum(self.length)
@@ -344,7 +342,7 @@ class Rocking(Applet):
         if self.controller == None:
             return
         operation = self.controller.operationDescription('volume')
-        operation.writeEntry('level', QVariant(float(value) / 1000));
+        operation.writeEntry('level', QVariant(F(value) / 1000.0));
         self.controller.startOperationCall(operation);
 
     def constraintsEvent(self, constraints):
@@ -436,14 +434,14 @@ class Rocking(Applet):
                 Plasma.ToolTipManager.self().setContent(self.applet, toolTip)
 
         if QString('Volume') in data:
-            v = int(data[QString('Volume')].toDouble()[0] * 1000)
+            v = I(F(data[QString('Volume')]) * 1000.0)
             if v != self.volume:
                 self.volume = v
                 if self.volumeWidget != None:
                     self.volumeWidget.setValue(v)
 
         if QString('Position') in data:
-            v = data[QString('Position')].toInt()[0]
+            v = I(data[QString('Position')])
             if v != self.position:
                 self.position = v
                 if self.positionWidget != None:
@@ -451,7 +449,7 @@ class Rocking(Applet):
                     self.current.setText('%d:%02d' % (v / 60, v % 60))
 
         if QString('Length') in data:
-            v = data[QString('Length')].toInt()[0]
+            v = I(data[QString('Length')])
             if v != self.length:
                 self.length = v
                 if self.positionWidget != None:

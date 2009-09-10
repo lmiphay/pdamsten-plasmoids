@@ -145,7 +145,7 @@ class ComplexPlotter(Applet):
         if data.has_key(valueName):
             plotter = source[0]
             index = source[1]
-            self.plotterData[plotter]['values'][index] += data[valueName].toDouble()[0]
+            self.plotterData[plotter]['values'][index] += F(data[valueName])
             self.plotterData[plotter]['current'][index] -= 1
             if self.plotterData[plotter]['current'] == \
                     [0] * len(self.plotterData[plotter]['initial']):

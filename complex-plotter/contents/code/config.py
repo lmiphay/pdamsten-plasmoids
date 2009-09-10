@@ -205,7 +205,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
     def configurePlotterButtonClicked(self):
         index = self.plottersTreeView.selectionModel().currentIndex()
         item = self.model.itemFromIndex(index)
-        dlg = PlotterDialog(self, self.applet)
+        dlg = PlotterDialog(self)
         dlg.setData(eval(U(item.data())))
         if dlg.exec_() == QDialog.Accepted:
             item.setData(repr(dlg.data()))
