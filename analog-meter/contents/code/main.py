@@ -26,11 +26,7 @@ from PyKDE4.plasmascript import Applet
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from config import ConfigDialog
-from uihelper import UiHelper
-
-def check(b):
-    if not b:
-        raise ValueError('Check failed.')
+from helpers import *
 
 class AnalogMeter(Applet):
     def __init__(self, parent, args = None):
@@ -104,14 +100,14 @@ class AnalogMeter(Applet):
                 if self.meter.maximum() != data[self.maxName].toDouble()[0]:
                     self.meter.setMaximum(data[self.maxName].toDouble()[0])
             self.meter.setValue(data[self.valueName].toDouble()[0])
-            try:
-                s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0],
-                                              max = data[self.maxName].toDouble()[0],
-                                              min = data[self.minName].toDouble()[0],
-                                              unit = unicode(data[self.unitName].toString()),
-                                              name = self.cfg['source']['name'])
-            except:
-                s = i18n('error')
+            #try:
+            s = self.cfg['header'].format(value = data[self.valueName].toDouble()[0],
+                                            max = data[self.maxName].toDouble()[0],
+                                            min = data[self.minName].toDouble()[0],
+                                            unit = unicode(data[self.unitName].toString()),
+                                            name = self.cfg['source']['name'])
+            #except:
+            #    s = i18n('error')
             self.meter.setLabel(1, s)
 
     @pyqtSignature("configAccepted()")

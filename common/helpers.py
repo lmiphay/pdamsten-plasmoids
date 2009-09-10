@@ -24,6 +24,10 @@ from PyQt4.QtGui import *
 from PyKDE4.kdeui import *
 from PyKDE4.kio import *
 
+def check(b):
+    if not b:
+        raise ValueError('Check failed.')
+
 class UiHelper():
     applet = None
 

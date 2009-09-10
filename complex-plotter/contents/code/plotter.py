@@ -24,7 +24,7 @@ from PyQt4.QtGui import *
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from PyKDE4.kio import *
-from uihelper import UiHelper
+from helpers import *
 
 class PlotterDialog(KDialog, UiHelper):
     def __init__(self, parent):

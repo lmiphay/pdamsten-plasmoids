@@ -27,7 +27,7 @@ from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from add import AddDialog
 from plotter import PlotterDialog
-from uihelper import UiHelper
+from helpers import *
 
 DEFAULTCFG = {
     'interval': 60000,

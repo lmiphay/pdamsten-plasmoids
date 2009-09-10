@@ -27,7 +27,7 @@ from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from config import ConfigDialog
 from config import DEFAULTCFG
-from uihelper import UiHelper
+from helpers import *
 
 class ComplexPlotter(Applet):
     def __init__(self, parent, args = None):

@@ -3,7 +3,7 @@
 rm -f *.plasmoid
 for dir in $(find . -maxdepth 1 -mindepth 1 -type d); do
     dir=${dir:2}
-    if [ "$dir" == ".git" ]; then
+    if [[ "$dir" == ".git" || "$dir" == "common" ]]; then
         continue
     fi
     cd $dir
