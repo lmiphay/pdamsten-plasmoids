@@ -40,14 +40,19 @@ def U(s):
     elif isinstance(s, QColor):
         return unicode(s.name())
     elif isinstance(s, QLineEdit) or isinstance(s, KLineEdit) or \
-         isinstance(s, QStandardItem) or isinstance(s, QListWidgetItem):
+         isinstance(s, QStandardItem) or isinstance(s, QListWidgetItem) or \
+         isinstance(s, KUrlComboRequester):
         return unicode(s.text())
+    elif isinstance(s, KColorCombo):
+        return unicode(s.color().name())
     else:
         return unicode(s)
 
 def F(f):
-    if isinstance(f, QVariant) or isinstance(i, QString):
+    if isinstance(f, QVariant) or isinstance(f, QString):
         return float(f.toDouble()[0])
+    elif isinstance(f, QLineEdit) or isinstance(f, KLineEdit):
+        return float(f.text().toDouble()[0])
     else:
         return float(f)
 
