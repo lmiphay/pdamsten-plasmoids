@@ -244,7 +244,6 @@ class ConfigDialog(KConfigDialog, UiHelper):
             if self.model.rowCount() == 0:
                 self.addPlotter()
             index = self.plottersTreeView.selectionModel().currentIndex()
-            print index
             if not index.isValid():
                 parent = self.model.item(0)
             else:
