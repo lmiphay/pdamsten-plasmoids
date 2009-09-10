@@ -133,7 +133,6 @@ class ComplexPlotter(Applet):
                             c['source'], self, plotter['cfg']['interval'])
             self.plotterData[p]['current'] = list(self.plotterData[p]['initial'])
             p.setThinFrame(False)
-            p.setFontColor(QColor())
             layout.addItem(p)
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
