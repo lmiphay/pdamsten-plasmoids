@@ -27,7 +27,7 @@ from PyKDE4.plasmascript import Applet
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from add import AddDialog
-from uihelper import UiHelper
+from helpers import *
 
 class ConfigDialog(KConfigDialog, UiHelper):
     def __init__(self, parent, id, applet):
