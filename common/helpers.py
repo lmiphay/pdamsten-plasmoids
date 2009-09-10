@@ -28,6 +28,14 @@ def check(b):
     if not b:
         raise ValueError('Check failed.')
 
+def U(s):
+    # For some reason in Arch Linux & Gentoo data map is QString => QString
+    # and in kubuntu (and C++ plasma) QString => QVariant
+    if isinstance(s, QVariant):
+        return unicode(s.toString())
+    else:
+        return unicode(s)
+
 class UiHelper():
     applet = None
 
