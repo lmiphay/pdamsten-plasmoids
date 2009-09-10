@@ -1,3 +1,6 @@
+2009-09-10  Version 0.3
+  * Fix QString/QVariant issues
+
 2009-09-09  Version 0.2
   * Show example text in config dialog
   * Fix default font
