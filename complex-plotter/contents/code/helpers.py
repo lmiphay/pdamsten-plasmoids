@@ -47,13 +47,13 @@ def U(s):
 
 def F(f):
     if isinstance(f, QVariant) or isinstance(i, QString):
-        return float(f.toDouble())
+        return float(f.toDouble()[0])
     else:
         return float(f)
 
 def I(i):
     if isinstance(i, QVariant) or isinstance(i, QString):
-        return int(i.toInt())
+        return int(i.toInt()[0])
     else:
         return int(i)
 
