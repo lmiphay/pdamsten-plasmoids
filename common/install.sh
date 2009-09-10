@@ -14,8 +14,12 @@ FILES=(
 
 SCRIPT=$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")
 DIR=$(dirname "$SCRIPT")
+PLASMOIDSDIR=$(dirname "$DIR")
 
 for FILE in "${FILES[@]}"; do
     SOURCE=$(basename $FILE)
-    cp "$SOURCE" "../$FILE"
+    if ! cmp --silent "$DIR/$SOURCE" "$PLASMOIDSDIR/$FILE" ; then
+        echo "$DIR/$SOURCE" " => " "$PLASMOIDSDIR/$FILE"
+        cp "$DIR/$SOURCE" "$PLASMOIDSDIR/$FILE"
+    fi
 done
