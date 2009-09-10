@@ -83,29 +83,29 @@ class PlotterDialog(KDialog, UiHelper):
         data = {}
         a = [1, 1000, 60 * 1000, 60 * 60 * 1000, 24 * 60 * 60 * 1000]
         data['interval'] = self.intervalSpin.value() * a[self.intervalCombo.currentIndex()]
-        data['unit'] = unicode(self.unitEdit.text())
+        data['unit'] = U(self.unitEdit)
         data['scale'] = float(self.scaleEdit.text())
         data['labels'] = self.labelsCheck.isChecked()
-        data['font'] = unicode(self.labelFont.font().toString())
-        data['fontcolor'] = unicode(self.fontColorCombo.color().name())
+        data['font'] = U(self.labelFont.font())
+        data['fontcolor'] = U(self.fontColorCombo.color())
         data['topbar'] = self.topbarCheck.isChecked()
         data['bgcolor'] = ''
         data['bgsvg'] = ''
         if self.backgroundCombo.currentIndex() == 1:
-            data['bgcolor'] = unicode(self.bgColorCombo.color().name())
+            data['bgcolor'] = U(self.bgColorCombo.color())
         elif self.backgroundCombo.currentIndex() == 1:
-            data['bgsvg'] = self.bgSvgCombo.text()
+            data['bgsvg'] = U(self.bgSvgCombo.text())
         data['stack'] = self.stackCheck.isChecked()
         data['autorange'] = self.autorangeCheck.isChecked()
         data['max'] = float(self.maxEdit.text())
         data['min'] = float(self.minEdit.text())
         data['vlines'] = self.vlinesCheck.isChecked()
-        data['vcolor'] = unicode(self.vcolorCombo.color().name())
+        data['vcolor'] = U(self.vcolorCombo.color())
         data['vdistance'] = self.vdistanceSpin.value()
         data['vscroll'] = self.vscrollCheck.isChecked()
         data['hpixels'] = self.hpixelsSpin.value()
         data['hlines'] = self.hlinesCheck.isChecked()
-        data['hcolor'] = unicode(self.hcolorCombo.color().name())
+        data['hcolor'] = U(self.hcolorCombo.color())
         data['hcount'] = self.hcountSpin.value()
         return data
 

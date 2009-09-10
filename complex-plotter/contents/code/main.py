@@ -43,10 +43,10 @@ class ComplexPlotter(Applet):
         self.applet.dataEngine('systemmonitor').sources()
 
         cg = self.config()
-        self.cfg['header'] = unicode(cg.readEntry('header', '').toString())
+        self.cfg['header'] = U(cg.readEntry('header', ''))
         self.cfg['plotterheader'] = cg.readEntry('plotterheader', False).toBool()
         try:
-            self.cfg['plotters'] = eval(unicode(cg.readEntry('plotters', '').toString()))
+            self.cfg['plotters'] = eval(U(cg.readEntry('plotters', '')))
             # Check for 0.1
             for plotter in self.cfg['plotters']:
                 for graph in plotter['graphs']:
@@ -138,7 +138,7 @@ class ComplexPlotter(Applet):
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
-        source = self.sources[unicode(sourceName)]
+        source = self.sources[U(sourceName)]
         cfg = source[2]
         #print self.sources, sourceName, data, cfg['value']
         valueName = QString(cfg['value'])

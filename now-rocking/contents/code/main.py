@@ -373,9 +373,9 @@ class Rocking(Applet):
         changed = False
         state = Rocking.Stopped
         if QString('State') in data:
-            if data[QString('State')].toString() == 'playing':
+            if U(data[QString('State')]) == u'playing':
                 state = Rocking.Playing
-            elif data[QString('State')].toString() == 'paused':
+            elif U(data[QString('State')]) == u'paused':
                 state = Rocking.Paused
         if self.state != state:
             self.state = state
@@ -383,9 +383,9 @@ class Rocking(Applet):
             changed = True
 
         if QString('Artist') in data:
-            artist = data[QString('Artist')].toString()
+            artist = U(data[QString('Artist')])
         elif self.player != '':
-            artist = unicode(self.player)
+            artist = U(self.player)
             artist = QString(artist[artist.rfind('.') + 1:].capitalize())
         else:
             artist = i18n('No Player')
@@ -396,7 +396,7 @@ class Rocking(Applet):
             changed = True
 
         if QString('Title') in data:
-            title = data[QString('Title')].toString()
+            title = U(data[QString('Title')])
             if self.state == Rocking.Paused:
                 title += i18n(' (paused)')
             if self.state == Rocking.Stopped:
@@ -413,7 +413,7 @@ class Rocking(Applet):
             changed = True
 
         if QString('Album') in data:
-            album = data[QString('Album')].toString()
+            album = U(data[QString('Album')])
         else:
             album = ''
         if self.album != album:

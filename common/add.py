@@ -36,7 +36,7 @@ class AddDialog(KDialog, UiHelper):
             data = engine.query(sensor)
             item = QListWidgetItem()
             if QString(u'name') in data:
-                item.setText(data[QString(u'name')].toString())
+                item.setText(U(data[QString(u'name')]))
             else:
                 item.setText(sensor)
             item.setData(Qt.UserRole, sensor)
@@ -52,15 +52,15 @@ class AddDialog(KDialog, UiHelper):
             d = item.data(Qt.UserRole)
             if d.typeName() == 'QString':
                 data = {}
-                data['name'] = unicode(item.text())
+                data['name'] = U(item)
                 data['dataengine'] = u'systemmonitor'
-                data['source'] = unicode(item.data(Qt.UserRole).toString())
+                data['source'] = U(item.data(Qt.UserRole))
                 data['value'] = u'value'
                 data['min'] = u'min'
                 data['max'] = u'max'
                 data['unit'] = u'units'
                 return data
             else:
-                return eval(unicode(item.data(Qt.UserRole).toString()))
+                return eval(U(item.data(Qt.UserRole)))
         return None
 

@@ -33,6 +33,14 @@ def U(s):
     # and in kubuntu (and C++ plasma) QString => QVariant
     if isinstance(s, QVariant):
         return unicode(s.toString())
+    elif isinstance(s, QString):
+        return unicode(s)
+    elif isinstance(s, QFont):
+        return unicode(s.toString())
+    elif isinstance(s, QColor):
+        return unicode(s.name())
+    elif isinstance(s, QLineEdit) or isinstance(s, KLineEdit) or isinstance(s, QStandardItem):
+        return unicode(s.text())
     else:
         return unicode(s)
 

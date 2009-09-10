@@ -77,7 +77,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
 
     def data(self):
         data = {}
-        data['header'] = unicode(self.headerEdit.text())
+        data['header'] = U(self.headerEdit)
         data['source'] = self.source
         data['font'] = self.fontRequester.font()
         data['fontcolor'] = self.fontColorButton.color()
@@ -91,13 +91,13 @@ class ConfigDialog(KConfigDialog, UiHelper):
     def setExample(self):
             try:
                 self.exampleTitleLabel.setText(i18n('e.g.: '))
-                s = unicode(self.headerEdit.text())
+                s = U(self.headerEdit)
                 s = s.format(value = 31.2345, max = 100.0, min = 0.0, unit = u'°C',
                              name = u'CPU Temp')
             except:
                 self.exampleTitleLabel.setText(i18n('error: '))
                 (exception_type, value, exception_traceback) = sys.exc_info()
-                s = unicode(value)
+                s = U(value)
             self.exampleLabel.setText(s)
             palette = self.exampleLabel.palette()
             palette.setColor(QPalette.Active, QPalette.WindowText, self.fontColorButton.color())

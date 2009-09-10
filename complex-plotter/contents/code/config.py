@@ -38,7 +38,7 @@ DEFAULTCFG = {
     'fontcolor': '#000000',
     'topbar': False,
     'bgcolor': '',
-    'bgsvg': unicode(i18n('Default')),
+    'bgsvg': U(i18n('Default')),
     'stack': True,
     'autorange': True,
     'max': 100,
@@ -60,8 +60,8 @@ class ComplexDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         QStyledItemDelegate.paint(self, painter, option, index)
         if index.column() == 1 and self.isGraph(index):
-            color = index.data().toString()
-            if color.length() > 0:
+            color = U(index.data())
+            if len(color) > 0:
                 rc = option.rect
                 rc.adjust(2, 5, -2, -5)
                 painter.fillRect(rc, QColor(color))
@@ -80,7 +80,7 @@ class ComplexDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 1 and self.isGraph(index):
-            editor.setColor(QColor(index.data().toString()))
+            editor.setColor(QColor(U(index.data())))
         else:
             return QStyledItemDelegate.setEditorData(self, editor, index)
 
@@ -145,21 +145,21 @@ class ConfigDialog(KConfigDialog, UiHelper):
 
     def data(self):
         data = {}
-        data['header'] = unicode(self.headerEdit.text())
+        data['header'] = U(self.headerEdit)
         data['plotterheader'] = self.headerCheck.isChecked()
         data['plotters'] = []
         for i in range(self.model.rowCount()):
             p = self.model.item(i)
             plotter = {}
-            plotter['name'] = unicode(p.text())
-            plotter['cfg'] = eval(unicode(p.data().toString()))
+            plotter['name'] = U(p)
+            plotter['cfg'] = eval(U(p.data()))
             plotter['graphs'] = []
             for j in range(p.rowCount()):
                 graph = {}
                 g = p.child(j)
-                graph['name'] = unicode(g.text())
-                graph['cfg'] = eval(unicode(g.data().toString()))
-                graph['color'] = unicode(p.child(j, 1).text())
+                graph['name'] = U(g)
+                graph['cfg'] = eval(U(g.data()))
+                graph['color'] = U(p.child(j, 1))
                 plotter['graphs'].append(graph)
             data['plotters'].append(plotter)
         return data
@@ -197,7 +197,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
 
     def configureAllPlottersButtonClicked(self):
         dlg = PlotterDialog(self)
-        dlg.setData(eval(unicode(self.model.item(0).data().toString())))
+        dlg.setData(eval(U(self.model.item(0).data())))
         if dlg.exec_() == QDialog.Accepted:
             for i in range(self.model.rowCount()):
                 self.model.item(i).setData(repr(dlg.data()))
@@ -206,7 +206,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
         index = self.plottersTreeView.selectionModel().currentIndex()
         item = self.model.itemFromIndex(index)
         dlg = PlotterDialog(self, self.applet)
-        dlg.setData(eval(unicode(item.data().toString())))
+        dlg.setData(eval(U(item.data())))
         if dlg.exec_() == QDialog.Accepted:
             item.setData(repr(dlg.data()))
 
