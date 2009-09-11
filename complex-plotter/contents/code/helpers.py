@@ -70,6 +70,15 @@ class UiHelper():
             self.ui = uic.loadUi(uifile)
         else:
             self.ui = uic.loadUi(self.applet.package().filePath('ui', uifile))
-        for w in self.ui.children():
-            self.__dict__[str(w.objectName())] = self.ui.findChild(\
-                  globals()[w.metaObject().className()], w.objectName())
+        self.addChildrenAsMembers(self.ui)
+
+    def addChildrenAsMembers(self, widget):
+        for w in widget.children():
+            if w.inherits('QWidget'):
+                try:
+                    self.__dict__[str(w.objectName())] = self.ui.findChild(\
+                            globals()[w.metaObject().className()], w.objectName())
+                    self.addChildrenAsMembers(self.__dict__[str(w.objectName())])
+                except:
+                    print 'Not using ' + w.metaObject().className() + ':' + str(w.objectName()) + \
+                          ' as child.'
