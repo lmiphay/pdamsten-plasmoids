@@ -38,6 +38,7 @@ class AnalogMeter(Applet):
         UiHelper.applet = self.applet
         # This trickers source list fill so they are ready when needed (e.g. config)
         self.applet.dataEngine('systemmonitor').sources()
+        self.halfSecondSource = False
 
         self.setAspectRatioMode(Plasma.Square)
         cg = self.config()
@@ -87,12 +88,24 @@ class AnalogMeter(Applet):
         self.minName = QString(c['min'])
         self.maxName = QString(c['max'])
         self.unitName = QString(c['unit'])
-        self.dataEngine(c['dataengine']).connectSource(c['source'], self, self.cfg['interval'])
+        if c['dataengine'] == 'systemmonitor':
+            # Hack for correctly update 'systemmonitor' dataengine
+            self.halfSecondSource = True
+            self.dataEngine(c['dataengine']).connectSource(c['source'], self, 500)
+        else:
+            self.dataEngine(c['dataengine']).connectSource(c['source'], self, self.cfg['interval'])
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
         #print data
         if data.has_key(self.valueName):
+            if self.halfSecondSource:
+                # Hack for correctly update 'systemmonitor' dataengine
+                self.halfSecondSource = False
+                c = self.cfg['source']
+                #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
+                self.dataEngine(c['dataengine']).connectSource(c['source'], \
+                                self, self.cfg['interval'])
             if self.cfg['autorange'] and F(data[self.minName]) != F(data[self.maxName]):
                 if self.meter.minimum() != F(data[self.minName]):
                     self.meter.setMinimum(F(data[self.minName]))
