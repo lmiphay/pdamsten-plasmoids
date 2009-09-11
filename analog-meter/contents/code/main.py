@@ -32,13 +32,13 @@ class AnalogMeter(Applet):
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
         self.cfg = {}
+        self.halfSecondSource = False
 
     def init(self):
         # To find ui files from package dir
         UiHelper.applet = self.applet
         # This trickers source list fill so they are ready when needed (e.g. config)
         self.applet.dataEngine('systemmonitor').sources()
-        self.halfSecondSource = False
 
         self.setAspectRatioMode(Plasma.Square)
         cg = self.config()

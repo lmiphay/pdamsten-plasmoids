@@ -1,3 +1,6 @@
+  * Allow bigger values than 99 to interval
+  * Update data on start on big intervals
+
 2009-09-10  Version 0.3
   * Fix QString/QVariant issues
 

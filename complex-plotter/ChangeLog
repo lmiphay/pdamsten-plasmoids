@@ -1,3 +1,7 @@
+  * Tabbed plotter dialog
+  * Allow bigger values than 99 to interval
+  * Update data on start on big intervals
+
 2009-09-10  Version 0.2
   * Fix plotter font color
   * Fix QString/QVariant issues

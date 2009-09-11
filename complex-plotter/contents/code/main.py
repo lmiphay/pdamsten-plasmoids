@@ -35,6 +35,7 @@ class ComplexPlotter(Applet):
         self.cfg = {}
         self.sources = {}
         self.plotterData = {}
+        self.halfSecondSource = {}
 
     def init(self):
         # To find ui files from package dir
@@ -126,11 +127,17 @@ class ComplexPlotter(Applet):
             for i, graph in enumerate(plotter['graphs']):
                 p.addPlot(QColor(graph['color']))
                 for c in graph['cfg']:
-                    self.sources[c['source']] = (p, i, c)
+                    self.sources[c['source']] = (p, i, c, plotter['cfg']['interval'])
                     self.plotterData[p]['initial'][i] += 1
                     self.plotterData[p]['current'][i] += 1
-                    self.dataEngine(c['dataengine']).connectSource(\
-                            c['source'], self, plotter['cfg']['interval'])
+                    if c['dataengine'] == 'systemmonitor':
+                        # Hack for correctly update 'systemmonitor' dataengine
+                        self.halfSecondSource[c['dataengine'] + c['source']] = True
+                        self.dataEngine(c['dataengine']).connectSource(\
+                                c['source'], self, 500)
+                    else:
+                        self.dataEngine(c['dataengine']).connectSource(\
+                                c['source'], self, plotter['cfg']['interval'])
             self.plotterData[p]['current'] = list(self.plotterData[p]['initial'])
             p.setThinFrame(False)
             layout.addItem(p)
@@ -144,6 +151,13 @@ class ComplexPlotter(Applet):
         if data.has_key(valueName):
             plotter = source[0]
             index = source[1]
+            key = cfg['dataengine'] + cfg['source']
+            if self.halfSecondSource[key]:
+                # Hack for correctly update 'systemmonitor' dataengine
+                self.halfSecondSource[key] = False
+                #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
+                self.dataEngine(cfg['dataengine']).connectSource(cfg['source'], \
+                                self, source[3])
             self.plotterData[plotter]['values'][index] += F(data[valueName])
             self.plotterData[plotter]['current'][index] -= 1
             if self.plotterData[plotter]['current'] == \
