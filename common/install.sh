@@ -10,6 +10,7 @@ FILES=(
 "complex-plotter/contents/ui/add.ui"
 "complex-plotter/contents/code/add.py"
 "complex-plotter/contents/code/helpers.py"
+"now-rocking/contents/code/helpers.py"
 )
 
 SCRIPT=$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")

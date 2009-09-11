@@ -46,6 +46,7 @@ from layout import Layout
 from label import Label
 from frame import Frame
 from fader import Fader
+from helpers import *
 
 class Rocking(Applet):
     Stopped, Playing, Paused, NA = range(4)
