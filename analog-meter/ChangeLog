@@ -1,3 +1,4 @@
+2009-09-11  Version 0.4
   * Allow bigger values than 99 to interval
   * Update data on start on big intervals
 
