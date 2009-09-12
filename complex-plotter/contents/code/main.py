@@ -43,6 +43,7 @@ class ComplexPlotter(Applet):
         # This trickers source list fill so they are ready when needed (e.g. config)
         self.applet.dataEngine('systemmonitor').sources()
 
+        self.setAspectRatioMode(Plasma.IgnoreAspectRatio)
         cg = self.config()
         self.cfg['header'] = U(cg.readEntry('header', ''))
         self.cfg['plotterheader'] = cg.readEntry('plotterheader', False).toBool()
