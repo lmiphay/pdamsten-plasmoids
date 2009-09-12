@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-15 18:31+0300\n"
+"POT-Creation-Date: 2009-09-12 11:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Petri Damstén <damu@iki.fi>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,22 +16,36 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. i18n: file: ui/config.ui:17
+#. i18n: ectx: property (text), widget (QLabel, unlockedOpacityLabel)
 #: rc.rb:3
 msgid "Unlocked Opacity:"
 msgstr "Läpinäkyvyys (Lukitsematta):"
 
+#. i18n: file: ui/config.ui:51
+#. i18n: ectx: property (text), widget (QLabel, label)
+#. i18n: file: ui/config.ui:130
+#. i18n: ectx: property (text), widget (QLabel, label_3)
 #: rc.rb:6 rc.rb:15
 msgid "Transparent"
 msgstr "Läpinäkyvä"
 
+#. i18n: file: ui/config.ui:71
+#. i18n: ectx: property (text), widget (QLabel, label_2)
+#. i18n: file: ui/config.ui:150
+#. i18n: ectx: property (text), widget (QLabel, label_4)
 #: rc.rb:9 rc.rb:18
 msgid "Opaque"
 msgstr "Läpinäkymätön"
 
+#. i18n: file: ui/config.ui:96
+#. i18n: ectx: property (text), widget (QLabel, lockedOpacityLabel)
 #: rc.rb:12
 msgid "Locked Opacity:"
 msgstr "Läpinäkyvyys (Lukittu):"
 
+#. i18n: file: ui/config.ui:179
+#. i18n: ectx: property (text), widget (QLabel, noteLabel)
 #: rc.rb:21
 msgid ""
 "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
@@ -55,13 +69,15 @@ msgstr ""
 "font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
-"weight:600;\">Huom:</span> Pääset takaisin tähän dialogiin painamalla"
-"Ctrl+Alt+0. Voit vaihtaa sitä toisella välilehdellä.</p></body></html>"
+"weight:600;\">Huom:</span> Pääset takaisin tähän dialogiin painamallaCtrl+Alt"
+"+0. Voit vaihtaa sitä toisella välilehdellä.</p></body></html>"
 
+#. i18n: file: config/main.xml:8
 #: rc.rb:27
 msgid "Cashew opacity in unlocked mode"
 msgstr "Cashew Läpinäkyvyys (ei lukittu)"
 
+#. i18n: file: config/main.xml:12
 #: rc.rb:29
 msgid "Cashew opacity in locked mode"
 msgstr "Cashew Läpinäkyvyys (lukittu)"
