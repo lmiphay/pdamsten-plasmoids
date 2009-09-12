@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-08 10:34+0300\n"
+"POT-Creation-Date: 2009-09-12 11:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -120,15 +120,24 @@ msgstr "Min:"
 msgid "Max:"
 msgstr "Maks:"
 
-#: code/config.py:40
+#: code/config.py:41
 msgctxt "@title:window"
 msgid "%1 Settings"
 msgstr "%1 Asetukset"
 
-#: code/main.py:73
+#: code/config.py:93
+msgid "e.g.: "
+msgstr "esim.:"
+
+#: code/config.py:98
+#, fuzzy
+msgid "error: "
+msgstr "virhe"
+
+#: code/main.py:72
 msgid "Source not configured"
 msgstr "Lähdettä ei valittu"
 
-#: code/main.py:111
+#: code/main.py:122
 msgid "error"
 msgstr "virhe"
