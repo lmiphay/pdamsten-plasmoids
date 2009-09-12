@@ -56,10 +56,10 @@ class Rocking(Applet):
         Applet.__init__(self, parent)
         self.connected = False
         self.allCaps = False
-        self.player = QString()
-        self.artist = QString()
-        self.album = QString()
-        self.title = QString()
+        self.player = u''
+        self.artist = u''
+        self.album = u''
+        self.title = u''
         self.volume = 1000
         self.position = 0
         self.length = 0
@@ -134,7 +134,7 @@ class Rocking(Applet):
 
     def formatArtistAndTitle(self, s):
         if self.allCaps:
-            return s.toUpper()
+            return s.upper()
         return s
 
     def readConfig(self):
@@ -385,9 +385,9 @@ class Rocking(Applet):
             artist = U(data[QString('Artist')])
         elif self.player != '':
             artist = U(self.player)
-            artist = QString(artist[artist.rfind('.') + 1:].capitalize())
+            artist = artist[artist.rfind('.') + 1:].title()
         else:
-            artist = i18n('No Player')
+            artist = U(i18n('No Player'))
         if artist != self.artist:
             self.artist = artist
             if self.artistWidget != None:
@@ -397,14 +397,14 @@ class Rocking(Applet):
         if QString('Title') in data:
             title = U(data[QString('Title')])
             if self.state == Rocking.Paused:
-                title += i18n(' (paused)')
+                title += U(i18n(' (paused)'))
             if self.state == Rocking.Stopped:
-                title += i18n(' (stopped)')
+                title += U(i18n(' (stopped)'))
         else:
             if self.state == Rocking.Stopped:
-                title = i18n('Stopped')
+                title = U(i18n('Stopped'))
             else:
-                title = i18n('N/A')
+                title = U(i18n('N/A'))
         if title != self.title:
             self.title = title
             if self.titleWidget != None:
