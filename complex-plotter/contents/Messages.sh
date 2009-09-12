@@ -8,7 +8,7 @@ NAME=$(basename $(dirname $DIR))
 API=$(grep "X-Plasma-API" ../metadata.desktop | sed 's/.*=//')
 case "$API" in
   "python") SCRIPTEXT="py" ;;
-  "ruby") SCRIPTEXT="rb" ;;
+  "ruby-script") SCRIPTEXT="rb" ;;
   * ) exit ;;
 esac
 
