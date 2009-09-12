@@ -1,7 +1,21 @@
 #! /usr/bin/env bash
 
-NAME="now-rocking"
-XGETTEXT="xgettext -ki18n"
+# Go to script dir
+cd "${0%/*}"
+DIR=$(pwd)
+
+NAME=$(basename $(dirname $DIR))
+API=$(grep "X-Plasma-API" ../metadata.desktop | sed 's/.*=//')
+case "$API" in
+  "python") SCRIPTEXT="py" ;;
+  "ruby") SCRIPTEXT="rb" ;;
+  * ) exit ;;
+esac
+
+XGETTEXT="xgettext --from-code=UTF-8 -kde -ci18n -ki18n:1 -ki18nc:1c,2 -ki18np:1,2 \
+          -ki18ncp:1c,2,3 -ktr2i18n:1 -kI18N_NOOP:1 -kI18N_NOOP2:1c,2 -kaliasLocale \
+          -kki18n:1 -kki18nc:1c,2 -kki18np:1,2 -kki18ncp:1c,2,3xgettext -ki18n -ki18nc
+          -ki18ncp -ki18np"
 EXTRACTRC="extractrc"
 
 if [ "x$1" != "x" ]; then
@@ -10,8 +24,8 @@ if [ "x$1" != "x" ]; then
     fi
 fi
 
-$EXTRACTRC ui/*.ui config/*.xml > ./rc.py
-$XGETTEXT rc.py code/*.py -o "$NAME.pot"
+$EXTRACTRC ui/*.ui config/*.xml > ./rc.$SCRIPTEXT
+$XGETTEXT rc.$SCRIPTEXT code/*.$SCRIPTEXT -o "$NAME.pot"
 sed -e 's/charset=CHARSET/charset=UTF-8/g' -i "$NAME.pot"
 
 for d in locale/*; do
@@ -31,5 +45,5 @@ for d in locale/*; do
     msgfmt "$d/LC_MESSAGES/$NAME.po" -o "$d/LC_MESSAGES/$NAME.mo"
 done
 
-rm -f rc.py
-rm -f now-rocking.pot
+rm -f rc.$SCRIPTEXT
+rm -f $NAME.pot

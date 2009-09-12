@@ -4,13 +4,17 @@
 # so copy files until better solution
 
 FILES=(
+"analog-meter/contents/Messages.sh"
 "analog-meter/contents/ui/add.ui"
 "analog-meter/contents/code/add.py"
 "analog-meter/contents/code/helpers.py"
+"complex-plotter/contents/Messages.sh"
 "complex-plotter/contents/ui/add.ui"
 "complex-plotter/contents/code/add.py"
 "complex-plotter/contents/code/helpers.py"
+"now-rocking/contents/Messages.sh"
 "now-rocking/contents/code/helpers.py"
+"stealth-cashew/contents/Messages.sh"
 )
 
 SCRIPT=$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")
