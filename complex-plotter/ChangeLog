@@ -1,3 +1,6 @@
+2009-09-11  Version 0.4
+  * Allow free scaling
+
 2009-09-11  Version 0.3
   * Tabbed plotter dialog
   * Allow bigger values than 99 to interval
