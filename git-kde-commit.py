@@ -18,7 +18,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import sys, time, os
+import sys, time, os, re
 from subprocess import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
