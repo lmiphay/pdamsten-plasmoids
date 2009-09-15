@@ -89,12 +89,12 @@ class GitCommit(QWidget):
         self.temp.setSuffix('.diff')
         self.setupUi()
         self.git = Git()
-        self.filesList.setHeaderLabels([i18n('File'), i18n('Action')])
         self.addFileItems(self.git.toCommit)
         self.addFileItems(self.git.toAdd, True)
         if self.filesList.topLevelItemCount() > 0:
             self.filesList.topLevelItem(0).setSelected(True)
         self.selectAll()
+        QTimer.singleShot(0, self.messageEdit.setFocus)
 
     def addFileItems(self, items, add = False):
         for i in items:
@@ -119,6 +119,9 @@ class GitCommit(QWidget):
         sizePolicy.setHeightForWidth(self.filesList.sizePolicy().hasHeightForWidth())
         self.filesList.setSizePolicy(sizePolicy)
         self.filesList.setObjectName("filesList")
+        self.filesList.setHeaderLabels([i18n('File'), i18n('Action')])
+        self.filesList.header().resizeSection(0, 150)
+        self.filesList.setMinimumSize(400, 0)
         self.verticalLayout.addWidget(self.filesList)
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -231,7 +234,7 @@ class GitCommit(QWidget):
         if len(a) > 0:
             if not self.git.commit(a, self.messageEdit.toPlainText()):
                 sys.exit(1)
-        sys.exit(0)
+        self.parent().close()
 
 class MainWindow(KMainWindow):
     def __init__(self):
