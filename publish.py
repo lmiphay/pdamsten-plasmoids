@@ -149,11 +149,12 @@ def makePackages():
     return (_('./make.sh')[0] == 0)
 
 def updateVersion():
-    print 'Updating version and changelog.'
     global plasmoidid
     global version
     global comment
     global name
+
+    print 'Updating version and changelog.'
     config = ConfigParser.RawConfigParser()
     config.read('./%s/metadata.desktop' % plasmoid)
     origVersion = config.get('Desktop Entry', 'X-KDE-PluginInfo-Version')
@@ -179,7 +180,7 @@ def uploadFile():
     if plasmoidid == '':
         return False
     params = [
-        ('localfile', (pycurl.FORM_FILE, './%s.plasmoid' % plasmoid))
+        ('localfile', (pycurl.FORM_FILE, '%s.plasmoid' % plasmoid))
     ]
     return upload('v1/content/uploaddownload/%s' % plasmoidid, params)
 
