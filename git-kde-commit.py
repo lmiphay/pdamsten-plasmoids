@@ -24,6 +24,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
+from PyKDE4.kparts import *
+
 
 class Git():
     def __init__(self):
@@ -44,6 +46,9 @@ class Git():
         #print output
         return (process.returncode, output)
 
+    def diff(self, name):
+        return self.run('git diff %s' % name)[1]
+
     def updateStatus(self):
         s = self.run('git status')[1]
         add = False
@@ -55,18 +60,23 @@ class Git():
             elif line.startswith('# Your'):
                 self.behind = int(re.findall('(\d+)', line)[0])
             elif line[:2] == '#\t':
-                s = line[12:].strip()
+                s = line[2:].strip()
                 if len(s) > 0:
                     if add:
-                        self.toAdd.append(s)
+                        self.toAdd.append('add & commit: ' + s)
                     else:
                         self.toCommit.append(s)
 
 class GitCommit(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self, parent)
+        self.temp = KTemporaryFile()
+        self.temp.setSuffix('.diff')
         self.setupUi()
         self.git = Git()
+        self.filesList.addItems(self.git.toCommit)
+        self.filesList.addItems(self.git.toAdd)
+        self.selectAll()
 
     def setupUi(self):
         self.verticalLayout_3 = QVBoxLayout(self)
@@ -112,10 +122,12 @@ class GitCommit(QWidget):
         self.diffLabel = QLabel(self)
         self.diffLabel.setObjectName("diffLabel")
         self.verticalLayout_2.addWidget(self.diffLabel)
-        self.diffEdit = KTextEdit(self)
+        self.part = KLibLoader.self().factory("katepart").create(self, "KatePart")
+        self.part.setReadWrite(False)
+        self.diffEdit = self.part.widget()
         self.diffEdit.setFocusPolicy(Qt.NoFocus)
-        self.diffEdit.setReadOnly(True)
         self.diffEdit.setObjectName("diffEdit")
+        self.diffEdit.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.verticalLayout_2.addWidget(self.diffEdit)
         self.horizontalLayout_3.addLayout(self.verticalLayout_2)
         self.verticalLayout_3.addLayout(self.horizontalLayout_3)
@@ -152,6 +164,35 @@ class GitCommit(QWidget):
         self.cancelButton.setText(i18n("Cancel"))
 
         self.connect(self.cancelButton, SIGNAL('clicked()'), self.parent().close)
+        self.connect(self.selectAllButton, SIGNAL('clicked()'), self.selectAll)
+        self.connect(self.selectNoneButton, SIGNAL('clicked()'), self.selectNone)
+        self.connect(self.commitButton, SIGNAL('clicked()'), self.commit)
+        self.connect(self.filesList, SIGNAL('currentRowChanged(int)'), self.changeDiff)
+
+    def fileName(self, name):
+        return name[name.find(':') + 1:].strip()
+
+    def changeDiff(self, row):
+        if row >= 0:
+            name = self.fileName(unicode(self.filesList.item(row).text()))
+            s = self.git.diff(name)
+            if self.temp.open():
+                open(self.temp.fileName(), 'w').write(s)
+                self.part.openUrl(KUrl(self.temp.fileName()))
+
+    def selectAll(self):
+        for i in range(self.filesList.count()):
+            self.filesList.item(i).setFlags(
+                    Qt.ItemIsUserCheckable | Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            self.filesList.item(i).setCheckState(Qt.Checked)
+
+    def selectNone(self):
+        for i in range(self.filesList.count()):
+            self.filesList.item(i).setCheckState(Qt.Unchecked)
+
+    def commit(self):
+        pass
+
 
 class MainWindow(KMainWindow):
     def __init__(self):
@@ -160,7 +201,18 @@ class MainWindow(KMainWindow):
         self.setCentralWidget(GitCommit(self))
 
 
-aboutData = KAboutData('git-kde-commit', '',  ki18n('git-kde-commit'), '0.1')
+aboutData = KAboutData(
+        'git-kde-commit',
+        '',
+        ki18n('git-kde-commit'),
+        '0.1'
+        ki18n('Gui for git commit & add'),
+        KAboutData.License_GPL,
+        ki18n(u'(c) Petri Damstén'),
+        ki18n('none'),
+        '',
+        'damu@iki.fi'
+)
 KCmdLineArgs.init(sys.argv, aboutData)
 app = KApplication()
 mainWindow = MainWindow()
