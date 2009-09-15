@@ -93,8 +93,12 @@ class GitCommit(QWidget):
         self.addFileItems(self.git.toAdd, True)
         if self.filesList.topLevelItemCount() > 0:
             self.filesList.topLevelItem(0).setSelected(True)
-        self.selectAll()
-        QTimer.singleShot(0, self.messageEdit.setFocus)
+            self.changeDiff(self.filesList.topLevelItem(0), None)
+            self.selectAll()
+            QTimer.singleShot(0, self.messageEdit.setFocus)
+        else:
+            self.commitButton.setEnabled(False)
+            QTimer.singleShot(0, self.cancelButton.setFocus)
 
     def addFileItems(self, items, add = False):
         for i in items:
