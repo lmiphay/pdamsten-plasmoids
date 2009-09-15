@@ -18,7 +18,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import sys, time
+import sys, time, os
 from subprocess import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -47,7 +47,17 @@ class Git():
         return (process.returncode, output)
 
     def diff(self, name):
-        return self.run('git diff %s' % name)[1]
+        if os.path.exists(name):
+            return self.run('git diff %s' % name)[1]
+        return ''
+
+    def add(self, name):
+        return (self.run('git add %s' % name)[0] == 0)
+
+    def commit(self, names, msg):
+        names = ['"' + unicode(name) + '"' for name in names]
+        return (self.run('git commit %s -m "%s"' % \
+                (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
     def updateStatus(self):
         s = self.run('git status')[1]
@@ -63,9 +73,14 @@ class Git():
                 s = line[2:].strip()
                 if len(s) > 0:
                     if add:
-                        self.toAdd.append('add & commit: ' + s)
+                        self.toAdd.append(('add & commit', s, s))
                     else:
-                        self.toCommit.append(s)
+                        i = s.find(':')
+                        name = s[i + 1:].strip()
+                        a = name.split(' -> ')
+                        if len(a) > 1:
+                            a.pop(0)
+                        self.toCommit.append((s[:i].strip(), name, a[0]))
 
 class GitCommit(QWidget):
     def __init__(self, parent):
@@ -74,9 +89,18 @@ class GitCommit(QWidget):
         self.temp.setSuffix('.diff')
         self.setupUi()
         self.git = Git()
-        self.filesList.addItems(self.git.toCommit)
-        self.filesList.addItems(self.git.toAdd)
+        self.filesList.setHeaderLabels([i18n('File'), i18n('Action')])
+        self.addFileItems(self.git.toCommit)
+        self.addFileItems(self.git.toAdd, True)
+        if self.filesList.topLevelItemCount() > 0:
+            self.filesList.topLevelItem(0).setSelected(True)
         self.selectAll()
+
+    def addFileItems(self, items, add = False):
+        for i in items:
+            item = QTreeWidgetItem([i[0], i[1]], int(add))
+            item.setData(0, Qt.UserRole, i[2])
+            self.filesList.addTopLevelItem(item)
 
     def setupUi(self):
         self.verticalLayout_3 = QVBoxLayout(self)
@@ -88,7 +112,7 @@ class GitCommit(QWidget):
         self.filesLabel = QLabel(self)
         self.filesLabel.setObjectName("filesLabel")
         self.verticalLayout.addWidget(self.filesLabel)
-        self.filesList = KListWidget(self)
+        self.filesList = QTreeWidget(self)
         sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -167,32 +191,47 @@ class GitCommit(QWidget):
         self.connect(self.selectAllButton, SIGNAL('clicked()'), self.selectAll)
         self.connect(self.selectNoneButton, SIGNAL('clicked()'), self.selectNone)
         self.connect(self.commitButton, SIGNAL('clicked()'), self.commit)
-        self.connect(self.filesList, SIGNAL('currentRowChanged(int)'), self.changeDiff)
+        self.connect(self.filesList,
+                     SIGNAL('currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)'),
+                     self.changeDiff)
 
-    def fileName(self, name):
-        return name[name.find(':') + 1:].strip()
-
-    def changeDiff(self, row):
-        if row >= 0:
-            name = self.fileName(unicode(self.filesList.item(row).text()))
-            s = self.git.diff(name)
-            if self.temp.open():
-                open(self.temp.fileName(), 'w').write(s)
-                self.part.openUrl(KUrl(self.temp.fileName()))
+    def changeDiff(self, current, previous):
+        if current:
+            name = current.data(0, Qt.UserRole).toString()
+            if current.type():
+                self.part.openUrl(KUrl.fromPath(name))
+            else:
+                s = self.git.diff(name)
+                if self.temp.open():
+                    open(self.temp.fileName(), 'w').write(s)
+                    self.part.openUrl(KUrl.fromPath(self.temp.fileName()))
 
     def selectAll(self):
-        for i in range(self.filesList.count()):
-            self.filesList.item(i).setFlags(
+        for i in range(self.filesList.topLevelItemCount()):
+            self.filesList.topLevelItem(i).setFlags(
                     Qt.ItemIsUserCheckable | Qt.ItemIsSelectable | Qt.ItemIsEnabled)
-            self.filesList.item(i).setCheckState(Qt.Checked)
+            self.filesList.topLevelItem(i).setCheckState(0, Qt.Checked)
 
     def selectNone(self):
-        for i in range(self.filesList.count()):
-            self.filesList.item(i).setCheckState(Qt.Unchecked)
+        for i in range(self.filesList.topLevelItemCount()):
+            self.filesList.topLevelItem(i).setCheckState(0, Qt.Unchecked)
 
     def commit(self):
-        pass
-
+        if self.messageEdit.toPlainText().isEmpty():
+            self.messageEdit.setFocus()
+            return
+        a = []
+        for i in range(self.filesList.topLevelItemCount()):
+            item = self.filesList.topLevelItem(i)
+            if item.checkState(0) == Qt.Checked:
+                if item.type():
+                    if not self.git.add(item.data(0, Qt.UserRole).toString()):
+                        sys.exit(1)
+                a.append(item.data(0, Qt.UserRole).toString())
+        if len(a) > 0:
+            if not self.git.commit(a, self.messageEdit.toPlainText()):
+                sys.exit(1)
+        sys.exit(0)
 
 class MainWindow(KMainWindow):
     def __init__(self):
@@ -205,10 +244,10 @@ aboutData = KAboutData(
         'git-kde-commit',
         '',
         ki18n('git-kde-commit'),
-        '0.1'
+        '0.1',
         ki18n('Gui for git commit & add'),
         KAboutData.License_GPL,
-        ki18n(u'(c) Petri Damstén'),
+        ki18n('(c) Petri Damstén'),
         ki18n('none'),
         '',
         'damu@iki.fi'
