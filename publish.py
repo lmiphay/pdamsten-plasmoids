@@ -47,6 +47,7 @@ version = ''
 comment = ''
 name = ''
 buf = ''
+depends = ''
 contentType = '77'  # Plasmoid Script
 depend = '50'       # KDE 4.x
 license = '1'       # GPL
@@ -155,12 +156,14 @@ def updateVersion():
     global version
     global comment
     global name
+    global depends
 
     print 'Updating version and changelog.'
     config = ConfigParser.RawConfigParser()
     config.read('./%s/metadata.desktop' % plasmoid)
     origVersion = config.get('Desktop Entry', 'X-KDE-PluginInfo-Version')
     plasmoidid = config.get('Desktop Entry', 'X-KDE-PluginInfo-Website')
+    depends = config.get('Desktop Entry', 'X-Script-Depends')
     plasmoidid = plasmoidid[plasmoidid.find('=') + 1:]
     comment = config.get('Desktop Entry', 'Comment')
     name = config.get('Desktop Entry', 'Name')
@@ -190,13 +193,16 @@ def uploadInfo():
     print 'Updating info: %s' % plasmoidid
     if plasmoidid == '':
         return False
+    description = comment + '\n\n' + defaultText
+    if depends != '':
+        description += '\n\n' + 'Plasmoid depends on: ' + depends
     params = [
         ('name', name),
         ('type', contentType),
         ('depend', depend),
         ('downloadtyp1', '0'), # uploaded file
         ('downloadname1', 'Plasmoid'),
-        ('description', comment + '\n\n' + defaultText),
+        ('description', description),
         ('licensetype', license),
         ('version', version),
         ('homepage', ''),
