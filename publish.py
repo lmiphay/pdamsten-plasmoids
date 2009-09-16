@@ -147,7 +147,8 @@ def gitCommit():
             return True
 
 def makePackages():
-    return (_('./make.sh')[0] == 0)
+    return (_('cd %s && zip -9 -v -o -r ../%s.plasmoid * -x \*~ && cd ..' % \
+           (plasmoid, plasmoid))[0] == 0)
 
 def updateVersion():
     global plasmoidid
@@ -209,6 +210,8 @@ def uploadInfo():
 X(gitCommit())
 X(updateVersion())
 X(makePackages())
+if inputWithDefault('Continue with upload?', 'yes') != 'yes':
+    sys.exit(0)
 X(uploadInfo())
 X(uploadFile())
 X(gitCommit())
