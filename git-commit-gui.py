@@ -56,13 +56,11 @@ class Git():
 
     def add(self, names):
         names = ['"' + unicode(name) + '"' for name in names]
-        print names
         return (self.run('git add %s' % \
                 (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
     def commit(self, names, msg):
         names = ['"' + unicode(name) + '"' for name in names]
-        print names
         return (self.run('git commit %s -m "%s"' % \
                 (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
@@ -239,7 +237,6 @@ class GitCommit(QWidget):
                 if item.type():
                     if not self.git.add(eval(unicode(item.data(0, Qt.UserRole).toString()))):
                         sys.exit(1)
-                print eval(unicode(item.data(0, Qt.UserRole).toString()))
                 a.extend(eval(unicode(item.data(0, Qt.UserRole).toString())))
         if len(a) > 0:
             if not self.git.commit(a, self.messageEdit.toPlainText()):
