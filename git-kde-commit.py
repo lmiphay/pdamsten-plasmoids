@@ -46,6 +46,9 @@ class Git():
         #print output
         return (process.returncode, output)
 
+    def hasChanges(self):
+        return (len(self.toAdd) > 0 or len(self.toCommit) > 0)
+
     def diff(self, name):
         if os.path.exists(name):
             return self.run('git diff %s' % name)[1]
@@ -83,12 +86,12 @@ class Git():
                         self.toCommit.append((s[:i].strip(), name, a[0]))
 
 class GitCommit(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, git):
         QWidget.__init__(self, parent)
         self.temp = KTemporaryFile()
         self.temp.setSuffix('.diff')
         self.setupUi()
-        self.git = Git()
+        self.git = git
         self.addFileItems(self.git.toCommit)
         self.addFileItems(self.git.toAdd, True)
         if self.filesList.topLevelItemCount() > 0:
@@ -241,11 +244,15 @@ class GitCommit(QWidget):
         self.parent().close()
 
 class MainWindow(KMainWindow):
-    def __init__(self):
+    def __init__(self, git):
         KMainWindow.__init__(self)
         self.resize(900, 700)
-        self.setCentralWidget(GitCommit(self))
+        self.setCentralWidget(GitCommit(self, git))
 
+git = Git()
+if not git.hasChanges():
+    print 'Nothing to commit.'
+    sys.exit(0)
 
 aboutData = KAboutData(
         'git-kde-commit',
@@ -261,7 +268,7 @@ aboutData = KAboutData(
 )
 KCmdLineArgs.init(sys.argv, aboutData)
 app = KApplication()
-mainWindow = MainWindow()
+mainWindow = MainWindow(git)
 mainWindow.show()
 app.connect(app, SIGNAL('lastWindowClosed()'), app.quit)
 app.exec_()
