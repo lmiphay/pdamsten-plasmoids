@@ -280,9 +280,9 @@ if not git.hasChanges():
     sys.exit(0)
 
 aboutData = KAboutData(
-        'git-kde-commit',
+        'git-commit-gui',
         '',
-        ki18n('git-kde-commit'),
+        ki18n('Git Commit'),
         '0.1',
         ki18n('Gui for git commit & add'),
         KAboutData.License_GPL,
