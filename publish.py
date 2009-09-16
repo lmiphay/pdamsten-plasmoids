@@ -43,6 +43,7 @@ if len(sys.argv) > 2:
     announce = sys.argv[2]
 
 plasmoidid = ''
+origVersion = ''
 version = ''
 comment = ''
 name = ''
@@ -51,7 +52,7 @@ depends = ''
 contentType = '77'  # Plasmoid Script
 depend = '50'       # KDE 4.x
 license = '1'       # GPL
-gitCommitCmd = 'git commit -a'
+gitCommitCmd = './git-commit-gui.py'
 config = ConfigParser.ConfigParser()
 config.read(os.path.expanduser('~/.kde-look.org/credentials'))
 user = config.get('Credentials', 'user')
@@ -132,20 +133,15 @@ def checkResult(result):
         return False
 
 def gitTag(s):
-    print 'Tagging.'
-    #return (_('git tag %s' % s)[0] == 0)
+    print 'Tagging %s.' % s
+    return (_('git tag %s' % s)[0] == 0)
     return True
 
 def gitCommit():
     print 'Committing changes.'
-    while True:
-        s = _('git status')[1]
-        if s.find('working directory clean') == -1:
-            #if _(gitCommitCmd)[0] != 0:
-            #    return False
-            return True # TODO debug
-        else:
-            return True
+    if _(gitCommitCmd)[0] != 0:
+        return False
+    return True
 
 def makePackages():
     return (_('cd %s && zip -9 -v -o -r ../%s.plasmoid * -x \*~ && cd ..' % \
@@ -153,6 +149,7 @@ def makePackages():
 
 def updateVersion():
     global plasmoidid
+    global origVersion
     global version
     global comment
     global name
@@ -221,5 +218,6 @@ if inputWithDefault('Continue with upload?', 'yes') != 'yes':
 X(uploadInfo())
 X(uploadFile())
 X(gitCommit())
-X(gitTag(name + ' ' + version))
+if origVersion != version
+    X(gitTag(name + ' ' + version))
 
