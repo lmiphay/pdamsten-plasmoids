@@ -51,15 +51,23 @@ class Git():
             return self.run('git diff %s' % name)[1]
         return ''
 
+    def lastMessage(self):
+        s = self.run('git log HEAD^..HEAD')[1]
+        return '\n'.join(s.split('\n')[3:]).strip()
+
     def add(self, names):
         names = ['"' + unicode(name) + '"' for name in names]
         return (self.run('git add %s' % \
                 (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
-    def commit(self, names, msg):
+    def commit(self, names, msg, amend):
         names = ['"' + unicode(name) + '"' for name in names]
-        return (self.run('git commit %s -m "%s"' % \
-                (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
+        if amend:
+            a = '--amend'
+        else:
+            a = ''
+        return (self.run('git commit %s %s -m "%s"' % \
+                (a, ' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
     def updateStatus(self):
         self.branch = ''
@@ -151,6 +159,8 @@ class GitCommit(QWidget):
         self.messageEdit.setSizePolicy(sizePolicy)
         self.messageEdit.setObjectName("messageEdit")
         self.verticalLayout.addWidget(self.messageEdit)
+        self.amendCheck = QCheckBox()
+        self.verticalLayout.addWidget(self.amendCheck)
         self.horizontalLayout_3.addLayout(self.verticalLayout)
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -186,7 +196,8 @@ class GitCommit(QWidget):
         self.setTabOrder(self.filesList, self.selectAllButton)
         self.setTabOrder(self.selectAllButton, self.selectNoneButton)
         self.setTabOrder(self.selectNoneButton, self.messageEdit)
-        self.setTabOrder(self.messageEdit, self.diffEdit)
+        self.setTabOrder(self.messageEdit, self.amendCheck)
+        self.setTabOrder(self.amendCheck, self.diffEdit)
         self.setTabOrder(self.diffEdit, self.commitButton)
         self.setTabOrder(self.commitButton, self.cancelButton)
 
@@ -197,14 +208,20 @@ class GitCommit(QWidget):
         self.diffLabel.setText(i18n("Diff:"))
         self.commitButton.setText(i18n("Commit"))
         self.cancelButton.setText(i18n("Cancel"))
+        self.amendCheck.setText(i18n("Amend commit"))
 
         self.connect(self.cancelButton, SIGNAL('clicked()'), self.parent().close)
         self.connect(self.selectAllButton, SIGNAL('clicked()'), self.selectAll)
         self.connect(self.selectNoneButton, SIGNAL('clicked()'), self.selectNone)
         self.connect(self.commitButton, SIGNAL('clicked()'), self.commit)
+        self.connect(self.amendCheck, SIGNAL('stateChanged(int)'), self.amendState)
         self.connect(self.filesList,
                      SIGNAL('currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)'),
                      self.changeDiff)
+
+    def amendState(self, state):
+        if state == Qt.Checked:
+            self.messageEdit.setText(self.git.lastMessage())
 
     def changeDiff(self, current, previous):
         if current:
@@ -240,7 +257,8 @@ class GitCommit(QWidget):
                         sys.exit(1)
                 a.extend(eval(unicode(item.data(0, Qt.UserRole).toString())))
         if len(a) > 0:
-            if not self.git.commit(a, self.messageEdit.toPlainText()):
+            if not self.git.commit(a, self.messageEdit.toPlainText(),
+                    self.amendCheck.checkState() == Qt.Checked):
                 sys.exit(1)
 
         self.filesList.clear()
