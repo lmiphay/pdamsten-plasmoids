@@ -30,10 +30,6 @@ from PyKDE4.kparts import *
 
 class Git():
     def __init__(self):
-        self.branch = ''
-        self.toCommit = []
-        self.toAdd = []
-        self.behind = 0
         self.updateStatus()
 
     def run(self, cmd):
@@ -66,6 +62,10 @@ class Git():
                 (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
     def updateStatus(self):
+        self.branch = ''
+        self.toCommit = []
+        self.toAdd = []
+        self.behind = 0
         s = self.run('git status')[1]
         add = False
         for line in s.split('\n'):
@@ -242,7 +242,13 @@ class GitCommit(QWidget):
         if len(a) > 0:
             if not self.git.commit(a, self.messageEdit.toPlainText()):
                 sys.exit(1)
-        self.parent().close()
+
+        self.filesList.clear()
+        self.git.updateStatus()
+        self.addFileItems(self.git.toCommit)
+        self.addFileItems(self.git.toAdd, True)
+        if self.filesList.topLevelItemCount() == 0:
+            self.parent().close()
 
 class MainWindow(KMainWindow):
     def __init__(self, git):
