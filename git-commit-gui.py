@@ -54,11 +54,15 @@ class Git():
             return self.run('git diff %s' % name)[1]
         return ''
 
-    def add(self, name):
-        return (self.run('git add %s' % name)[0] == 0)
+    def add(self, names):
+        names = ['"' + unicode(name) + '"' for name in names]
+        print names
+        return (self.run('git add %s' % \
+                (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
     def commit(self, names, msg):
         names = ['"' + unicode(name) + '"' for name in names]
+        print names
         return (self.run('git commit %s -m "%s"' % \
                 (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
 
@@ -76,14 +80,12 @@ class Git():
                 s = line[2:].strip()
                 if len(s) > 0:
                     if add:
-                        self.toAdd.append(('add & commit', s, s))
+                        self.toAdd.append(('add & commit', s, [s]))
                     else:
                         i = s.find(':')
                         name = s[i + 1:].strip()
                         a = name.split(' -> ')
-                        if len(a) > 1:
-                            a.pop(0)
-                        self.toCommit.append((s[:i].strip(), name, a[0]))
+                        self.toCommit.append((s[:i].strip(), name, a))
 
 class GitCommit(QWidget):
     def __init__(self, parent, git):
@@ -106,7 +108,7 @@ class GitCommit(QWidget):
     def addFileItems(self, items, add = False):
         for i in items:
             item = QTreeWidgetItem([i[0], i[1]], int(add))
-            item.setData(0, Qt.UserRole, i[2])
+            item.setData(0, Qt.UserRole, repr(i[2]))
             self.filesList.addTopLevelItem(item)
 
     def setupUi(self):
@@ -207,11 +209,11 @@ class GitCommit(QWidget):
 
     def changeDiff(self, current, previous):
         if current:
-            name = current.data(0, Qt.UserRole).toString()
+            name = eval(unicode(current.data(0, Qt.UserRole).toString()))
             if current.type():
-                self.part.openUrl(KUrl.fromPath(name))
+                self.part.openUrl(KUrl.fromPath(name[0]))
             else:
-                s = self.git.diff(name)
+                s = self.git.diff(name[0])
                 if self.temp.open():
                     open(self.temp.fileName(), 'w').write(s)
                     self.part.openUrl(KUrl.fromPath(self.temp.fileName()))
@@ -235,9 +237,10 @@ class GitCommit(QWidget):
             item = self.filesList.topLevelItem(i)
             if item.checkState(0) == Qt.Checked:
                 if item.type():
-                    if not self.git.add(item.data(0, Qt.UserRole).toString()):
+                    if not self.git.add(eval(unicode(item.data(0, Qt.UserRole).toString()))):
                         sys.exit(1)
-                a.append(item.data(0, Qt.UserRole).toString())
+                print eval(unicode(item.data(0, Qt.UserRole).toString()))
+                a.extend(eval(unicode(item.data(0, Qt.UserRole).toString())))
         if len(a) > 0:
             if not self.git.commit(a, self.messageEdit.toPlainText()):
                 sys.exit(1)
