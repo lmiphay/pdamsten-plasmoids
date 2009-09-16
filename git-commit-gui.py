@@ -294,6 +294,7 @@ aboutData = KAboutData(
 KCmdLineArgs.init(sys.argv, aboutData)
 app = KApplication()
 mainWindow = MainWindow(git)
+mainWindow.setCaption(git.branch)
 mainWindow.show()
 app.connect(app, SIGNAL('lastWindowClosed()'), app.quit)
 app.exec_()
