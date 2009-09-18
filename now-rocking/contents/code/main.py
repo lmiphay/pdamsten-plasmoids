@@ -18,7 +18,7 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import os, urllib
+import os, urllib, re
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import SLOT
 from PyQt4.QtCore import SIGNAL
@@ -74,6 +74,8 @@ class Rocking(Applet):
         self.logo = None
         self.cover = None
         self.actions = []
+        self.cacheKey = None
+        self.cache = None
 
     def __del__(self):
         # Getting crash without this...
@@ -373,17 +375,51 @@ class Rocking(Applet):
             f = filename.lower()
             if os.path.splitext(f)[1] in ['.jpg', '.png', '.jpeg']:
                 if f.find('front') > -1 or f.find('cover') > -1 or f.find('album') > -1:
-                    jpg = filename
+                    jpg = os.path.join(path, filename)
                     break
                 elif jpg == default:
-                    jpg = filename
+                    jpg = os.path.join(path, filename)
         return jpg
+
+    def getMetaFromPath(self, path):
+        if path == self.cacheKey:
+            return self.cache
+        self.cacheKey = path
+        self.cache = None
+        a = re.split('[-.]', os.path.splitext(os.path.basename(urllib.url2pathname(path)))[0])
+        if len(a) > 2:
+            if a[0].strip().isdigit:
+                artist = a[1]
+            else:
+                artist = a[0]
+            title = a[2]
+        elif len(a) > 1:
+            if a[0].strip().isdigit:
+                artist = ''
+                title = a[1]
+            else:
+                artist = a[0]
+                title = a[1]
+        else:
+            artist = ''
+            title = a[0]
+        self.cache = (artist.strip(), title.strip())
+        return self.cache
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
         #print data
         changed = False
         state = Rocking.Stopped
+        hasArtist = QString('Artist') in data
+        hasTitle = QString('Title') in data
+        if (not hasArtist or not hasTitle) and QString('Url') in data:
+            t = self.getMetaFromPath(U(data[QString('Url')]))
+            artistUrl = t[0]
+            titleUrl = t[1]
+        else:
+            artistUrl = None
+            titleUrl = None
         if QString('State') in data:
             if U(data[QString('State')]) == u'playing':
                 state = Rocking.Playing
@@ -394,10 +430,12 @@ class Rocking(Applet):
             self.checkPlayPause()
             changed = True
 
-        if QString('Artist') in data:
+        if hasArtist:
             artist = U(data[QString('Artist')])
+        elif artistUrl:
+            artist = artistUrl
         elif self.player != '':
-            artist = U(self.player)
+            artist = self.player
             artist = artist[artist.rfind('.') + 1:].title()
         else:
             artist = U(i18n('No Player'))
@@ -407,17 +445,18 @@ class Rocking(Applet):
                 self.artistWidget.setText(self.formatArtistAndTitle(self.artist))
             changed = True
 
-        if QString('Title') in data:
+        if hasTitle:
             title = U(data[QString('Title')])
-            if self.state == Rocking.Paused:
-                title += U(i18n(' (paused)'))
-            if self.state == Rocking.Stopped:
-                title += U(i18n(' (stopped)'))
+        elif titleUrl:
+            title = titleUrl
+        elif self.state == Rocking.Stopped:
+            title = U(i18n('Stopped'))
         else:
-            if self.state == Rocking.Stopped:
-                title = U(i18n('Stopped'))
-            else:
-                title = U(i18n('N/A'))
+            title = U(i18n('N/A'))
+        if self.state == Rocking.Paused:
+            title += U(i18n(' (paused)'))
+        elif self.state == Rocking.Stopped:
+            title += U(i18n(' (stopped)'))
         if title != self.title:
             self.title = title
             if self.titleWidget != None:
@@ -435,7 +474,8 @@ class Rocking(Applet):
         if QString('Artwork') in data:
             if changed:
                 self.cover.setImage(QPixmap(data[QString('Artwork')]))
-        elif QString('Url') in data
+        elif QString('Url') in data:
+            print '***********', changed
             if changed:
                 dirname = urllib.url2pathname(os.path.dirname(U(data[QString('Url')])))
                 dirname = dirname.replace('file://', '')
