@@ -475,7 +475,6 @@ class Rocking(Applet):
             if changed:
                 self.cover.setImage(QPixmap(data[QString('Artwork')]))
         elif QString('Url') in data:
-            print '***********', changed
             if changed:
                 dirname = urllib.url2pathname(os.path.dirname(U(data[QString('Url')])))
                 dirname = dirname.replace('file://', '')
@@ -529,14 +528,19 @@ class Rocking(Applet):
             if self.bar == None:
                 self.createButtonBar()
             self.bar.fadeIn(Fader.Medium)
-
-        self.applet.hoverEnterEvent(event)
+        try:
+            self.applet.hoverEnterEvent(event)
+        except:
+            pass
 
     def hoverLeaveEvent(self, event):
         if self.bar != None:
             self.bar.fadeOut(Fader.Medium)
 
-        self.applet.hoverLeaveEvent(event)
+        try:
+            self.applet.hoverLeaveEvent(event)
+        except:
+            pass
 
 def CreateApplet(parent):
     return Rocking(parent)
