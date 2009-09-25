@@ -18,7 +18,6 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import os, urllib
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import SLOT
 from PyQt4.QtCore import SIGNAL
@@ -160,9 +159,9 @@ class Rocking(Applet):
             self.cover.setAspectRatioMode(Qt.IgnoreAspectRatio)
 
         prev = self.logo
-        self.logo = U(cg.readEntry('logo'))
+        self.logo = cg.readEntry('logo')
         if self.logo == '':
-            self.logo = U(self.applet.package().filePath('images', 'now-rocking.svgz'))
+            self.logo = self.applet.package().filePath('images', 'now-rocking.svgz')
         else:
             self.logo = self.logo.replace('file://', '')
         if prev == '' or self.cover.image() == prev:
@@ -181,8 +180,8 @@ class Rocking(Applet):
                 [(0, 1), (0, 1), (1, -1), (0, Rocking.ButtonWidth + top + bottom)])
         layout = Layout(self.bar)
 
-        buttonsSvg = U(self.applet.package().filePath('images', 'buttons.svgz'))
-        slidersSvg = U(self.applet.package().filePath('images', 'sliders.svgz'))
+        buttonsSvg = self.applet.package().filePath('images', 'buttons.svgz')
+        slidersSvg = self.applet.package().filePath('images', 'sliders.svgz')
 
         self.prev = Button(self.bar)
         self.prev.hide()
@@ -290,7 +289,7 @@ class Rocking(Applet):
         self.connected = False
         self.engine.disconnectSource(self.player, self)
         if not self.engine.sources().contains(self.player) and self.engine.sources().count() > 0:
-            self.player = U(self.engine.sources().first())
+            self.player = QString(self.engine.sources().first())
         if self.engine.sources().contains(self.player):
             self.engine.connectSource(self.player, self, 500)
             try:
@@ -369,18 +368,6 @@ class Rocking(Applet):
             self.controller.associateWidget(self.play, 'play');
             self.play.setPrefix('play')
 
-    def getImageFromPath(self, path, default):
-        jpg = default
-        for filename in os.listdir(path):
-            f = filename.lower()
-            if os.path.splitext(f)[1] in ['.jpg', '.png', '.jpeg']:
-                if f.find('front') > -1 or f.find('cover') > -1 or f.find('album') > -1:
-                    jpg = filename
-                    break
-                elif jpg == default:
-                    jpg = filename
-        return jpg
-
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
         #print data
@@ -437,11 +424,6 @@ class Rocking(Applet):
         if QString('Artwork') in data:
             if changed:
                 self.cover.setImage(QPixmap(data[QString('Artwork')]))
-        elif QString('Url') in data:
-            if changed:
-                dirname = urllib.url2pathname(os.path.dirname(U(data[QString('Url')])))
-                dirname = dirname.replace('file://', '')
-                self.cover.setImage(self.getImageFromPath(dirname, self.logo))
         else:
             if self.cover.image() != self.logo:
                 self.cover.setImage(self.logo)

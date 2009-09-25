@@ -74,7 +74,7 @@ class ImagePainter(Fader):
             self.img = img
         else:
             self.imgPath = img
-            if self.imgPath.find('.svg') > -1:
+            if self.imgPath.indexOf('.svg') > -1:
                 self.img = Plasma.Svg(self)
                 self.img.setImagePath(self.imgPath)
             else:
