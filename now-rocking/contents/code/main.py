@@ -107,6 +107,8 @@ class Rocking(Applet):
         self.connect(action, SIGNAL('triggered(bool)'), self.makeSquare)
         self.actions.append(action)
 
+        self.createButtonBar()
+
     def themeChanged(self):
         if self.artistWidget != None:
             self.artistWidget.setColor(Plasma.Theme.defaultTheme().color(Plasma.Theme.TextColor))
@@ -525,8 +527,6 @@ class Rocking(Applet):
 
     def hoverEnterEvent(self, event):
         if self.connected and self.cover.size().width() > Rocking.ButtonWidth * 9:
-            if self.bar == None:
-                self.createButtonBar()
             self.bar.fadeIn(Fader.Medium)
         try:
             self.applet.hoverEnterEvent(event)
@@ -534,9 +534,7 @@ class Rocking(Applet):
             pass
 
     def hoverLeaveEvent(self, event):
-        if self.bar != None:
-            self.bar.fadeOut(Fader.Medium)
-
+        self.bar.fadeOut(Fader.Medium)
         try:
             self.applet.hoverLeaveEvent(event)
         except:
