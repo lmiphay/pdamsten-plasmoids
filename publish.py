@@ -218,6 +218,6 @@ if inputWithDefault('Continue with upload?', 'yes') != 'yes':
 X(uploadInfo())
 X(uploadFile())
 X(gitCommit())
-if origVersion != version
+if origVersion != version:
     X(gitTag(name + ' ' + version))
 
