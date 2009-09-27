@@ -316,7 +316,8 @@ class Rocking(Applet):
     def playClicked(self):
         if self.controller == None:
             return
-        if self.state == Rocking.Playing:
+        # VLC needs pause even if paused. play stops current track.
+        if self.state == Rocking.Playing or self.player == 'org.mpris.vlc':
             self.controller.startOperationCall(self.controller.operationDescription('pause'))
         else:
             self.controller.startOperationCall(self.controller.operationDescription('play'))
