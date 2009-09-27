@@ -14,6 +14,7 @@ FILES=(
 "complex-plotter/contents/code/helpers.py"
 "now-rocking/contents/Messages.sh"
 "now-rocking/contents/code/helpers.py"
+"scriptedimage/contents/Messages.sh"
 "stealth-cashew/contents/Messages.sh"
 )
 

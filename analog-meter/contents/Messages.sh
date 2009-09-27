@@ -9,6 +9,7 @@ API=$(grep "X-Plasma-API" ../metadata.desktop | sed 's/.*=//')
 case "$API" in
   "python") SCRIPTEXT="py" ;;
   "ruby-script") SCRIPTEXT="rb" ;;
+  "webkit") SCRIPTEXT="js" ;;
   * ) exit ;;
 esac
 
