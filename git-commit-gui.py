@@ -225,13 +225,16 @@ class GitCommit(QWidget):
     def changeDiff(self, current, previous):
         if current:
             name = eval(unicode(current.data(0, Qt.UserRole).toString()))
-            if current.type():
+            if QFileInfo(name[0]).isDir():
+                s = ''
+            elif current.type():
                 self.part.openUrl(KUrl.fromPath(name[0]))
+                return
             else:
                 s = self.git.diff(name[0])
-                if self.temp.open():
-                    open(self.temp.fileName(), 'w').write(s)
-                    self.part.openUrl(KUrl.fromPath(self.temp.fileName()))
+            if self.temp.open():
+                open(self.temp.fileName(), 'w').write(s)
+                self.part.openUrl(KUrl.fromPath(self.temp.fileName()))
 
     def selectAll(self):
         for i in range(self.filesList.topLevelItemCount()):
