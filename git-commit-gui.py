@@ -57,8 +57,7 @@ class Git():
 
     def add(self, names):
         names = ['"' + unicode(name) + '"' for name in names]
-        return (self.run('git add %s' % \
-                (' '.join(names), msg.replace('"', '\\"')))[0] == 0)
+        return (self.run('git add %s' % (' '.join(names)))[0] == 0)
 
     def commit(self, names, msg, amend):
         names = ['"' + unicode(name) + '"' for name in names]
