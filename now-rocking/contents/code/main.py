@@ -18,27 +18,13 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import SLOT
-from PyQt4.QtCore import SIGNAL
-from PyQt4.QtCore import pyqtSignature
-from PyQt4.QtCore import QObject
-from PyQt4.QtCore import QVariant
-from PyQt4.QtCore import QString
-from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QTimer
-from PyQt4.QtGui  import QGraphicsLinearLayout
-from PyQt4.QtGui  import QPixmap
-from PyQt4.QtGui  import QSizePolicy
-from PyQt4.QtGui  import QColor
-from PyQt4.QtGui  import QFont
-from PyQt4.QtGui  import qApp
-from PyQt4.QtGui  import QGraphicsWidget
-from PyQt4.QtGui  import QAction
+import os, sys
+from PyQt4.QtCore import *
+from PyQt4.QtGui  import *
 from PyKDE4.plasma import Plasma
 from PyKDE4.plasmascript import Applet
-from PyKDE4.kdecore import i18n
-from PyKDE4.kdeui import KIcon
+from PyKDE4.kdecore import *
+from PyKDE4.kdeui import *
 from image import Image
 from button import Button
 from slider import Slider
@@ -48,12 +34,28 @@ from frame import Frame
 from fader import Fader
 from helpers import *
 
+def loadPlugin(name):
+    plugin = name + 'Plugin'
+    filename = unicode(KStandardDirs.locate('data', 'plasma_applet_now-rocking/' + plugin + '.py'))
+    if filename != '':
+        directory = os.path.dirname(filename)
+        if directory not in sys.path:
+            sys.path.append(directory)
+        try:
+            temp = __import__(plugin, globals(), locals(), [name])
+            return temp.__dict__[name]
+        except:
+            return lambda *args: None
+
+
 class Rocking(Applet):
     Stopped, Playing, Paused, NA = range(4)
     ButtonWidth = 24
 
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
+        self.coverPlugin = loadPlugin('cover')
+        self.coverCache = {}
         self.connected = False
         self.allCaps = False
         self.player = u''
@@ -159,9 +161,9 @@ class Rocking(Applet):
             self.cover.setAspectRatioMode(Qt.IgnoreAspectRatio)
 
         prev = self.logo
-        self.logo = cg.readEntry('logo')
+        self.logo = U(cg.readEntry('logo'))
         if self.logo == '':
-            self.logo = self.applet.package().filePath('images', 'now-rocking.svgz')
+            self.logo = U(self.applet.package().filePath('images', 'now-rocking.svgz'))
         else:
             self.logo = self.logo.replace('file://', '')
         if prev == '' or self.cover.image() == prev:
@@ -173,15 +175,15 @@ class Rocking(Applet):
         # Button bar
         self.bar = Frame(self.cover)
         self.bar.hide()
-        self.bar.setSvg(self.applet.package().filePath('images', 'frame.svgz'))
+        self.bar.setSvg(U(self.applet.package().filePath('images', 'frame.svgz')))
 
         (left, top, right, bottom) = self.bar.getContentsMargins()
         self.coverLayout.addItem(self.bar, \
                 [(0, 1), (0, 1), (1, -1), (0, Rocking.ButtonWidth + top + bottom)])
         layout = Layout(self.bar)
 
-        buttonsSvg = self.applet.package().filePath('images', 'buttons.svgz')
-        slidersSvg = self.applet.package().filePath('images', 'sliders.svgz')
+        buttonsSvg = U(self.applet.package().filePath('images', 'buttons.svgz'))
+        slidersSvg = U(self.applet.package().filePath('images', 'sliders.svgz'))
 
         self.prev = Button(self.bar)
         self.prev.hide()
@@ -425,8 +427,19 @@ class Rocking(Applet):
             if changed:
                 self.cover.setImage(QPixmap(data[QString('Artwork')]))
         else:
-            if self.cover.image() != self.logo:
-                self.cover.setImage(self.logo)
+            if album != '':
+                key = artist + '|' + album
+                if key in self.coverCache:
+                    img = self.coverCache[key]
+                else:
+                    img = self.coverPlugin(artist, album)
+                    if not img:
+                        img = self.logo
+            else:
+                img = self.logo
+
+            if self.cover.image() != img:
+                self.cover.setImage(img)
 
         if changed:
             self.artwork = self.cover.pixmap()
