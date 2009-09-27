@@ -1,0 +1,147 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-09-27 11:14+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Petri Damstén <damu@iki.fi>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. i18n: file: ui/config.ui:17
+#. i18n: ectx: property (text), widget (QRadioButton, kcfg_imageUrlRadio)
+#: rc.js:3
+msgid "Image URL:"
+msgstr "Kuvan URL:"
+
+#. i18n: file: ui/config.ui:27
+#. i18n: ectx: property (text), widget (QRadioButton, kcfg_imageScriptRadio)
+#: rc.js:6
+msgid "Script that prints image URL:"
+msgstr "Skripti joka printtaa URL:n:"
+
+#. i18n: file: ui/config.ui:45
+#. i18n: ectx: property (text), widget (QLabel, intervalLabel)
+#: rc.js:9
+msgid "Interval:"
+msgstr "Päivitysväli"
+
+#. i18n: file: ui/config.ui:65
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_intervalUnit)
+#: rc.js:12
+msgid "seconds"
+msgstr "sekunttia"
+
+#. i18n: file: ui/config.ui:70
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_intervalUnit)
+#: rc.js:15
+msgid "minutes"
+msgstr "minuuttia"
+
+#. i18n: file: ui/config.ui:75
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_intervalUnit)
+#: rc.js:18
+msgid "hours"
+msgstr "tuntia"
+
+#. i18n: file: ui/config.ui:93
+#. i18n: ectx: property (text), widget (QLabel, scalingLabel)
+#: rc.js:21
+msgid "Scaling:"
+msgstr "Skaalaus:"
+
+#. i18n: file: ui/config.ui:113
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_scaling)
+#: rc.js:24
+msgid "No scaling"
+msgstr "Ei skaalausta"
+
+#. i18n: file: ui/config.ui:118
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_scaling)
+#: rc.js:27
+msgid "Scale content to applet"
+msgstr "Skaalaa kuva aplettiin"
+
+#. i18n: file: ui/config.ui:123
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_scaling)
+#: rc.js:30
+msgid "Scale content to applet, keep aspect ratio"
+msgstr "Skaalaa kuva aplettiin, pidä mitta suhde"
+
+#. i18n: file: ui/config.ui:128
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_scaling)
+#: rc.js:33
+msgid "Scale applet to content"
+msgstr "Skaalaa apletti kuvaan"
+
+#. i18n: file: ui/config.ui:146
+#. i18n: ectx: property (text), widget (QLabel, backgroundLabel)
+#: rc.js:36
+msgid "Background:"
+msgstr "Tausta:"
+
+#. i18n: file: ui/config.ui:166
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_backgroundHint)
+#: rc.js:39
+msgid "No Background"
+msgstr "Ei taustaa"
+
+#. i18n: file: ui/config.ui:171
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_backgroundHint)
+#: rc.js:42
+msgid "Standard Background"
+msgstr "Normaali tausta"
+
+#. i18n: file: ui/config.ui:176
+#. i18n: ectx: property (text), item, widget (QComboBox, kcfg_backgroundHint)
+#: rc.js:45
+msgid "Translucent Background"
+msgstr "Läpinäkyvä tausta"
+
+#. i18n: file: config/main.xml:8
+#: rc.js:47
+msgid "Select to use image URL"
+msgstr "Valitse käyttääksesi kuvan URL:lää"
+
+#. i18n: file: config/main.xml:12
+#: rc.js:49
+msgid "Image URL"
+msgstr "Kuvan URL"
+
+#. i18n: file: config/main.xml:16
+#: rc.js:51
+msgid "Select to use image script"
+msgstr "Valitse käyttääksesi kuva skriptiä"
+
+#. i18n: file: config/main.xml:20
+#: rc.js:53
+msgid "Image Script"
+msgstr "Kuva skripti"
+
+#. i18n: file: config/main.xml:24
+#: rc.js:55
+msgid "Image update interval"
+msgstr "Kuvan päivitys väli"
+
+#. i18n: file: config/main.xml:28
+#: rc.js:57
+msgid "Image update interval unit"
+msgstr "Kuvan päivitys välin mitta yksikkö"
+
+#. i18n: file: config/main.xml:32
+#: rc.js:59
+msgid "Applet scaling"
+msgstr "Appletin skaalaus"
+
+#. i18n: file: config/main.xml:36
+#: rc.js:61
+msgid "Applet background hint"
+msgstr "Appletin tausta"
