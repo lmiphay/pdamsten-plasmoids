@@ -1,3 +1,7 @@
+2009-27-09  Version 0.8
+  * Add combobox to select background type
+  * Add fi translation
+
 2009-09-04  Version 0.7
   * Fix urls that have '?'
 
