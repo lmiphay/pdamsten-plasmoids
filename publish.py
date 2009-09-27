@@ -206,6 +206,7 @@ def uploadInfo():
         ('changelog', open('./%s/Changelog' % plasmoid).read()),
         ('announceupdate', announce)
     ]
+    print params
     return upload('v1/content/edit/%s' % plasmoidid, params)
 
 #---------------------------------------------------------------------------------------------------
