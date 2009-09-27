@@ -100,6 +100,12 @@ class GitCommit(QWidget):
         self.temp.setSuffix('.diff')
         self.setupUi()
         self.git = git
+        self.initList(False)
+
+    def initList(self, update = True):
+        if update:
+            self.filesList.clear()
+            self.git.updateStatus()
         self.addFileItems(self.git.toCommit)
         self.addFileItems(self.git.toAdd, True)
         if self.filesList.topLevelItemCount() > 0:
@@ -263,10 +269,7 @@ class GitCommit(QWidget):
                     self.amendCheck.checkState() == Qt.Checked):
                 sys.exit(1)
 
-        self.filesList.clear()
-        self.git.updateStatus()
-        self.addFileItems(self.git.toCommit)
-        self.addFileItems(self.git.toAdd, True)
+        self.initList()
         if self.filesList.topLevelItemCount() == 0:
             self.parent().close()
 
