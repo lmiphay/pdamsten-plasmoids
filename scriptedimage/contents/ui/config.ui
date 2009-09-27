@@ -1,64 +1,77 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Config</class>
- <widget class="QWidget" name="Config" >
-  <property name="geometry" >
+ <widget class="QWidget" name="Config">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>357</width>
-    <height>200</height>
+    <width>443</width>
+    <height>221</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" >
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QRadioButton" name="kcfg_imageUrlRadio" >
-     <property name="text" >
-      <string>Image &amp;URL:</string>
+    <widget class="QRadioButton" name="kcfg_imageUrlRadio">
+     <property name="text">
+      <string>Image URL:</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="KUrlRequester" name="kcfg_imageUrl" />
+    <widget class="KUrlRequester" name="kcfg_imageUrl"/>
    </item>
    <item>
-    <widget class="QRadioButton" name="kcfg_imageScriptRadio" >
-     <property name="text" >
-      <string>&amp;Script that prints image URL:</string>
+    <widget class="QRadioButton" name="kcfg_imageScriptRadio">
+     <property name="text">
+      <string>Script that prints image URL:</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="KUrlRequester" name="kcfg_imageScript" />
+    <widget class="KUrlRequester" name="kcfg_imageScript"/>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" >
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="intervalLabel" >
-       <property name="text" >
-        <string>&amp;Interval:</string>
+      <widget class="QLabel" name="intervalLabel">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
        </property>
-       <property name="buddy" >
+       <property name="text">
+        <string>Interval:</string>
+       </property>
+       <property name="buddy">
         <cstring>kcfg_interval</cstring>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="kcfg_interval" />
+      <widget class="QSpinBox" name="kcfg_interval"/>
      </item>
      <item>
-      <widget class="QComboBox" name="kcfg_intervalUnit" >
+      <widget class="QComboBox" name="kcfg_intervalUnit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>seconds</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>minutes</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>hours</string>
         </property>
        </item>
@@ -67,39 +80,51 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" >
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="scalingLabel" >
-       <property name="text" >
-        <string>&amp;Scaling:</string>
+      <widget class="QLabel" name="scalingLabel">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
        </property>
-       <property name="buddy" >
+       <property name="text">
+        <string>Scaling:</string>
+       </property>
+       <property name="buddy">
         <cstring>kcfg_scaling</cstring>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="kcfg_scaling" >
-       <property name="editable" >
+      <widget class="QComboBox" name="kcfg_scaling">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="editable">
         <bool>false</bool>
        </property>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>No scaling</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Scale content to applet</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Scale content to applet, keep aspect ratio</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Scale applet to content</string>
         </property>
        </item>
@@ -108,11 +133,59 @@
     </layout>
    </item>
    <item>
-    <spacer name="verticalSpacer" >
-     <property name="orientation" >
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="backgroundLabel">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Background:</string>
+       </property>
+       <property name="buddy">
+        <cstring>kcfg_backgroundHint</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="kcfg_backgroundHint">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>No Background</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Standard Background</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Translucent Background</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="sizeHint" stdset="0" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>4</height>

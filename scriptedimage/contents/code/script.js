@@ -30,8 +30,8 @@ function init()
     g_img = new Image();
     g_img.onload = widhtHeightReady;
 
-    constraintsEvent(FormFactorConstraint);
     configChanged();
+    constraintsEvent(FormFactorConstraint);
 }
 
 function connectEngine()
@@ -162,6 +162,7 @@ function configChanged()
     g_scaling = cfg.readEntry("scaling", 0);
     g_interval = cfg.readEntry("interval", 0);
     g_intervalUnit = cfg.readEntry("intervalUnit", 1);
+    window.applet.setBackgroundHints(cfg.readEntry("backgroundHint", 1));
 
     switch (g_scaling) {
         case 0: // No scaling
