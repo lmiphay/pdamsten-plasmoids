@@ -172,7 +172,7 @@ def updateVersion():
                       'X-KDE-PluginInfo-Version=%s' % origVersion, \
                       'X-KDE-PluginInfo-Version=%s' % version)
         appendToFontOfFile('./%s/Changelog' % plasmoid, \
-                '%s  Version %s\n  * \n\n' % (datetime.today().strftime('%Y-%d-%m'), version))
+                '%s  Version %s\n  * \n\n' % (datetime.today().strftime('%Y-%m-%d'), version))
     editor = os.environ['EDITOR']
     os.system(editor + ' ./%s/Changelog' % plasmoid)
     return True
