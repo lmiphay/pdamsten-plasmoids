@@ -53,6 +53,10 @@ class Layout(QGraphicsLayout):
         else:
             return QSizeF(-1, -1)
 
+    def invalidate(self):
+        QGraphicsLayout.invalidate(self)
+        self.repositionItems()
+
     def repositionItems(self):
         rect = self.geometry()
         #print '***', type(self), rect

@@ -55,7 +55,7 @@ class ImagePainter(Fader):
             p.setY(p.y() + ((s.height() - self.scaledImg.size().height()) / 2.0))
             painter.drawPixmap(p, self.scaledImg)
         elif isinstance(self.img, Plasma.Svg):
-            #print self.svgElement(), self.boundingRect(), self.imageSize()
+            #print type(self), self.svgElement(), self.boundingRect(), self.imageSize()
             elem = self.svgElement()
             self.img.paint(painter, self.boundingRect(), elem)
             try:

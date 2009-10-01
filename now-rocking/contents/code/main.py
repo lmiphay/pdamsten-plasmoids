@@ -276,6 +276,7 @@ class Rocking(Applet):
                 [(1, -2 * Rocking.ButtonWidth + 1), (0, 0), (1, 0), (1, 0)])
 
         self.associateWidgets()
+        self.barLayout = layout
         self.bar.hide()
 
     def associateWidgets(self):
@@ -484,6 +485,8 @@ class Rocking(Applet):
 
     def hoverEnterEvent(self, event):
         if self.connected and self.cover.size().width() > Rocking.ButtonWidth * 9:
+            # TODO why buttons are half height without invalidate?
+            self.barLayout.invalidate()
             self.bar.fadeIn(Fader.Medium)
         try:
             self.applet.hoverEnterEvent(event)
