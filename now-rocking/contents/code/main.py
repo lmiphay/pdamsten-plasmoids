@@ -174,7 +174,6 @@ class Rocking(Applet):
     def createButtonBar(self):
         # Button bar
         self.bar = Frame(self.cover)
-        self.bar.hide()
         self.bar.setSvg(U(self.applet.package().filePath('images', 'frame.svgz')))
 
         (left, top, right, bottom) = self.bar.getContentsMargins()
@@ -277,6 +276,7 @@ class Rocking(Applet):
                 [(1, -2 * Rocking.ButtonWidth + 1), (0, 0), (1, 0), (1, 0)])
 
         self.associateWidgets()
+        self.bar.hide()
 
     def associateWidgets(self):
         if self.controller != None and self.bar != None:
@@ -428,15 +428,15 @@ class Rocking(Applet):
             if changed:
                 self.cover.setImage(QPixmap(data[QString('Artwork')]))
         else:
+            img = None
             if album != '':
                 key = artist + '|' + album
                 if key in self.coverCache:
                     img = self.coverCache[key]
                 else:
                     img = self.coverPlugin(artist, album)
-                    if not img:
-                        img = self.logo
-            else:
+                    self.coverCache[key] = img
+            if not img:
                 img = self.logo
 
             if self.cover.image() != img:
@@ -491,7 +491,8 @@ class Rocking(Applet):
             pass
 
     def hoverLeaveEvent(self, event):
-        self.bar.fadeOut(Fader.Medium)
+        if self.bar.isVisible():
+            self.bar.fadeOut(Fader.Medium)
         try:
             self.applet.hoverLeaveEvent(event)
         except:
