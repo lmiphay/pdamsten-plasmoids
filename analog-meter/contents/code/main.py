@@ -38,7 +38,7 @@ class AnalogMeter(Applet):
         # To find ui files from package dir
         UiHelper.applet = self.applet
         # This trickers source list fill so they are ready when needed (e.g. config)
-        self.applet.dataEngine('systemmonitor').sources()
+        sources = self.applet.dataEngine('systemmonitor').sources()
 
         self.setAspectRatioMode(Plasma.Square)
         cg = self.config()
@@ -56,7 +56,20 @@ class AnalogMeter(Applet):
             check(isinstance(self.cfg['source'], dict))
         except:
             self.cfg['source'] = None
+
+        c = self.cfg['source']
+        if c != None:
+            if c['dataengine'] == 'systemmonitor':
+                if c['source'] not in sources:
+                    self.connect(self.applet.dataEngine('systemmonitor'),
+                                 SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
+                    return
         self.createMeter()
+
+    def sourceAdded(self, name):
+        #print name, self.cfg['source']['source']
+        if name == self.cfg['source']['source']:
+            QTimer.singleShot(0, self.createMeter)
 
     def createMeter(self):
         layout = self.applet.layout()
