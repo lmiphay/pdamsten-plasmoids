@@ -73,7 +73,6 @@ class ComplexPlotter(Applet):
         self.createPlotters()
 
     def sourceAdded(self, name):
-        print name
         self.allSystemmonitorSources.append(name)
         for source in self.systemmonitorSources:
             if source not in self.allSystemmonitorSources:
