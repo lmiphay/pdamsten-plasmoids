@@ -41,7 +41,7 @@ class ComplexPlotter(Applet):
         # To find ui files from package dir
         UiHelper.applet = self.applet
         # This trickers source list fill so they are ready when needed (e.g. config)
-        self.applet.dataEngine('systemmonitor').sources()
+        self.allSystemmonitorSources = self.applet.dataEngine('systemmonitor').sources()
 
         self.setAspectRatioMode(Plasma.IgnoreAspectRatio)
         cg = self.config()
@@ -63,7 +63,32 @@ class ComplexPlotter(Applet):
                             graph['cfg'][i]['unit'] = u'units'
         except:
             self.cfg['plotters'] = {}
+
+        self.systemmonitorSources = self.systemmonitorSources()
+        for source in self.systemmonitorSources:
+            if source not in self.allSystemmonitorSources:
+                self.connect(self.applet.dataEngine('systemmonitor'),
+                                SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
+                return
         self.createPlotters()
+
+    def sourceAdded(self, name):
+        print name
+        self.allSystemmonitorSources.append(name)
+        for source in self.systemmonitorSources:
+            if source not in self.allSystemmonitorSources:
+                return
+        QTimer.singleShot(0, self.createPlotters)
+
+    def systemmonitorSources(self):
+        result = []
+        if self.cfg['plotters']:
+            for plotter in self.cfg['plotters']:
+                for graph in plotter['graphs']:
+                    for cfg in graph['cfg']:
+                        if cfg['dataengine'] == 'systemmonitor':
+                            result.append(cfg['source'])
+        return result
 
     def createPlotters(self):
         self.sources.clear()
