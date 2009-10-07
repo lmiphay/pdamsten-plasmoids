@@ -165,7 +165,7 @@ def updateVersion():
     plasmoidid = plasmoidid[plasmoidid.find('=') + 1:]
     comment = config.get('Desktop Entry', 'Comment')
     name = config.get('Desktop Entry', 'Name')
-    version = unicode(float(origVersion) + 0.1)
+    version = str(float(origVersion) + 0.1)
     version = inputWithDefault('New version', version)
     if (origVersion != version):
         # RawConfigParser messes file don't use that for writing
