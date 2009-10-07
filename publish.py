@@ -134,8 +134,10 @@ def checkResult(result):
         return False
 
 def gitTag(s):
+    s = s.replace(' ', '-')
+    s = s.lower()
     print 'Tagging %s.' % s
-    return (_('git tag %s' % s)[0] == 0)
+    return (_('git tag "%s"' % s)[0] == 0)
     return True
 
 def gitCommit():
@@ -207,7 +209,7 @@ def uploadInfo():
         ('changelog', open('./%s/Changelog' % plasmoid).read()),
         ('announceupdate', announce)
     ]
-    print params
+    #print params
     return upload('v1/content/edit/%s' % plasmoidid, params)
 
 #---------------------------------------------------------------------------------------------------
