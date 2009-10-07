@@ -47,10 +47,10 @@ class AnalogMeter(Applet):
         self.cfg['font'].fromString(
                 U(cg.readEntry('font', 'Sans Serif,8,-1,5,50,0,0,0,0,0')))
         self.cfg['fontcolor'] = QColor(U(cg.readEntry('fontcolor', '#000000')))
-        self.cfg['interval'] = I(cg.readEntry('interval', 60000))
-        self.cfg['min'] = F(cg.readEntry('min', 0.0))
-        self.cfg['max'] = F(cg.readEntry('max', 100.0))
-        self.cfg['autorange'] = cg.readEntry('autorange', True).toBool()
+        self.cfg['interval'] = I(cg.readEntry('interval', '60000'))
+        self.cfg['min'] = F(cg.readEntry('min', '0.0'))
+        self.cfg['max'] = F(cg.readEntry('max', '100.0'))
+        self.cfg['autorange'] = cg.readEntry('autorange', 'true').toBool()
         try:
             self.cfg['source'] = eval(U(cg.readEntry('source', '')))
             check(isinstance(self.cfg['source'], dict))
