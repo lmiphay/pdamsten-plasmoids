@@ -76,7 +76,8 @@ def _(cmd):
                     close_fds = True, stderr = STDOUT)
     process.wait()
     output = process.stdout.read().strip()
-    #print output
+    if process.returncode != 0:
+        print output
     return (process.returncode, output)
 
 def appendToFontOfFile(name, s):
