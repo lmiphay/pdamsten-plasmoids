@@ -64,7 +64,7 @@ class ComplexPlotter(Applet):
         except:
             self.cfg['plotters'] = {}
 
-        self.systemmonitorSources = self.systemmonitorSources()
+        self.systemmonitorSources = self.parseSystemmonitorSources()
         for source in self.systemmonitorSources:
             if source not in self.allSystemmonitorSources:
                 self.connect(self.applet.dataEngine('systemmonitor'),
@@ -79,7 +79,7 @@ class ComplexPlotter(Applet):
                 return
         QTimer.singleShot(0, self.createPlotters)
 
-    def systemmonitorSources(self):
+    def parseSystemmonitorSources(self):
         result = []
         if self.cfg['plotters']:
             for plotter in self.cfg['plotters']:
