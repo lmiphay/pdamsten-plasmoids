@@ -52,7 +52,7 @@ depends = ''
 contentType = '77'  # Plasmoid Script
 depend = '50'       # KDE 4.x
 license = '1'       # GPL
-gitCommitCmd = './git-commit-gui.py %s'
+gitCommitCmd = './git-commit-gui.py "%s"'
 config = ConfigParser.ConfigParser()
 config.read(os.path.expanduser('~/.kde-look.org/credentials'))
 user = config.get('Credentials', 'user')
@@ -80,7 +80,7 @@ def _(cmd):
         print output
     return (process.returncode, output)
 
-def appendToFontOfFile(name, s):
+def appendToFrontOfFile(name, s):
     f = codecs.open(name, 'r+', 'utf-8')
     content = f.read()
     f.truncate(0)
@@ -193,8 +193,8 @@ def updateVersion():
                       'X-KDE-PluginInfo-Version=%s' % origVersion, \
                       'X-KDE-PluginInfo-Version=%s' % version)
         log = gitLog(name + ' ' + origVersion)
-        appendToFontOfFile('./%s/Changelog' % plasmoid, \
-                '%s  Version %s\n%s\n' % (datetime.today().strftime('%Y-%m-%d'), version, log))
+        appendToFrontOfFile('./%s/Changelog' % plasmoid, \
+                '%s  Version %s\n%s\n\n' % (datetime.today().strftime('%Y-%m-%d'), version, log))
     editor = os.environ['EDITOR']
     os.system(editor + ' ./%s/Changelog' % plasmoid)
     return True
