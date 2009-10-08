@@ -297,9 +297,15 @@ aboutData = KAboutData(
         'damu@iki.fi'
 )
 KCmdLineArgs.init(sys.argv, aboutData)
+options = KCmdLineOptions()
+options.add('+[comment]', ki18n("Default 'comment'"))
+KCmdLineArgs.addCmdLineOptions(options)
+args = KCmdLineArgs.parsedArgs()
 app = KApplication()
 mainWindow = MainWindow(git)
 mainWindow.setCaption(git.branch)
+if args.count() > 0:
+    mainWindow.centralWidget().messageEdit.setText(args.arg(0))
 mainWindow.show()
 app.connect(app, SIGNAL('lastWindowClosed()'), app.quit)
 app.exec_()
