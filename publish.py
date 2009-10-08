@@ -52,7 +52,7 @@ depends = ''
 contentType = '77'  # Plasmoid Script
 depend = '50'       # KDE 4.x
 license = '1'       # GPL
-gitCommitCmd = './git-commit-gui.py'
+gitCommitCmd = './git-commit-gui.py %s'
 config = ConfigParser.ConfigParser()
 config.read(os.path.expanduser('~/.kde-look.org/credentials'))
 user = config.get('Credentials', 'user')
@@ -133,16 +133,34 @@ def checkResult(result):
     except:
         return False
 
-def gitTag(s):
+def tag(s):
     s = s.replace(' ', '-')
     s = s.lower()
+    return s
+
+def gitLog(s):
+    s = tag(s)
+    a = _('git log "%s.." "%s"' % (s, plasmoid))
+    if a[0] != 0:
+        return ''
+    result = []
+    for line in a[1].split('\n'):
+        line = line.strip()
+        if len(line) == 0:
+            continue
+        if 'commit ' in line or 'Author:' in line or 'Date:' in line:
+            continue
+        result.append('  * ' + line)
+    return '\n'.join(result)
+
+def gitTag(s):
+    s = tag(s)
     print 'Tagging %s.' % s
     return (_('git tag "%s"' % s)[0] == 0)
-    return True
 
-def gitCommit():
+def gitCommit(msg = ''):
     print 'Committing changes.'
-    if _(gitCommitCmd)[0] != 0:
+    if _(gitCommitCmd % msg)[0] != 0:
         return False
     return True
 
@@ -174,8 +192,9 @@ def updateVersion():
         replaceInFile('./%s/metadata.desktop' % plasmoid, \
                       'X-KDE-PluginInfo-Version=%s' % origVersion, \
                       'X-KDE-PluginInfo-Version=%s' % version)
+        log = gitLog(name + ' ' + origVersion)
         appendToFontOfFile('./%s/Changelog' % plasmoid, \
-                '%s  Version %s\n  * \n\n' % (datetime.today().strftime('%Y-%m-%d'), version))
+                '%s  Version %s\n%s\n' % (datetime.today().strftime('%Y-%m-%d'), version, log))
     editor = os.environ['EDITOR']
     os.system(editor + ' ./%s/Changelog' % plasmoid)
     return True
@@ -221,7 +240,7 @@ if inputWithDefault('Continue with upload?', 'yes') != 'yes':
     sys.exit(0)
 X(uploadInfo())
 X(uploadFile())
-X(gitCommit())
+X(gitCommit('Update version and changelog'))
 if origVersion != version:
     X(gitTag(name + ' ' + version))
 
