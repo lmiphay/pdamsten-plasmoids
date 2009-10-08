@@ -40,7 +40,7 @@ if not os.path.exists(plasmoid):
 
 onlyText = False
 if len(sys.argv) > 2:
-    onlyText = (sys.argv[2] == '1')
+    onlyText = (sys.argv[2] == '0')
 
 plasmoidid = ''
 origVersion = ''
@@ -176,7 +176,7 @@ def readInfo():
     global name
     global depends
 
-    print 'Updating version and changelog.'
+    print 'Reading info.'
     config = ConfigParser.RawConfigParser()
     config.read('./%s/metadata.desktop' % plasmoid)
     origVersion = config.get('Desktop Entry', 'X-KDE-PluginInfo-Version')
@@ -185,11 +185,14 @@ def readInfo():
     plasmoidid = plasmoidid[plasmoidid.find('=') + 1:]
     comment = config.get('Desktop Entry', 'Comment')
     name = config.get('Desktop Entry', 'Name')
-    version = str(float(origVersion) + 0.1)
+    version = origVersion
     return True
 
 def updateVersion():
     global version
+
+    print 'Updating version and changelog.'
+    version = str(float(origVersion) + 0.1)
     version = inputWithDefault('New version', version)
     if (origVersion != version):
         # RawConfigParser messes file don't use that for writing
