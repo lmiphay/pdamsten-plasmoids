@@ -40,8 +40,6 @@ class ComplexPlotter(Applet):
     def init(self):
         # To find ui files from package dir
         UiHelper.applet = self.applet
-        # This trickers source list fill so they are ready when needed (e.g. config)
-        self.allSystemmonitorSources = self.applet.dataEngine('systemmonitor').sources()
 
         self.setAspectRatioMode(Plasma.IgnoreAspectRatio)
         cg = self.config()
@@ -64,20 +62,26 @@ class ComplexPlotter(Applet):
         except:
             self.cfg['plotters'] = {}
 
-        self.systemmonitorSources = self.parseSystemmonitorSources()
-        for source in self.systemmonitorSources:
-            if source not in self.allSystemmonitorSources:
-                self.connect(self.applet.dataEngine('systemmonitor'),
-                                SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
-                return
+        self.smengine = self.applet.dataEngine('systemmonitor')
+        self.allSystemmonitorSources = self.smengine.sources()
+        self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createPlotters()
+        self.connect(self.smengine, SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
+        self.connect(self.smengine, SIGNAL('sourceRemoved(const QString&)'), self.sourceRemoved)
 
     def sourceAdded(self, name):
         self.allSystemmonitorSources.append(name)
-        for source in self.systemmonitorSources:
-            if source not in self.allSystemmonitorSources:
-                return
-        QTimer.singleShot(0, self.createPlotters)
+        if name in self.activeSystemmonitorSources:
+            self.connectSystemMonitorSource(name)
+
+    def connectSystemMonitorSource(self, name):
+        if name in self.allSystemmonitorSources:
+            # Hack for correctly update 'systemmonitor' dataengine
+            self.halfSecondSource['systemmonitor' + name] = True
+            self.smengine.connectSource(name, self, 500)
+
+    def sourceRemoved(self, name):
+        self.allSystemmonitorSources.removeAll(name)
 
     def parseSystemmonitorSources(self):
         result = []
@@ -156,10 +160,7 @@ class ComplexPlotter(Applet):
                     self.plotterData[p]['initial'][i] += 1
                     self.plotterData[p]['current'][i] += 1
                     if c['dataengine'] == 'systemmonitor':
-                        # Hack for correctly update 'systemmonitor' dataengine
-                        self.halfSecondSource[c['dataengine'] + c['source']] = True
-                        self.dataEngine(c['dataengine']).connectSource(\
-                                c['source'], self, 500)
+                        self.connectSystemMonitorSource(c['source'])
                     else:
                         self.dataEngine(c['dataengine']).connectSource(\
                                 c['source'], self, plotter['cfg']['interval'])
@@ -173,16 +174,17 @@ class ComplexPlotter(Applet):
         cfg = source[2]
         #print self.sources, sourceName, data, cfg['value']
         valueName = QString(cfg['value'])
-        if data.has_key(valueName):
+        if valueName in data:
             plotter = source[0]
             index = source[1]
+            # Hack for correctly update 'systemmonitor' dataengine ---------------------
             key = cfg['dataengine'] + cfg['source']
-            if self.halfSecondSource[key]:
-                # Hack for correctly update 'systemmonitor' dataengine
+            if key in self.halfSecondSource:
                 self.halfSecondSource[key] = False
                 #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
                 self.dataEngine(cfg['dataengine']).connectSource(cfg['source'], \
                                 self, source[3])
+            # --------------------------------------------------------------------------
             self.plotterData[plotter]['values'][index] += F(data[valueName])
             self.plotterData[plotter]['current'][index] -= 1
             if self.plotterData[plotter]['current'] == \
@@ -200,6 +202,7 @@ class ComplexPlotter(Applet):
         cg.writeEntry('plotters', repr(self.cfg['plotters']))
         cg.writeEntry('header', self.cfg['header'])
         cg.writeEntry('plotterheader', self.cfg['plotterheader'])
+        self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createPlotters()
 
     def configDialogId(self):

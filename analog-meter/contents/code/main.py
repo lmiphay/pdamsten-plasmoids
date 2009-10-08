@@ -37,8 +37,6 @@ class AnalogMeter(Applet):
     def init(self):
         # To find ui files from package dir
         UiHelper.applet = self.applet
-        # This trickers source list fill so they are ready when needed (e.g. config)
-        self.allSystemmonitorSources = self.applet.dataEngine('systemmonitor').sources()
 
         self.setAspectRatioMode(Plasma.Square)
         cg = self.config()
@@ -57,24 +55,30 @@ class AnalogMeter(Applet):
         except:
             self.cfg['source'] = None
 
-        self.systemmonitorSources = self.parseSystemmonitorSources()
-        for source in self.systemmonitorSources:
-            if source not in self.allSystemmonitorSources:
-                self.connect(self.applet.dataEngine('systemmonitor'),
-                                SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
-                return
+        self.smengine = self.applet.dataEngine('systemmonitor')
+        self.allSystemmonitorSources = self.smengine.sources()
+        self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createMeter()
+        self.connect(self.smengine, SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
+        self.connect(self.smengine, SIGNAL('sourceRemoved(const QString&)'), self.sourceRemoved)
 
     def sourceAdded(self, name):
         self.allSystemmonitorSources.append(name)
-        for source in self.systemmonitorSources:
-            if source not in self.allSystemmonitorSources:
-                return
-        QTimer.singleShot(0, self.createMeter)
+        if name in self.activeSystemmonitorSources:
+            self.connectSystemMonitorSource(name)
+
+    def connectSystemMonitorSource(self, name):
+        if name in self.allSystemmonitorSources:
+            # Hack for correctly update 'systemmonitor' dataengine
+            self.halfSecondSource = True
+            self.smengine.connectSource(name, self, 500)
+
+    def sourceRemoved(self, name):
+        self.allSystemmonitorSources.removeAll(name)
 
     def parseSystemmonitorSources(self):
         result = []
-        if self.cfg['source']['dataengine'] == 'systemmonitor':
+        if self.cfg['source'] and self.cfg['source']['dataengine'] == 'systemmonitor':
             result.append(self.cfg['source']['source'])
         return result
 
@@ -109,23 +113,22 @@ class AnalogMeter(Applet):
         self.maxName = QString(c['max'])
         self.unitName = QString(c['unit'])
         if c['dataengine'] == 'systemmonitor':
-            # Hack for correctly update 'systemmonitor' dataengine
-            self.halfSecondSource = True
-            self.dataEngine(c['dataengine']).connectSource(c['source'], self, 500)
+            self.connectSystemMonitorSource(c['source'])
         else:
             self.dataEngine(c['dataengine']).connectSource(c['source'], self, self.cfg['interval'])
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
         #print data
-        if data.has_key(self.valueName):
+        if self.valueName in data:
+            # Hack for correctly update 'systemmonitor' dataengine ---------------------
             if self.halfSecondSource:
-                # Hack for correctly update 'systemmonitor' dataengine
                 self.halfSecondSource = False
                 c = self.cfg['source']
                 #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
                 self.dataEngine(c['dataengine']).connectSource(c['source'], \
                                 self, self.cfg['interval'])
+            # --------------------------------------------------------------------------
             if self.cfg['autorange'] and F(data[self.minName]) != F(data[self.maxName]):
                 if self.meter.minimum() != F(data[self.minName]):
                     self.meter.setMinimum(F(data[self.minName]))
@@ -154,6 +157,7 @@ class AnalogMeter(Applet):
         cg.writeEntry('fontcolor', U(self.cfg['fontcolor']))
         cg.writeEntry('source', repr(self.cfg['source']))
         cg.writeEntry('interval', repr(self.cfg['interval']))
+        self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createMeter()
 
     def configDialogId(self):
