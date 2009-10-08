@@ -1,3 +1,6 @@
+2009-10-08  Version 0.6
+  * Handle system monitor source remove and add
+
 2009-10-07  Version 0.5
   * Use only string defaults
   * Update data on login
