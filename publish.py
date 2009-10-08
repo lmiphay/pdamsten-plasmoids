@@ -38,9 +38,9 @@ if not os.path.exists(plasmoid):
     print 'Can\'t find plasmoid: ' + plasmoid
     sys.exit(1)
 
-announce = '1'
+onlyText = False
 if len(sys.argv) > 2:
-    announce = sys.argv[2]
+    onlyText = (sys.argv[2] == '1')
 
 plasmoidid = ''
 origVersion = ''
@@ -168,7 +168,7 @@ def makePackages():
     return (_('cd %s && zip -9 -v -o -r ../%s.plasmoid * -x \*~ && cd ..' % \
            (plasmoid, plasmoid))[0] == 0)
 
-def updateVersion():
+def readInfo():
     global plasmoidid
     global origVersion
     global version
@@ -186,6 +186,10 @@ def updateVersion():
     comment = config.get('Desktop Entry', 'Comment')
     name = config.get('Desktop Entry', 'Name')
     version = str(float(origVersion) + 0.1)
+    return True
+
+def updateVersion():
+    global version
     version = inputWithDefault('New version', version)
     if (origVersion != version):
         # RawConfigParser messes file don't use that for writing
@@ -215,6 +219,10 @@ def uploadInfo():
     description = comment + '\n\n' + defaultText
     if depends != '':
         description += '\n\n' + 'Plasmoid depends on: ' + depends
+    if onlyText:
+        tmp = '0'
+    else:
+        tmp = '1'
     params = [
         ('name', name),
         ('type', contentType),
@@ -226,21 +234,27 @@ def uploadInfo():
         ('version', version),
         ('homepage', ''),
         ('changelog', open('./%s/Changelog' % plasmoid).read()),
-        ('announceupdate', announce)
+        ('announceupdate', tmp)
     ]
     #print params
     return upload('v1/content/edit/%s' % plasmoidid, params)
 
 #---------------------------------------------------------------------------------------------------
 
-X(gitCommit())
-X(updateVersion())
-X(makePackages())
+if not onlyText:
+    X(gitCommit())
+X(readInfo())
+if not onlyText:
+    X(updateVersion())
+    X(makePackages())
+
 if inputWithDefault('Continue with upload?', 'yes') != 'yes':
     sys.exit(0)
+
 X(uploadInfo())
-X(uploadFile())
-X(gitCommit('Update version and changelog'))
-if origVersion != version:
-    X(gitTag(name + ' ' + version))
+if not onlyText:
+    X(uploadFile())
+    X(gitCommit('Update version and changelog'))
+    if origVersion != version:
+        X(gitTag(name + ' ' + version))
 
