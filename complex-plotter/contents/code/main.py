@@ -36,6 +36,7 @@ class ComplexPlotter(Applet):
         self.sources = {}
         self.plotterData = {}
         self.halfSecondSource = {}
+        self.keepAlive = False
 
     def init(self):
         # To find ui files from package dir
@@ -66,6 +67,7 @@ class ComplexPlotter(Applet):
         self.allSystemmonitorSources = self.smengine.sources()
         self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createPlotters()
+        self.checkKeepAlive()
         self.connect(self.smengine, SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
         self.connect(self.smengine, SIGNAL('sourceRemoved(const QString&)'), self.sourceRemoved)
 
@@ -79,9 +81,27 @@ class ComplexPlotter(Applet):
             # Hack for correctly update 'systemmonitor' dataengine
             self.halfSecondSource['systemmonitor' + name] = True
             self.smengine.connectSource(name, self, 500)
+            self.checkKeepAlive()
 
     def sourceRemoved(self, name):
         self.allSystemmonitorSources.removeAll(name)
+        self.checkKeepAlive()
+
+    def checkKeepAlive(self):
+        # Another hack to get sourceAdded signals when we have only one source
+        # TODO Fix these in systemmonitor dataengine someday
+        count = 0
+        for source in self.activeSystemmonitorSources:
+            if source in self.allSystemmonitorSources:
+                count += 1
+        if count == 0 and not self.keepAlive:
+            print 'connect'
+            self.keepAlive = True
+            self.smengine.connectSource('network/interfaces/lo/receiver/multicastTotal', self, 1000)
+        elif count > 0 and self.keepAlive:
+            print 'disconnect'
+            self.keepAlive = False
+            self.smengine.disconnectSource('network/interfaces/lo/receiver/multicastTotal', self)
 
     def parseSystemmonitorSources(self):
         result = []
@@ -170,30 +190,33 @@ class ComplexPlotter(Applet):
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
-        source = self.sources[U(sourceName)]
-        cfg = source[2]
-        #print self.sources, sourceName, data, cfg['value']
-        valueName = QString(cfg['value'])
-        if valueName in data:
-            plotter = source[0]
-            index = source[1]
-            # Hack for correctly update 'systemmonitor' dataengine ---------------------
-            key = cfg['dataengine'] + cfg['source']
-            if key in self.halfSecondSource:
-                self.halfSecondSource[key] = False
-                #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
-                self.dataEngine(cfg['dataengine']).connectSource(cfg['source'], \
-                                self, source[3])
-            # --------------------------------------------------------------------------
-            self.plotterData[plotter]['values'][index] += F(data[valueName])
-            self.plotterData[plotter]['current'][index] -= 1
-            if self.plotterData[plotter]['current'] == \
-                    [0] * len(self.plotterData[plotter]['initial']):
-                plotter.addSample(self.plotterData[plotter]['values'])
-                self.plotterData[plotter]['current'] = \
-                        list(self.plotterData[plotter]['initial'])
-                self.plotterData[plotter]['values'] = \
-                        [0.0] * len(self.plotterData[plotter]['initial'])
+        name = U(sourceName)
+        print name
+        if name in self.sources:
+            source = self.sources[name]
+            cfg = source[2]
+            #print self.sources, sourceName, data, cfg['value']
+            valueName = QString(cfg['value'])
+            if valueName in data:
+                plotter = source[0]
+                index = source[1]
+                # Hack for correctly update 'systemmonitor' dataengine ---------------------
+                key = cfg['dataengine'] + cfg['source']
+                if key in self.halfSecondSource:
+                    self.halfSecondSource[key] = False
+                    #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
+                    self.dataEngine(cfg['dataengine']).connectSource(cfg['source'], \
+                                    self, source[3])
+                # --------------------------------------------------------------------------
+                self.plotterData[plotter]['values'][index] += F(data[valueName])
+                self.plotterData[plotter]['current'][index] -= 1
+                if self.plotterData[plotter]['current'] == \
+                        [0] * len(self.plotterData[plotter]['initial']):
+                    plotter.addSample(self.plotterData[plotter]['values'])
+                    self.plotterData[plotter]['current'] = \
+                            list(self.plotterData[plotter]['initial'])
+                    self.plotterData[plotter]['values'] = \
+                            [0.0] * len(self.plotterData[plotter]['initial'])
 
     @pyqtSignature("configAccepted()")
     def configAccepted(self):
