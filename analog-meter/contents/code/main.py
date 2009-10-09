@@ -137,10 +137,10 @@ class AnalogMeter(Applet):
             self.meter.setValue(F(data[self.valueName]))
             try:
                 s = self.cfg['header'].format(value = F(data[self.valueName]),
-                                                max = F(data[self.maxName]),
-                                                min = F(data[self.minName]),
-                                                unit = U(data[self.unitName]),
-                                                name = self.cfg['source']['name'])
+                                             max = F(data[self.maxName]),
+                                             min = F(data[self.minName]),
+                                             unit = U(data[self.unitName]),
+                                             name = self.cfg['source']['name'])
             except:
                 s = i18n('error')
             self.meter.setLabel(1, s)
