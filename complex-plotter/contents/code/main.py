@@ -86,7 +86,7 @@ class ComplexPlotter(Applet):
     def connectSystemMonitorSource(self, name):
         if name in self.allSystemmonitorSources:
             # Hack for correctly update 'systemmonitor' dataengine
-            self.halfSecondSource['systemmonitor' + name] = True
+            self.halfSecondSource[U('systemmonitor:' + name)] = True
             self.smengine.connectSource(name, self, 500)
             self.checkKeepAlive()
 
@@ -103,11 +103,11 @@ class ComplexPlotter(Applet):
             if source in self.allSystemmonitorSources:
                 count += 1
         if count == 0 and not self.keepAlive:
-            print 'connect network/interfaces/lo/receiver/data'
+            #print 'connect network/interfaces/lo/receiver/data'
             self.keepAlive = True
             self.smengine.connectSource('network/interfaces/lo/receiver/data', self, 1000)
         elif count > 0 and self.keepAlive:
-            print 'disconnect'
+            #print 'disconnect'
             self.keepAlive = False
             self.smengine.disconnectSource('network/interfaces/lo/receiver/data', self)
 
@@ -199,7 +199,7 @@ class ComplexPlotter(Applet):
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
         name = U(sourceName)
-        print name
+        #print name
         if name in self.sources:
             source = self.sources[name]
             cfg = source[2]
@@ -209,9 +209,8 @@ class ComplexPlotter(Applet):
                 plotter = source[0]
                 index = source[1]
                 # Hack for correctly update 'systemmonitor' dataengine ---------------------
-                key = cfg['dataengine'] + cfg['source']
+                key = cfg['dataengine'] + ':' + cfg['source']
                 if key in self.halfSecondSource and self.halfSecondSource[key] == True:
-                    print '**************** ' + key
                     self.halfSecondSource[key] = False
                     #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
                     self.dataEngine(cfg['dataengine']).connectSource(cfg['source'], \
