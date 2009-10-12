@@ -1,3 +1,6 @@
+2009-10-12  Version 0.7
+  * Handle network interface add/remove correctly when we have only one plotter
+
 2009-10-08  Version 0.6
   * Handle system monitor source remove and add
 
