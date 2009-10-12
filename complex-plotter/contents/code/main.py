@@ -67,14 +67,21 @@ class ComplexPlotter(Applet):
         self.allSystemmonitorSources = self.smengine.sources()
         self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createPlotters()
-        self.checkKeepAlive()
         self.connect(self.smengine, SIGNAL('sourceAdded(const QString&)'), self.sourceAdded)
         self.connect(self.smengine, SIGNAL('sourceRemoved(const QString&)'), self.sourceRemoved)
+        if len(self.allSystemmonitorSources) == 0:
+            self.sourceTimer = QTimer()
+            self.sourceTimer.setSingleShot(True)
+            self.connect(self.sourceTimer, SIGNAL('timeout()'), self.checkKeepAlive)
+        else:
+            self.sourceTimer = None
 
     def sourceAdded(self, name):
         self.allSystemmonitorSources.append(name)
         if name in self.activeSystemmonitorSources:
             self.connectSystemMonitorSource(name)
+        if self.sourceTimer != None and not self.sourceTimer.isActive():
+            self.sourceTimer.start(0)
 
     def connectSystemMonitorSource(self, name):
         if name in self.allSystemmonitorSources:
@@ -90,18 +97,19 @@ class ComplexPlotter(Applet):
     def checkKeepAlive(self):
         # Another hack to get sourceAdded signals when we have only one source
         # TODO Fix these in systemmonitor dataengine someday
+        self.sourceTimer = None
         count = 0
         for source in self.activeSystemmonitorSources:
             if source in self.allSystemmonitorSources:
                 count += 1
         if count == 0 and not self.keepAlive:
-            print 'connect'
+            print 'connect network/interfaces/lo/receiver/data'
             self.keepAlive = True
-            self.smengine.connectSource('network/interfaces/lo/receiver/multicastTotal', self, 1000)
+            self.smengine.connectSource('network/interfaces/lo/receiver/data', self, 1000)
         elif count > 0 and self.keepAlive:
             print 'disconnect'
             self.keepAlive = False
-            self.smengine.disconnectSource('network/interfaces/lo/receiver/multicastTotal', self)
+            self.smengine.disconnectSource('network/interfaces/lo/receiver/data', self)
 
     def parseSystemmonitorSources(self):
         result = []
@@ -202,7 +210,8 @@ class ComplexPlotter(Applet):
                 index = source[1]
                 # Hack for correctly update 'systemmonitor' dataengine ---------------------
                 key = cfg['dataengine'] + cfg['source']
-                if key in self.halfSecondSource:
+                if key in self.halfSecondSource and self.halfSecondSource[key] == True:
+                    print '**************** ' + key
                     self.halfSecondSource[key] = False
                     #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
                     self.dataEngine(cfg['dataengine']).connectSource(cfg['source'], \
