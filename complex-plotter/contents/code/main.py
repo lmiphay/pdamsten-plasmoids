@@ -27,13 +27,11 @@ from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from config import ConfigDialog
 from config import DEFAULTCFG
-from resizer import Resizer
 from helpers import *
 
-class ComplexPlotter(Applet): #, Resizer):
+class ComplexPlotter(Applet):
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
-        #Resizer.__init__(self)
         self.cfg = {}
         self.sources = {}
         self.plotterData = {}
@@ -41,7 +39,6 @@ class ComplexPlotter(Applet): #, Resizer):
         self.keepAlive = False
 
     def init(self):
-        #Resizer.init(self)
         # To find ui files from package dir
         UiHelper.applet = self.applet
 
