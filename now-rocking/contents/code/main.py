@@ -58,6 +58,7 @@ class Rocking(Applet):
         self.coverCache = {}
         self.connected = False
         self.allCaps = False
+        self.visibleWhenActive = False
         self.player = u''
         self.artist = u''
         self.album = u''
@@ -141,6 +142,16 @@ class Rocking(Applet):
             return s.upper()
         return s
 
+    def checkVisibility(self):
+        if self.visibleWhenActive == True and self.state == Rocking.Stopped:
+            if self.isVisible():
+                self.hide()
+                self.cover.hide()
+        else:
+            if not self.isVisible():
+                self.show()
+                self.cover.show()
+
     def readConfig(self):
         cg = self.config()
         if self.artistWidget != None:
@@ -159,6 +170,9 @@ class Rocking(Applet):
             self.cover.setAspectRatioMode(Qt.KeepAspectRatio)
         else:
             self.cover.setAspectRatioMode(Qt.IgnoreAspectRatio)
+
+        self.visibleWhenActive = (cg.readEntry('visibleWhenActive') == QString('true'))
+        self.checkVisibility()
 
         prev = self.logo
         self.logo = U(cg.readEntry('logo'))
@@ -385,6 +399,7 @@ class Rocking(Applet):
         if self.state != state:
             self.state = state
             self.checkPlayPause()
+            self.checkVisibility()
             changed = True
 
         if QString('Artist') in data:

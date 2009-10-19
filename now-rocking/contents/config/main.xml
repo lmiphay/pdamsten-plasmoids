@@ -14,6 +14,10 @@
           <label>Keep aspect ratio</label>
           <default>true</default>
       </entry>
+      <entry name="visibleWhenActive" type="Bool">
+          <label>Visible only when player active</label>
+          <default>false</default>
+      </entry>
       <entry name="allCaps" type="Bool">
           <label>Use capital letters for artist and title</label>
           <default>false</default>
