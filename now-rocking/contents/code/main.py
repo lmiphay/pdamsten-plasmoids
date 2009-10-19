@@ -82,6 +82,10 @@ class Rocking(Applet):
         self.disconnect(Plasma.Theme.defaultTheme(), SIGNAL('themeChanged()'), self.themeChanged)
 
     def init(self):
+        cg = self.config()
+        if cg.readEntry('firstTime', 1) == 1:
+            self.setGlobalShortcut(KShortcut('Ctrl+Alt+P'))
+            cg.writeEntry('firstTime', 0)
         self.connect(self, SIGNAL('activate()'), self.playClicked)
         self.connect(Plasma.Theme.defaultTheme(), SIGNAL('themeChanged()'), self.themeChanged)
 
@@ -107,6 +111,7 @@ class Rocking(Applet):
         self.connect(action, SIGNAL('triggered(bool)'), self.makeSquare)
         self.actions.append(action)
 
+        self.connect(self, SIGNAL('activate()'), self.playClicked)
         self.createButtonBar()
 
     def themeChanged(self):
@@ -142,8 +147,8 @@ class Rocking(Applet):
             return s.upper()
         return s
 
-    def checkVisibility(self):
-        if self.visibleWhenActive == True and self.state == Rocking.Stopped:
+    def checkVisibility(self, forceShow = False):
+        if self.visibleWhenActive == True and self.state == Rocking.Stopped and forceShow == False:
             if self.isVisible():
                 self.hide()
                 self.cover.hide()
@@ -329,6 +334,7 @@ class Rocking(Applet):
             self.connectToEngine()
 
     def playClicked(self):
+        self.checkVisibility(True)
         if self.controller == None:
             return
         # VLC needs pause even if paused. play stops current track.
