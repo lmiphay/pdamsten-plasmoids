@@ -48,6 +48,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="kcfg_visibleWhenActive">
+       <property name="toolTip">
+        <string>Warning: when this feature is on you are not able to access now-rocking if player is not playing (or paused).</string>
+       </property>
        <property name="text">
         <string>Visible only when player active</string>
        </property>
