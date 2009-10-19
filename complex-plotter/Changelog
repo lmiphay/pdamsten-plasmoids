@@ -1,3 +1,6 @@
+2009-10-19  Version 0.8
+  * Panel support
+
 2009-10-12  Version 0.7
   * Handle network interface add/remove correctly when we have only one plotter
 
