@@ -111,7 +111,7 @@ class Rocking(Applet):
         self.connect(action, SIGNAL('triggered(bool)'), self.makeSquare)
         self.actions.append(action)
 
-        self.connect(self, SIGNAL('activate()'), self.playClicked)
+        self.connect(self.applet, SIGNAL('activate()'), self.playClicked)
         self.createButtonBar()
 
     def themeChanged(self):
