@@ -449,7 +449,7 @@ class Rocking(Applet):
                 key = artist + '|' + album
                 if key in self.coverCache:
                     img = self.coverCache[key]
-                else:
+                elif self.coverPlugin != None:
                     img = self.coverPlugin(artist, album)
                     self.coverCache[key] = img
             if not img:
