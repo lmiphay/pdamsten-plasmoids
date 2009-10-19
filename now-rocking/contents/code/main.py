@@ -152,6 +152,7 @@ class Rocking(Applet):
             if self.isVisible():
                 self.hide()
                 self.cover.hide()
+                self.bar.hide()
         else:
             if not self.isVisible():
                 self.show()
@@ -402,6 +403,7 @@ class Rocking(Applet):
                 state = Rocking.Playing
             elif U(data[QString('State')]) == u'paused':
                 state = Rocking.Paused
+
         if self.state != state:
             self.state = state
             self.checkPlayPause()
