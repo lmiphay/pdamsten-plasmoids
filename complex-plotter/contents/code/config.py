@@ -136,6 +136,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
     def setData(self, data):
         self.headerEdit.setText(data['header'])
         self.headerCheck.setChecked(data['plotterheader'])
+        self.panelRatioSpinBox.setValue(data['panelRatio'])
         for plotter in data['plotters']:
             c = DEFAULTCFG.copy()
             c.update(plotter['cfg'])
@@ -147,6 +148,7 @@ class ConfigDialog(KConfigDialog, UiHelper):
         data = {}
         data['header'] = U(self.headerEdit)
         data['plotterheader'] = self.headerCheck.isChecked()
+        data['panelRatio'] = self.panelRatioSpinBox.value()
         data['plotters'] = []
         for i in range(self.model.rowCount()):
             p = self.model.item(i)

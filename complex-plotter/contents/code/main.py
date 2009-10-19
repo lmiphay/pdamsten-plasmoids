@@ -29,6 +29,8 @@ from config import ConfigDialog
 from config import DEFAULTCFG
 from helpers import *
 
+QWIDGETSIZE_MAX = 16777215
+
 class ComplexPlotter(Applet):
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
@@ -44,6 +46,7 @@ class ComplexPlotter(Applet):
 
         self.setAspectRatioMode(Plasma.IgnoreAspectRatio)
         cg = self.config()
+        self.cfg['panelRatio'] = F(cg.readEntry('panelRatio', '0.0'))
         self.cfg['header'] = U(cg.readEntry('header', ''))
         self.cfg['plotterheader'] = cg.readEntry('plotterheader', False).toBool()
         try:
@@ -233,8 +236,10 @@ class ComplexPlotter(Applet):
         cg.writeEntry('plotters', repr(self.cfg['plotters']))
         cg.writeEntry('header', self.cfg['header'])
         cg.writeEntry('plotterheader', self.cfg['plotterheader'])
+        cg.writeEntry('panelRatio', self.cfg['panelRatio'])
         self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createPlotters()
+        self.constraintsEvent(Plasma.FormFactorConstraint)
 
     def configDialogId(self):
         return QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
@@ -247,6 +252,28 @@ class ComplexPlotter(Applet):
         self.connect(self.dlg, SIGNAL('okClicked()'), self, SLOT('configAccepted()'))
         self.dlg.setData(self.cfg)
         self.dlg.show()
+
+    def constraintsEvent(self, constraints):
+        if constraints & Plasma.FormFactorConstraint:
+            minSize = self.layout().minimumSize()
+            print minSize, self.size(), self.cfg['panelRatio']
+            if self.formFactor() == Plasma.Horizontal and self.cfg['panelRatio'] > 0.0:
+                self.setMinimumWidth(self.size().height() * self.cfg['panelRatio'])
+                self.setMaximumWidth(self.size().height() * self.cfg['panelRatio'])
+                self.setMinimumHeight(minSize.height())
+                self.setMaximumHeight(QWIDGETSIZE_MAX)
+            elif self.formFactor() == Plasma.Vertical and self.cfg['panelRatio'] > 0.0:
+                self.setMinimumWidth(minSize.width())
+                self.setMaximumWidth(QWIDGETSIZE_MAX)
+                self.setMinimumHeight(self.size().width() * self.cfg['panelRatio'])
+                self.setMaximumHeight(self.size().width() * self.cfg['panelRatio'])
+            else:
+                self.setMinimumHeight(minSize.height())
+                self.setMaximumHeight(QWIDGETSIZE_MAX)
+                self.setMinimumWidth(minSize.width())
+                self.setMaximumWidth(QWIDGETSIZE_MAX)
+            print self.minimumSize(), self.maximumSize(), self.size()
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
 
 def CreateApplet(parent):
     return ComplexPlotter(parent)
