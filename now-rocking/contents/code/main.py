@@ -151,12 +151,11 @@ class Rocking(Applet):
         if self.visibleWhenActive == True and self.state == Rocking.Stopped and forceShow == False:
             if self.isVisible():
                 self.hide()
-                self.cover.hide()
-                self.bar.hide()
+                if self.bar:
+                    self.bar.hide()
         else:
             if not self.isVisible():
                 self.show()
-                self.cover.show()
 
     def readConfig(self):
         cg = self.config()
