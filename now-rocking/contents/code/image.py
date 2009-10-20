@@ -47,9 +47,13 @@ class ImagePainter(Fader):
             if self.img.isNull():
                 return
             s = self.boundingRect().size().toSize()
-            if s.width() != self.scaledImg.size().width() and \
+            if s.width() != self.scaledImg.size().width() or \
                s.height() != self.scaledImg.size().height():
-                self.scaledImg = self.img.scaled(s, self.aspectRatioMode, Qt.SmoothTransformation)
+                if self.img.height() > 750:
+                    trans = Qt.FastTransformation
+                else:
+                    trans = Qt.SmoothTransformation
+                self.scaledImg = self.img.scaled(s, self.aspectRatioMode, trans)
             p = self.boundingRect().topLeft()
             p.setX(p.x() + ((s.width() - self.scaledImg.size().width()) / 2.0))
             p.setY(p.y() + ((s.height() - self.scaledImg.size().height()) / 2.0))
