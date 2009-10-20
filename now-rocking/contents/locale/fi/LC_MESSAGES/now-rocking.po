@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-07 15:28+0300\n"
+"POT-Creation-Date: 2009-10-20 14:33+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Petri Damstén <damu@iki.fi>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,61 +29,73 @@ msgid "Keep Aspect Ratio"
 msgstr "Säilytä kuvasuhde"
 
 #: rc.py:12
+msgid ""
+"Warning: when this feature is on you are not able to access now-rocking if "
+"player is not playing (or paused)."
+msgstr ""
+"Varoitus: Jos tämä asetus on päällä now-rocking on saatamattomissa jollei "
+"soitin ole päällä."
+
+#: rc.py:15 rc.py:35
+msgid "Visible only when player active"
+msgstr "Näkyvissä vain jos soitin aktiivinen"
+
+#: rc.py:18
 msgid "Artist and Title"
 msgstr "Artisti ja Kappale"
 
-#: rc.py:15
+#: rc.py:21
 msgid "&Artist:"
 msgstr "&Artisti:"
 
-#: rc.py:18
+#: rc.py:24
 msgid "&Title:"
 msgstr "&Kappale:"
 
-#: rc.py:21
+#: rc.py:27
 msgid "Use Capital letters"
 msgstr "Käytä vain isoja kirjaimia"
 
-#: rc.py:23
+#: rc.py:29
 msgid "Artist Font"
 msgstr "Artistin kirjaisintyyli"
 
-#: rc.py:25
+#: rc.py:31
 msgid "Title Font"
 msgstr "Kappaleen kirjaisintyyli"
 
-#: rc.py:27
+#: rc.py:33
 msgid "Keep aspect ratio"
 msgstr "Säilytä kuvasuhde"
 
-#: rc.py:29
+#: rc.py:37
 msgid "Use capital letters for artist and title"
 msgstr "Käytä vain isoja kirjaimia artistiin ja kappaleeseen"
 
-#: rc.py:31
+#: rc.py:39
 msgid "Url of the logo"
 msgstr "Logon polku"
 
-#: code/main.py:102
+#: code/main.py:110
 msgid "Make cover &square"
 msgstr "Skaalaa kuva neliöksi"
 
-#: code/main.py:389
+#: code/main.py:418
 msgid "No Player"
 msgstr "Ei Soitinta"
 
-#: code/main.py:399
+#: code/main.py:428
 msgid " (paused)"
 msgstr " (tauko)"
 
-#: code/main.py:401
+#: code/main.py:430
 msgid " (stopped)"
 msgstr " (pysäytetty)"
 
-#: code/main.py:404
+#: code/main.py:433
 msgid "Stopped"
 msgstr "Pysäytetty"
 
-#: code/main.py:406
+#: code/main.py:435
 msgid "N/A"
 msgstr "Ei tiedossa"
