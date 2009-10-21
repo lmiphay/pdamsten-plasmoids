@@ -65,11 +65,11 @@ def I(i):
 class UiHelper():
     applet = None
 
-    def __init__(self, uifile):
+    def __init__(self, uifile, base = None):
         if QDir.isAbsolutePath(uifile) or QFile.exists(uifile):
-            self.ui = uic.loadUi(uifile)
+            self.ui = uic.loadUi(uifile, base)
         else:
-            self.ui = uic.loadUi(self.applet.package().filePath('ui', uifile))
+            self.ui = uic.loadUi(self.applet.package().filePath('ui', uifile), base)
         self.addChildrenAsMembers(self.ui)
 
     def addChildrenAsMembers(self, widget):
