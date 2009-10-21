@@ -25,7 +25,7 @@ from PyKDE4.plasma import Plasma
 from PyKDE4.plasmascript import Applet
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
-from config import ConfigDialog
+from config import ConfigPage
 from config import DEFAULTCFG
 from helpers import *
 
@@ -232,7 +232,7 @@ class ComplexPlotter(Applet):
     @pyqtSignature("configAccepted()")
     def configAccepted(self):
         cg = self.config()
-        self.cfg = self.dlg.data()
+        self.cfg = self.configPage.data()
         cg.writeEntry('plotters', repr(self.cfg['plotters']))
         cg.writeEntry('header', self.cfg['header'])
         cg.writeEntry('plotterheader', self.cfg['plotterheader'])
@@ -241,16 +241,36 @@ class ComplexPlotter(Applet):
         self.createPlotters()
         self.constraintsEvent(Plasma.FormFactorConstraint)
 
-    def configDialogId(self):
-        return QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
-
     def showConfigurationInterface(self):
-        if KConfigDialog.showDialog(self.configDialogId()):
-            return
-        self.dlg = ConfigDialog(None, self.configDialogId(), self.applet)
+        try:
+            # KDE >= 4.4
+            self.dlg = self.standardConfigurationDialog()
+        except:
+            # KDE <= 4.3
+            cfgId = QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
+            if KConfigDialog.showDialog(cfgId):
+                return
+            self.nullManager = KConfigSkeleton()
+            self.dlg = KConfigDialog(None, cfgId, self.nullManager)
+            self.dlg.setFaceType(KPageDialog.Auto)
+            self.dlg.setWindowTitle(i18nc('@title:window', '%1 Settings', self.applet.name()))
+            self.dlg.setAttribute(Qt.WA_DeleteOnClose, True)
+            self.dlg.showButton(KDialog.Apply, False)
+            self.connect(self.dlg, SIGNAL('finished()'), self.nullManager, SLOT('deleteLater()'))
+
         self.connect(self.dlg, SIGNAL('applyClicked()'), self, SLOT('configAccepted()'))
         self.connect(self.dlg, SIGNAL('okClicked()'), self, SLOT('configAccepted()'))
-        self.dlg.setData(self.cfg)
+
+        self.configPage = ConfigPage(None, self.applet)
+        self.configPage.setData(self.cfg)
+
+        current = self.dlg.currentPage()
+        if current:
+            pageItem = self.dlg.insertPage(current, self.configPage, i18n('General'))
+        else:
+            pageItem = self.dlg.addPage(self.configPage, i18n('General'))
+        pageItem.setIcon(KIcon('applications-utilities'))
+        self.dlg.setCurrentPage(pageItem)
         self.dlg.show()
 
     def constraintsEvent(self, constraints):
