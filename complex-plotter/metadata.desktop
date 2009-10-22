@@ -2,7 +2,6 @@
 Name=Complex Plotter
 Comment=Displays various data sources in plotter
 Type=Service
-ServiceTypes=Plasma/Applet
 Icon=applications-utilities
 
 X-KDE-ServiceTypes=Plasma/Applet

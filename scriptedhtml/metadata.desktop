@@ -22,8 +22,8 @@ Comment[pt_BR]=Ver o URL do HTML impresso pelo programa.
 Comment[uk]=Засіб для перегляду HTML URL-адреси, створеної скриптом.
 Type=Service
 Icon=internet-web-browser
-ServiceTypes=Plasma/Applet
 
+X-KDE-ServiceTypes=Plasma/Applet
 X-KDE-Library=plasma_applet_scriptedhtml
 X-KDE-PluginInfo-Author=Petri Damstén
 X-KDE-PluginInfo-Email=damu@iki.fi

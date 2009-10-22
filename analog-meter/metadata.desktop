@@ -2,7 +2,6 @@
 Name=Analog Meter
 Comment=Displays various data sources in analog meter
 Type=Service
-ServiceTypes=Plasma/Applet
 Icon=chronometer
 
 X-KDE-ServiceTypes=Plasma/Applet

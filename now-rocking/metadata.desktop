@@ -2,7 +2,6 @@
 Name=Now Rocking
 Comment=Displays currently rocking audio
 Type=Service
-ServiceTypes=Plasma/Applet
 Icon=now-rocking.svgz
 
 X-KDE-ServiceTypes=Plasma/Applet

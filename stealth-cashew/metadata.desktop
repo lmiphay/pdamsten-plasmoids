@@ -2,7 +2,6 @@
 Name=Stealth Cashew
 Comment=Adjust cashew transparency
 Type=Service
-ServiceTypes=Plasma/Applet
 Icon=plasma
 
 X-KDE-ServiceTypes=Plasma/Applet
