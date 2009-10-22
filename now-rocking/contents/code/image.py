@@ -144,7 +144,11 @@ class Image(ImagePainter, QGraphicsWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def mousePressEvent(self, event):
-        event.accept()
+        if event.button() == Qt.LeftButton:
+            event.accept()
+        QGraphicsWidget.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        self.emit(SIGNAL('clicked()'))
+        if event.button() == Qt.LeftButton:
+            self.emit(SIGNAL('clicked()'))
+        QGraphicsWidget.mouseReleaseEvent(self, event)
