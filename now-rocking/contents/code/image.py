@@ -146,9 +146,11 @@ class Image(ImagePainter, QGraphicsWidget):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             event.accept()
-        QGraphicsWidget.mousePressEvent(self, event)
+        else:
+            QGraphicsWidget.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.emit(SIGNAL('clicked()'))
-        QGraphicsWidget.mouseReleaseEvent(self, event)
+        else:
+            QGraphicsWidget.mouseReleaseEvent(self, event)
