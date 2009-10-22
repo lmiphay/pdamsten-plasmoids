@@ -18,15 +18,8 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import QPointF
-from PyQt4.QtCore import QSizeF
-from PyQt4.QtCore import QRectF
-from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui  import QGraphicsWidget
-from PyQt4.QtGui  import QPixmap
-from PyQt4.QtGui  import QPainter
-from PyQt4.QtGui  import QSizePolicy
+from PyQt4.QtCore import *
+from PyQt4.QtGui  import *
 from PyKDE4.plasma import Plasma
 from fader import Fader
 
@@ -34,7 +27,7 @@ class ImagePainter(Fader):
     def __init__(self):
         Fader.__init__(self)
         self.img = QPixmap()
-        self.scaledImg = QPixmap()
+        self.cache = {}
         self.elementString = ''
         self.prefix = ''
         self.imgPath = ''
@@ -46,18 +39,12 @@ class ImagePainter(Fader):
         if isinstance(self.img, QPixmap):
             if self.img.isNull():
                 return
-            s = self.boundingRect().size().toSize()
-            if s.width() != self.scaledImg.size().width() or \
-               s.height() != self.scaledImg.size().height():
-                if self.img.height() > 750:
-                    trans = Qt.FastTransformation
-                else:
-                    trans = Qt.SmoothTransformation
-                self.scaledImg = self.img.scaled(s, self.aspectRatioMode, trans)
             p = self.boundingRect().topLeft()
-            p.setX(p.x() + ((s.width() - self.scaledImg.size().width()) / 2.0))
-            p.setY(p.y() + ((s.height() - self.scaledImg.size().height()) / 2.0))
-            painter.drawPixmap(p, self.scaledImg)
+            s = self.boundingRect().size().toSize()
+            pixmap = self.scaledPixmap(s.width(), s.height())
+            p.setX(p.x() + ((s.width() - pixmap.width()) / 2.0))
+            p.setY(p.y() + ((s.height() - pixmap.height()) / 2.0))
+            painter.drawPixmap(p, pixmap)
         elif isinstance(self.img, Plasma.Svg):
             #print type(self), self.svgElement(), self.boundingRect(), self.imageSize()
             elem = self.svgElement()
@@ -71,6 +58,8 @@ class ImagePainter(Fader):
                 pass
 
     def setImage(self, img):
+        if not isinstance(img, QPixmap) and self.imgPath == img:
+            return
         if self.isVisible():
             self.saveFadeStart()
         if isinstance(img, QPixmap):
@@ -83,7 +72,7 @@ class ImagePainter(Fader):
                 self.img.setImagePath(self.imgPath)
             else:
                 self.img = QPixmap(self.imgPath)
-        self.scaledImg = QPixmap()
+        self.cache = {}
         if self.isVisible():
             self.startFade(Fader.Slow)
         self.setPreferredSize(QSizeF(self.imageSize()))
@@ -91,12 +80,22 @@ class ImagePainter(Fader):
     def image(self):
         return self.imgPath
 
-    def pixmap(self):
+    def scaledPixmap(self, w, h):
+        key = '%dx%d' % (w, h)
+        if key in self.cache:
+            return self.cache[key]
         if isinstance(self.img, QPixmap):
-            return self.img
+            pixmap = self.img
         elif isinstance(self.img, Plasma.Svg):
-            return self.img.pixmap()
-        return QPixmap()
+            pixmap = self.img.pixmap()
+        else:
+            return QPixmap()
+        if pixmap.height() > 750:
+            trans = Qt.FastTransformation
+        else:
+            trans = Qt.SmoothTransformation
+        self.cache[key] = pixmap.scaled(QSize(w, h), self.aspectRatioMode, trans)
+        return self.cache[key]
 
     def setPrefix(self, prefix):
         if self.prefix == prefix:
@@ -121,7 +120,7 @@ class ImagePainter(Fader):
 
     def setAspectRatioMode(self, mode):
         self.aspectRatioMode = mode
-        self.scaledImg = QPixmap()
+        self.cache = {}
         self.update()
 
     def svgElement(self):

@@ -465,13 +465,10 @@ class Rocking(Applet):
             if self.cover.image() != img:
                 self.cover.setImage(img)
 
-        if changed:
-            self.artwork = self.cover.pixmap()
-            self.artwork = self.artwork.scaled(QSize(50, 50), Qt.IgnoreAspectRatio, \
-                                               Qt.SmoothTransformation)
-            if self.formFactor() in [Plasma.Horizontal, Plasma.Vertical]:
-                toolTip = Plasma.ToolTipContent(self.artist, self.title, self.artwork)
-                Plasma.ToolTipManager.self().setContent(self.applet, toolTip)
+        if changed and self.formFactor() in [Plasma.Horizontal, Plasma.Vertical]:
+            self.artwork = self.cover.scaledPixmap(50, 50)
+            toolTip = Plasma.ToolTipContent(self.artist, self.title, self.artwork)
+            Plasma.ToolTipManager.self().setContent(self.applet, toolTip)
 
         if QString('Volume') in data:
             v = I(F(data[QString('Volume')]) * 1000.0)
