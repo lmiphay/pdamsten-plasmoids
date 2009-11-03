@@ -210,19 +210,24 @@ class ConfigPage(QWidget, UiHelper):
     def downButtonClicked(self):
         self.move(1)
 
-    def move(self, dir):
+    def move(self, direction):
         index = self.plottersTreeView.selectionModel().currentIndex()
         item = self.model.itemFromIndex(index)
         if item.parent() is None:
             items = self.model.takeRow(index.row())
-            self.model.insertRow(index.row() + dir, items)
+            self.model.insertRow(index.row() + direction, items)
         else:
             parent = item.parent()
             items = parent.takeRow(index.row())
             parent.insertRow(index.row() + dir, items)
-        self.plottersTreeView.selectionModel().setCurrentIndex(items[0].index(),
+        self.selectAndScroll(items[0])
+
+    def selectAndScroll(self, item):
+        self.plottersTreeView.expandAll()
+        self.plottersTreeView.selectionModel().setCurrentIndex(item.index(),
                 QItemSelectionModel.ClearAndSelect)
-        self.plottersTreeView.scrollTo(items[0].index())
+        self.plottersTreeView.scrollTo(item.index())
+        self.enableItems()
 
     def addPlotter(self, name = i18n('Plotter'), cfg = DEFAULTCFG):
         item = QStandardItem(name)
@@ -231,6 +236,7 @@ class ConfigPage(QWidget, UiHelper):
         item.setData(font, Qt.FontRole)
         item.setData(repr(cfg))
         self.model.appendRow([item])
+        self.selectAndScroll(item)
         return item
 
     def addGraph(self, name, color, cfg, parent = None):
@@ -247,5 +253,4 @@ class ConfigPage(QWidget, UiHelper):
         item = QStandardItem(name)
         item.setData(repr(cfg))
         parent.appendRow([item, QStandardItem(color)])
-        self.plottersTreeView.expandAll()
-        self.enableItems()
+        self.selectAndScroll(item)
