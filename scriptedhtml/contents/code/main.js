@@ -50,10 +50,10 @@ plasmoid.connectEngine = function()
     }
 
     if (g_useScript) {
-        var engine = plasmoid.dataEngine("executable");
+        var engine = dataEngine("executable");
         engine.connectSource(script, this, interval * 1000);
     } else  {
-        var engine = plasmoid.dataEngine("time");
+        var engine = dataEngine("time");
         engine.connectSource("Local", this, interval * 1000);
     }
 }
