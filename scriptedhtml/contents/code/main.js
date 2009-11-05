@@ -34,6 +34,7 @@ plasmoid.init = function()
 plasmoid.connectEngine = function()
 {
     //print("connectEngine")
+    plasmoid.busy = true;
     var script = g_script.replace("file://", "");
     var interval;
 
@@ -93,6 +94,7 @@ plasmoid.configChanged = function()
 plasmoid.dataUpdate = function(source, data)
 {
     //print('dataUpdate');
+    plasmoid.busy = false;
     if (g_useScript) {
         if (typeof(data["stdout"]) != "string") {
             return;
