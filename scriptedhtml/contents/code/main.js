@@ -27,6 +27,7 @@ plasmoid.init = function()
     //print("init")
     layout = new LinearLayout(plasmoid);
     g_web = new WebView();
+    g_web.loadFinished.connect(plasmoid.loadFinished);
     layout.addItem(g_web);
     plasmoid.configChanged();
 }
@@ -57,6 +58,12 @@ plasmoid.connectEngine = function()
         var engine = dataEngine("time");
         engine.connectSource("Local", this, interval * 1000);
     }
+}
+
+plasmoid.loadFinished = function(success)
+{
+    //print("loadFinished")
+    plasmoid.busy = false;
 }
 
 plasmoid.formFactorChanged = function()
@@ -94,7 +101,6 @@ plasmoid.configChanged = function()
 plasmoid.dataUpdate = function(source, data)
 {
     //print('dataUpdate');
-    plasmoid.busy = false;
     if (g_useScript) {
         if (typeof(data["stdout"]) != "string") {
             return;
