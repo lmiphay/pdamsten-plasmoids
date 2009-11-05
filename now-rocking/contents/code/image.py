@@ -90,10 +90,10 @@ class ImagePainter(Fader):
             pixmap = self.img.pixmap()
         else:
             return QPixmap()
-        if pixmap.height() > 750:
-            trans = Qt.FastTransformation
-        else:
-            trans = Qt.SmoothTransformation
+        #if pixmap.height() > 750:
+        #    trans = Qt.FastTransformation
+        #else:
+        trans = Qt.SmoothTransformation
         self.cache[key] = pixmap.scaled(QSize(w, h), self.aspectRatioMode, trans)
         return self.cache[key]
 
