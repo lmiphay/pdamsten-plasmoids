@@ -37,6 +37,7 @@ class PlotterDialog(KDialog, UiHelper):
         self.connect(self.autorangeCheck, SIGNAL('stateChanged(int)'), self.enableItems)
         self.connect(self.vlinesCheck, SIGNAL('stateChanged(int)'), self.enableItems)
         self.connect(self.hlinesCheck, SIGNAL('stateChanged(int)'), self.enableItems)
+        self.connect(self.valuePlacementCombo, SIGNAL('currentIndexChanged(int)'), self.enableItems)
         self.enableItems()
 
     def setData(self, data):
@@ -77,6 +78,11 @@ class PlotterDialog(KDialog, UiHelper):
         self.hlinesCheck.setChecked(data['hlines'])
         self.hcolorCombo.setColor(QColor(data['hcolor']))
         self.hcountSpin.setValue(data['hcount'])
+        self.valuePlacementCombo.setCurrentIndex(data['valueplace'])
+        self.valueFormatEdit.setText(data['valueformat'])
+        f = QFont()
+        f.fromString(data['valuefont'])
+        self.valueLabelFont.setFont(f)
         self.enableItems()
 
     def data(self):
@@ -107,9 +113,28 @@ class PlotterDialog(KDialog, UiHelper):
         data['hlines'] = self.hlinesCheck.isChecked()
         data['hcolor'] = U(self.hcolorCombo)
         data['hcount'] = self.hcountSpin.value()
+        data['valueplace'] = self.valuePlacementCombo.currentIndex()
+        data['valueformat'] = U(self.valueFormatEdit)
+        data['valuefont'] = U(self.valueLabelFont.font())
         return data
 
     def enableItems(self):
+        ver = isKDEVersion(4,3,74)
+        self.valueLabel.setVisible(ver)
+        self.valuePlacementCombo.setVisible(ver)
+        self.valueFormatLabel.setVisible(ver)
+        self.valueFormatEdit.setVisible(ver)
+        self.space.setVisible(ver)
+        self.valueExampleLabel.setVisible(ver)
+        self.valueFontLabel.setVisible(ver)
+        self.valueLabelFont.setVisible(ver)
+        enabled = (self.valuePlacementCombo.currentIndex() != 0)
+        self.valueFormatLabel.setEnabled(enabled)
+        self.valueFormatEdit.setEnabled(enabled)
+        self.space.setEnabled(enabled)
+        self.valueExampleLabel.setEnabled(enabled)
+        self.valueFontLabel.setEnabled(enabled)
+        self.valueLabelFont.setEnabled(enabled)
         self.labelFont.setEnabled(self.labelsCheck.isChecked())
         self.fontLabel.setEnabled(self.labelsCheck.isChecked())
         self.bgColorLabel.setVisible(self.backgroundCombo.currentIndex() == 1)

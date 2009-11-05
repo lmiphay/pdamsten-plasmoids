@@ -50,7 +50,10 @@ DEFAULTCFG = {
     'hpixels': 1,
     'hlines': True,
     'hcolor': '#000000',
-    'hcount': 5
+    'hcount': 5,
+    'valueplace': 0,
+    'valueformat': '', # TODO
+    'valuefont': 'Sans,8,-1,5,50,0,0,0,0,0'
 }
 
 class ComplexDelegate(QStyledItemDelegate):
