@@ -129,6 +129,9 @@ class ConfigPage(QWidget, UiHelper):
         self.headerEdit.setText(data['header'])
         self.headerCheck.setChecked(data['plotterheader'])
         self.panelRatioSpinBox.setValue(data['panelRatio'])
+        f = QFont()
+        f.fromString(data['headerfont'])
+        self.headerFont.setFont(f)
         for plotter in data['plotters']:
             c = DEFAULTCFG.copy()
             c.update(plotter['cfg'])
@@ -139,6 +142,7 @@ class ConfigPage(QWidget, UiHelper):
     def data(self):
         data = {}
         data['header'] = U(self.headerEdit)
+        data['headerfont'] = U(self.headerFont.font())
         data['plotterheader'] = self.headerCheck.isChecked()
         data['panelRatio'] = self.panelRatioSpinBox.value()
         data['plotters'] = []
@@ -159,6 +163,8 @@ class ConfigPage(QWidget, UiHelper):
         return data
 
     def enableItems(self):
+        self.headerFont.setVisible(isKDEVersion(4,3,74))
+        self.headerFontLabel.setVisible(isKDEVersion(4,3,74))
         index = self.plottersTreeView.selectionModel().currentIndex()
         item = self.model.itemFromIndex(index)
         if item is None:

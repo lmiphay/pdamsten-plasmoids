@@ -48,6 +48,7 @@ class ComplexPlotter(Applet):
         cg = self.config()
         self.cfg['panelRatio'] = F(cg.readEntry('panelRatio', '0.0'))
         self.cfg['header'] = U(cg.readEntry('header', ''))
+        self.cfg['headerfont'] = U(cg.readEntry('headerfont', ''))
         self.cfg['plotterheader'] = cg.readEntry('plotterheader', False).toBool()
         try:
             self.cfg['plotters'] = eval(U(cg.readEntry('plotters', '')))
@@ -144,11 +145,19 @@ class ComplexPlotter(Applet):
         if len(self.cfg['header']) > 0:
             h = Plasma.Frame(self.applet)
             h.setText(self.cfg['header'])
+            if isKDEVersion(4,3,74):
+                f = QFont()
+                f.fromString(c['headerfont'])
+                h.setFont(f)
             layout.addItem(h)
         for plotter in self.cfg['plotters']:
             if self.cfg['plotterheader']:
                 h = Plasma.Frame(self.applet)
                 h.setText(plotter['name'])
+                if isKDEVersion(4,3,74):
+                    f = QFont()
+                    f.fromString(c['headerfont'])
+                    h.setFont(f)
                 layout.addItem(h)
             c = DEFAULTCFG.copy()
             c.update(plotter['cfg'])
@@ -235,6 +244,7 @@ class ComplexPlotter(Applet):
         self.cfg = self.configPage.data()
         cg.writeEntry('plotters', repr(self.cfg['plotters']))
         cg.writeEntry('header', self.cfg['header'])
+        cg.writeEntry('headerfont', self.cfg['headerfont'])
         cg.writeEntry('plotterheader', self.cfg['plotterheader'])
         cg.writeEntry('panelRatio', self.cfg['panelRatio'])
         self.activeSystemmonitorSources = self.parseSystemmonitorSources()
