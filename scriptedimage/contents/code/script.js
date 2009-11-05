@@ -37,6 +37,7 @@ function init()
 function connectEngine()
 {
     //alert("connectEngine")
+    window.applet.setBusy(true);
     var script = g_script.replace("file://", "");
     var interval;
 
@@ -113,6 +114,7 @@ function widhtHeightReady()
 function updateImage()
 {
     //alert("updateImage")
+    window.applet.setBusy(false);
     if (g_img.width == 0 || g_img.height == 0) {
         return;
     }
