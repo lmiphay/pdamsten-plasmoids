@@ -114,6 +114,15 @@ class Rocking(Applet):
         self.connect(self.applet, SIGNAL('activate()'), self.playClicked)
         self.createButtonBar()
 
+        self.hoverTimer = QTimer()
+        self.hoverTimer.setSingleShot(True)
+        self.hoverTimer.setInterval(333)
+        self.leaveTimer = QTimer()
+        self.leaveTimer.setSingleShot(True)
+        self.leaveTimer.setInterval(500)
+        self.connect(self.hoverTimer, SIGNAL('timeout()'), self.showBar)
+        self.connect(self.leaveTimer, SIGNAL('timeout()'), self.hideBar)
+
     def themeChanged(self):
         if self.artistWidget != None:
             self.artistWidget.setColor(Plasma.Theme.defaultTheme().color(Plasma.Theme.TextColor))
@@ -502,11 +511,20 @@ class Rocking(Applet):
         else:
             return []
 
+    def showBar(self):
+        # TODO why buttons are half height without invalidate?
+        self.barLayout.invalidate()
+        self.bar.fadeIn(Fader.Medium)
+
+    def hideBar(self):
+        self.bar.fadeOut(Fader.Medium)
+
     def hoverEnterEvent(self, event):
         if self.connected and self.cover.size().width() > Rocking.ButtonWidth * 9:
-            # TODO why buttons are half height without invalidate?
-            self.barLayout.invalidate()
-            self.bar.fadeIn(Fader.Medium)
+            if self.leaveTimer.isActive():
+                self.leaveTimer.stop()
+            else:
+                self.hoverTimer.start()
         try:
             self.applet.hoverEnterEvent(event)
         except:
@@ -514,7 +532,10 @@ class Rocking(Applet):
 
     def hoverLeaveEvent(self, event):
         if self.bar.isVisible():
-            self.bar.fadeOut(Fader.Medium)
+            if self.hoverTimer.isActive():
+                self.hoverTimer.stop()
+            else:
+                self.leaveTimer.start()
         try:
             self.applet.hoverLeaveEvent(event)
         except:
