@@ -470,9 +470,6 @@ p, li { white-space: pre-wrap; }
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="text">
-          <string>X</string>
-         </property>
         </widget>
        </item>
        <item row="13" column="1">
@@ -482,9 +479,6 @@ p, li { white-space: pre-wrap; }
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="text">
-          <string>X</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
