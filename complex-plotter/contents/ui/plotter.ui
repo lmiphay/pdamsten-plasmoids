@@ -197,7 +197,7 @@
           </sizepolicy>
          </property>
          <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
+          <enum>Qt::StrongFocus</enum>
          </property>
         </widget>
        </item>
@@ -208,6 +208,9 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="buddy">
+          <cstring>fontColorCombo</cstring>
          </property>
         </widget>
        </item>
@@ -369,7 +372,7 @@
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy">
-          <cstring>stackCheck</cstring>
+          <cstring>valuePlacementCombo</cstring>
          </property>
         </widget>
        </item>
@@ -442,7 +445,7 @@
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy">
-          <cstring>stackCheck</cstring>
+          <cstring>valueFormatEdit</cstring>
          </property>
         </widget>
        </item>
@@ -494,7 +497,7 @@ p, li { white-space: pre-wrap; }
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy">
-          <cstring>labelFont</cstring>
+          <cstring>valueLabelFont</cstring>
          </property>
         </widget>
        </item>
@@ -505,6 +508,9 @@ p, li { white-space: pre-wrap; }
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::StrongFocus</enum>
          </property>
         </widget>
        </item>
