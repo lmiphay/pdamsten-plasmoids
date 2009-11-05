@@ -21,8 +21,12 @@
 from PyQt4 import uic
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from PyKDE4.kio import *
+
+def isKDEVersion(a, b, c):
+    return (version() >= (a << 16) + (b << 8) + c)
 
 def check(b):
     if not b:
