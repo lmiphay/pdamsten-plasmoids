@@ -52,7 +52,7 @@ DEFAULTCFG = {
     'hcolor': '#000000',
     'hcount': 5,
     'valueplace': 0,
-    'valueformat': '', # TODO
+    'valueformat': '{value0:1.1f} {unit0}',
     'valuefont': 'Sans,8,-1,5,50,0,0,0,0,0'
 }
 

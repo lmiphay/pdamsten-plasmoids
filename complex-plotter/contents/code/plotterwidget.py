@@ -23,6 +23,7 @@ from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
 from config import DEFAULTCFG
 from helpers import *
+from string import Formatter
 
 class ComplexPlotterWidget(QGraphicsWidget):
     def __init__(self, parent, cfg, header):
@@ -35,6 +36,7 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.setLayout(QGraphicsLinearLayout(Qt.Vertical))
         self.setContentsMargins(0, 0, 0, 0)
         self.layout().setContentsMargins(0, 0, 0, 0)
+        self.formatter = Formatter()
 
         f = QFont()
         if self.header:
@@ -98,6 +100,7 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.allUpdated = [0] * len(self.graphs)
         self.source2GraphIndex = {}
         self.sourceData = {}
+        self.valueArgs = {}
         for i, graph in enumerate(self.graphs):
             self.plotter.addPlot(QColor(graph['color']))
             for source in graph['cfg']:
@@ -105,7 +108,6 @@ class ComplexPlotterWidget(QGraphicsWidget):
                 self.sourceData[source['source']] = source
             self.initial[i] = len(graph['cfg'])
         self.current = list(self.initial)
-        self.valueText = self.cfg['valueformat']
         self.plotter.setThinFrame(False)
         self.layout().addItem(self.plotter)
 
@@ -123,19 +125,18 @@ class ComplexPlotterWidget(QGraphicsWidget):
         if valueName in data:
             self.values[graphIndex] += F(data[valueName])
             self.current[graphIndex] -= 1
-            try:
-                # TODO value#
-                self.valueText = self.valueText.format(
-                        value = F(data[valueName]),
-                        max = F(data[source['max']]),
-                        min = F(data[source['min']]),
-                        unit = U(data[source['unit']]),
-                        name = source['name'])
-            except:
-                pass
+            if self.valueLabel:
+                self.valueArgs['value%d' % graphIndex] = F(data[valueName])
+                self.valueArgs['max%d' % graphIndex] = F(data[QString(source['max'])])
+                self.valueArgs['min%d' % graphIndex] = F(data[QString(source['min'])])
+                self.valueArgs['unit%d' % graphIndex] = U(data[QString(source['unit'])])
+                self.valueArgs['name%d' % graphIndex] = source['name']
             if self.current == self.allUpdated:
                 self.plotter.addSample(self.values)
-                self.valueLabel.setText(self.valueText)
-                self.valueText = self.cfg['valueformat']
+                if self.valueLabel:
+                    try:
+                        self.valueLabel.setText(self.cfg['valueformat'].format(**self.valueArgs))
+                    except:
+                        pass
                 self.current = list(self.initial)
                 self.values = [0.0] * len(self.initial)
