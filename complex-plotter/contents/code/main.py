@@ -151,11 +151,11 @@ class ComplexPlotter(Applet):
                 h.setFont(f)
             layout.addItem(h)
         for plotter in self.cfg['plotters']:
+            f = QFont()
             if self.cfg['plotterheader']:
                 h = Plasma.Frame(self.applet)
                 h.setText(plotter['name'])
                 if isKDEVersion(4,3,74):
-                    f = QFont()
                     f.fromString(c['headerfont'])
                     h.setFont(f)
                 layout.addItem(h)
@@ -166,7 +166,6 @@ class ComplexPlotter(Applet):
             p.setTitle(plotter['name'])
             p.setUnit(c['unit'])
             p.setShowLabels(c['labels'])
-            f = QFont()
             f.fromString(c['font'])
             p.setFont(f)
             p.setFontColor(QColor(c['fontcolor']))
@@ -189,6 +188,28 @@ class ComplexPlotter(Applet):
             p.setHorizontalLinesColor(QColor(c['hcolor']))
             p.setHorizontalLinesCount(c['hcount'])
 
+            v = None
+            if c['valueplace'] != 0 and isKDEVersion(4,3,74):
+                row = int((c['valueplace'] - 1) / 3)
+                col = (c['valueplace'] - 1) % 3
+                v = Plasma.Frame(p)
+                f.fromString(c['valuefont'])
+                v.setFont(f)
+                v.setZValue(10)
+                hl = QGraphicsLinearLayout(Qt.Horizontal)
+                if col > 0:
+                    hl.addStretch()
+                hl.addItem(v)
+                if col < 2:
+                    hl.addStretch()
+                vl = QGraphicsLinearLayout(Qt.Vertical)
+                if row > 0:
+                    vl.addStretch()
+                vl.addItem(hl)
+                if row < 2:
+                    vl.addStretch()
+                p.setLayout(vl)
+
             self.plotterData[p] = {}
             self.plotterData[p]['initial'] = [0] * len(plotter['graphs'])
             self.plotterData[p]['values'] = [0.0] * len(plotter['graphs'])
@@ -196,7 +217,7 @@ class ComplexPlotter(Applet):
             for i, graph in enumerate(plotter['graphs']):
                 p.addPlot(QColor(graph['color']))
                 for c in graph['cfg']:
-                    self.sources[c['source']] = (p, i, c, plotter['cfg']['interval'])
+                    self.sources[c['source']] = (p, i, c, plotter['cfg']['interval'], v)
                     self.plotterData[p]['initial'][i] += 1
                     self.plotterData[p]['current'][i] += 1
                     if c['dataengine'] == 'systemmonitor':
@@ -205,6 +226,8 @@ class ComplexPlotter(Applet):
                         self.dataEngine(c['dataengine']).connectSource(\
                                 c['source'], self, plotter['cfg']['interval'])
             self.plotterData[p]['current'] = list(self.plotterData[p]['initial'])
+            self.plotterData[p]['textformat'] = plotter['cfg']['valueformat']
+            self.plotterData[p]['text'] = self.plotterData[p]['textformat']
             p.setThinFrame(False)
             layout.addItem(p)
 
@@ -230,9 +253,20 @@ class ComplexPlotter(Applet):
                 # --------------------------------------------------------------------------
                 self.plotterData[plotter]['values'][index] += F(data[valueName])
                 self.plotterData[plotter]['current'][index] -= 1
+                try:
+                    self.plotterData[p]['text'] = self.plotterData[p]['text'].format(
+                            value = F(data[self.valueName]),
+                            max = F(data[self.maxName]),
+                            min = F(data[self.minName]),
+                            unit = U(data[self.unitName]),
+                            name = self.cfg['source']['name'])
+                except:
+                    pass
                 if self.plotterData[plotter]['current'] == \
                         [0] * len(self.plotterData[plotter]['initial']):
                     plotter.addSample(self.plotterData[plotter]['values'])
+                    source[4].setText(self.plotterData[plotter]['text'])
+                    self.plotterData[plotter]['text'] = self.plotterData[plotter]['textformat']
                     self.plotterData[plotter]['current'] = \
                             list(self.plotterData[plotter]['initial'])
                     self.plotterData[plotter]['values'] = \
@@ -252,11 +286,9 @@ class ComplexPlotter(Applet):
         self.constraintsEvent(Plasma.FormFactorConstraint)
 
     def showConfigurationInterface(self):
-        try:
-            # KDE >= 4.4
+        if False: # TODO: standardConfigurationDialog crashes. isKDEVersion(4,3,74):
             self.dlg = self.standardConfigurationDialog()
-        except:
-            # KDE <= 4.3
+        else:
             cfgId = QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
             if KConfigDialog.showDialog(cfgId):
                 return
@@ -286,7 +318,7 @@ class ComplexPlotter(Applet):
     def constraintsEvent(self, constraints):
         if constraints & Plasma.FormFactorConstraint:
             minSize = self.layout().minimumSize()
-            print minSize, self.size(), self.cfg['panelRatio']
+            # print minSize, self.size(), self.cfg['panelRatio']
             if self.formFactor() == Plasma.Horizontal and self.cfg['panelRatio'] > 0.0:
                 self.setMinimumWidth(self.size().height() * self.cfg['panelRatio'])
                 self.setMaximumWidth(self.size().height() * self.cfg['panelRatio'])
@@ -302,7 +334,7 @@ class ComplexPlotter(Applet):
                 self.setMaximumHeight(QWIDGETSIZE_MAX)
                 self.setMinimumWidth(minSize.width())
                 self.setMaximumWidth(QWIDGETSIZE_MAX)
-            print self.minimumSize(), self.maximumSize(), self.size()
+            # print self.minimumSize(), self.maximumSize(), self.size()
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
 
 def CreateApplet(parent):
