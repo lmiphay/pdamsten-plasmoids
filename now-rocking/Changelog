@@ -1,3 +1,9 @@
+2009-11-06  Version 0.9
+  * German translation. Thanks to Kirilo.
+  * Don't use FastTransformation. Users did not like it.
+  * Use delays in in/out fade similar to applet handle.
+  * cache scaled pixmaps when possible
+
 2009-10-20  Version 0.8
   * Use fast scale for big images
   * Add show only when player active option
