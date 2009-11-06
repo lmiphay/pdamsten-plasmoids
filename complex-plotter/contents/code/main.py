@@ -27,6 +27,7 @@ from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from config import ConfigPage
 from config import DEFAULTCFG
+from plotterwidget import ComplexPlotterWidget
 from helpers import *
 
 QWIDGETSIZE_MAX = 16777215
@@ -147,130 +148,37 @@ class ComplexPlotter(Applet):
             h.setText(self.cfg['header'])
             if isKDEVersion(4,3,74):
                 f = QFont()
-                f.fromString(c['headerfont'])
+                f.fromString(cfg['headerfont'])
                 h.setFont(f)
             layout.addItem(h)
+        self.plotters = {}
         for plotter in self.cfg['plotters']:
-            f = QFont()
-            if self.cfg['plotterheader']:
-                h = Plasma.Frame(self.applet)
-                h.setText(plotter['name'])
-                if isKDEVersion(4,3,74):
-                    f.fromString(c['headerfont'])
-                    h.setFont(f)
-                layout.addItem(h)
-            c = DEFAULTCFG.copy()
-            c.update(plotter['cfg'])
-            p = Plasma.SignalPlotter(self.applet)
-
-            p.setTitle(plotter['name'])
-            p.setUnit(c['unit'])
-            p.setShowLabels(c['labels'])
-            f.fromString(c['font'])
-            p.setFont(f)
-            p.setFontColor(QColor(c['fontcolor']))
-            p.setShowTopBar(c['topbar'])
-            if len(c['bgcolor']) != 0:
-                p.setBackgroundColor(QColor(c['bgcolor']))
-            elif QFile.exists(c['bgsvg']):
-                p.setSvgBackground(c['bgsvg'])
-            else:
-                p.setSvgBackground('widgets/plot-background')
-            p.setStackPlots(c['stack'])
-            p.setVerticalRange(c['min'], c['max'])
-            p.setUseAutoRange(c['autorange'])
-            p.setShowVerticalLines(c['vlines'])
-            p.setVerticalLinesColor(QColor(c['vcolor']))
-            p.setVerticalLinesDistance(c['vdistance'])
-            p.setVerticalLinesScroll(c['vscroll'])
-            p.setHorizontalScale(c['hpixels'])
-            p.setShowHorizontalLines(c['hlines'])
-            p.setHorizontalLinesColor(QColor(c['hcolor']))
-            p.setHorizontalLinesCount(c['hcount'])
-
-            v = None
-            if c['valueplace'] != 0 and isKDEVersion(4,3,74):
-                row = int((c['valueplace'] - 1) / 3)
-                col = (c['valueplace'] - 1) % 3
-                v = Plasma.Frame(p)
-                f.fromString(c['valuefont'])
-                v.setFont(f)
-                v.setZValue(10)
-                hl = QGraphicsLinearLayout(Qt.Horizontal)
-                if col > 0:
-                    hl.addStretch()
-                hl.addItem(v)
-                if col < 2:
-                    hl.addStretch()
-                vl = QGraphicsLinearLayout(Qt.Vertical)
-                if row > 0:
-                    vl.addStretch()
-                vl.addItem(hl)
-                if row < 2:
-                    vl.addStretch()
-                p.setLayout(vl)
-
-            self.plotterData[p] = {}
-            self.plotterData[p]['initial'] = [0] * len(plotter['graphs'])
-            self.plotterData[p]['values'] = [0.0] * len(plotter['graphs'])
-            self.plotterData[p]['current'] = [0] * len(plotter['graphs'])
-            for i, graph in enumerate(plotter['graphs']):
-                p.addPlot(QColor(graph['color']))
-                for c in graph['cfg']:
-                    self.sources[c['source']] = (p, i, c, plotter['cfg']['interval'], v)
-                    self.plotterData[p]['initial'][i] += 1
-                    self.plotterData[p]['current'][i] += 1
-                    if c['dataengine'] == 'systemmonitor':
-                        self.connectSystemMonitorSource(c['source'])
-                    else:
-                        self.dataEngine(c['dataengine']).connectSource(\
-                                c['source'], self, plotter['cfg']['interval'])
-            self.plotterData[p]['current'] = list(self.plotterData[p]['initial'])
-            self.plotterData[p]['textformat'] = plotter['cfg']['valueformat']
-            self.plotterData[p]['text'] = self.plotterData[p]['textformat']
-            p.setThinFrame(False)
+            p = ComplexPlotterWidget(self.applet, plotter, self.cfg['plotterheader'])
+            for source in p.sources().values():
+                self.plotters[source['source']] = p
+                if source['dataengine'] == 'systemmonitor':
+                    self.connectSystemMonitorSource(source['source'])
+                else:
+                    self.dataEngine(source['dataengine']).connectSource(\
+                            source['source'], self, plotter['cfg']['interval'])
             layout.addItem(p)
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
         name = U(sourceName)
         #print name
-        if name in self.sources:
-            source = self.sources[name]
-            cfg = source[2]
-            #print self.sources, sourceName, data, cfg['value']
-            valueName = QString(cfg['value'])
-            if valueName in data:
-                plotter = source[0]
-                index = source[1]
-                # Hack for correctly update 'systemmonitor' dataengine ---------------------
-                key = cfg['dataengine'] + ':' + cfg['source']
-                if key in self.halfSecondSource and self.halfSecondSource[key] == True:
-                    self.halfSecondSource[key] = False
-                    #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
-                    self.dataEngine(cfg['dataengine']).connectSource(cfg['source'], \
-                                    self, source[3])
-                # --------------------------------------------------------------------------
-                self.plotterData[plotter]['values'][index] += F(data[valueName])
-                self.plotterData[plotter]['current'][index] -= 1
-                try:
-                    self.plotterData[p]['text'] = self.plotterData[p]['text'].format(
-                            value = F(data[self.valueName]),
-                            max = F(data[self.maxName]),
-                            min = F(data[self.minName]),
-                            unit = U(data[self.unitName]),
-                            name = self.cfg['source']['name'])
-                except:
-                    pass
-                if self.plotterData[plotter]['current'] == \
-                        [0] * len(self.plotterData[plotter]['initial']):
-                    plotter.addSample(self.plotterData[plotter]['values'])
-                    source[4].setText(self.plotterData[plotter]['text'])
-                    self.plotterData[plotter]['text'] = self.plotterData[plotter]['textformat']
-                    self.plotterData[plotter]['current'] = \
-                            list(self.plotterData[plotter]['initial'])
-                    self.plotterData[plotter]['values'] = \
-                            [0.0] * len(self.plotterData[plotter]['initial'])
+        if name in self.plotters:
+            plotter = self.plotters[name]
+            # Hack for correctly update 'systemmonitor' dataengine ---------------------
+            source = plotter.sources()[name]
+            key = source['dataengine'] + ':' + name
+            if key in self.halfSecondSource and self.halfSecondSource[key] == True:
+                self.halfSecondSource[key] = False
+                #self.dataEngine(c['dataengine']).disconnectSource(c['source'], self)
+                self.dataEngine(source['dataengine']).connectSource(source['source'], \
+                                self, plotter.interval())
+            # --------------------------------------------------------------------------
+            plotter.dataUpdated(name, data)
 
     @pyqtSignature("configAccepted()")
     def configAccepted(self):
