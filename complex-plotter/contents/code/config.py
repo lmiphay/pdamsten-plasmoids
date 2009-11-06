@@ -200,7 +200,12 @@ class ConfigPage(QWidget, UiHelper):
 
     def configureAllPlottersButtonClicked(self):
         dlg = PlotterDialog(self)
-        dlg.setData(eval(U(self.model.item(0).data())))
+        data = eval(U(self.model.item(0).data()))
+        data['graphCount'] = 0
+        for i in range(self.model.rowCount()):
+            if self.model.item(i).rowCount() > data['graphCount']:
+                data['graphCount'] = self.model.item(i).rowCount()
+        dlg.setData(data)
         if dlg.exec_() == QDialog.Accepted:
             for i in range(self.model.rowCount()):
                 self.model.item(i).setData(repr(dlg.data()))
@@ -209,7 +214,9 @@ class ConfigPage(QWidget, UiHelper):
         index = self.plottersTreeView.selectionModel().currentIndex()
         item = self.model.itemFromIndex(index)
         dlg = PlotterDialog(self)
-        dlg.setData(eval(U(item.data())))
+        data = eval(U(item.data()))
+        data['graphCount'] = item.rowCount()
+        dlg.setData(data)
         if dlg.exec_() == QDialog.Accepted:
             item.setData(repr(dlg.data()))
 

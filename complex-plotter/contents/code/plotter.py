@@ -18,6 +18,7 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+import sys
 from PyQt4 import uic
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -31,6 +32,7 @@ class PlotterDialog(KDialog, UiHelper):
         UiHelper.__init__(self, 'plotter.ui')
         KDialog.__init__(self, parent)
 
+        self.graphCount = 0
         self.setMainWidget(self.ui)
         self.connect(self.labelsCheck, SIGNAL('stateChanged(int)'), self.enableItems)
         self.connect(self.backgroundCombo, SIGNAL('currentIndexChanged(int)'), self.enableItems)
@@ -38,6 +40,8 @@ class PlotterDialog(KDialog, UiHelper):
         self.connect(self.vlinesCheck, SIGNAL('stateChanged(int)'), self.enableItems)
         self.connect(self.hlinesCheck, SIGNAL('stateChanged(int)'), self.enableItems)
         self.connect(self.valuePlacementCombo, SIGNAL('currentIndexChanged(int)'), self.enableItems)
+        self.connect(self.valueFormatEdit, SIGNAL('textChanged(const QString&)'), self.setExample)
+        self.connect(self.valueLabelFont, SIGNAL('fontSelected(const QFont&)'), self.setExample)
         self.enableItems()
 
     def setData(self, data):
@@ -83,7 +87,9 @@ class PlotterDialog(KDialog, UiHelper):
         f = QFont()
         f.fromString(data['valuefont'])
         self.valueLabelFont.setFont(f)
+        self.graphCount = data['graphCount']
         self.enableItems()
+        self.setExample()
 
     def data(self):
         data = {}
@@ -124,14 +130,14 @@ class PlotterDialog(KDialog, UiHelper):
         self.valuePlacementCombo.setVisible(ver)
         self.valueFormatLabel.setVisible(ver)
         self.valueFormatEdit.setVisible(ver)
-        self.space.setVisible(ver)
+        self.exampleTitleLabel.setVisible(ver)
         self.valueExampleLabel.setVisible(ver)
         self.valueFontLabel.setVisible(ver)
         self.valueLabelFont.setVisible(ver)
         enabled = (self.valuePlacementCombo.currentIndex() != 0)
         self.valueFormatLabel.setEnabled(enabled)
         self.valueFormatEdit.setEnabled(enabled)
-        self.space.setEnabled(enabled)
+        self.exampleTitleLabel.setEnabled(enabled)
         self.valueExampleLabel.setEnabled(enabled)
         self.valueFontLabel.setEnabled(enabled)
         self.valueLabelFont.setEnabled(enabled)
@@ -155,3 +161,22 @@ class PlotterDialog(KDialog, UiHelper):
         self.hcolorCombo.setEnabled(self.hlinesCheck.isChecked())
         self.hcountLabel.setEnabled(self.hlinesCheck.isChecked())
         self.hcountSpin.setEnabled(self.hlinesCheck.isChecked())
+
+    def setExample(self):
+        self.valueExampleLabel.setFont(self.valueLabelFont.font())
+        s = U(self.valueFormatEdit.text())
+        valueArgs = {}
+        for i in range(self.graphCount):
+            valueArgs['value%d' % i] = 31.2345
+            valueArgs['max%d' % i] = 100.0
+            valueArgs['min%d' % i] = 0.0
+            valueArgs['unit%d' % i] = u'°C'
+            valueArgs['name%d' % i] = u'CPU Temp'
+        try:
+            self.exampleTitleLabel.setText(i18n('e.g.: '))
+            s = s.format(**valueArgs)
+        except:
+            self.exampleTitleLabel.setText(i18n('error: '))
+            (exception_type, value, exception_traceback) = sys.exc_info()
+            s = U(value)
+        self.valueExampleLabel.setText(s)

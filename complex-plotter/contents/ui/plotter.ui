@@ -466,7 +466,7 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item row="13" column="0">
-        <widget class="QLabel" name="space">
+        <widget class="QLabel" name="exampleTitleLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
