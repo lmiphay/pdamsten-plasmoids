@@ -72,6 +72,7 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.plotter.setShowHorizontalLines(self.cfg['hlines'])
         self.plotter.setHorizontalLinesColor(QColor(self.cfg['hcolor']))
         self.plotter.setHorizontalLinesCount(self.cfg['hcount'])
+        self.plotter.scale(self.cfg['scale'])
 
         self.valueLabel = None
         if self.cfg['valueplace'] != 0 and isKDEVersion(4,3,74):
