@@ -124,7 +124,11 @@ class ComplexPlotterWidget(QGraphicsWidget):
         source = self.sourceData[name]
         valueName = QString(source['value'])
         if valueName in data:
-            self.values[graphIndex] += F(data[valueName])
+            # net has sometimes negative values
+            if source['source'].startswith('network'):
+                self.values[graphIndex] += max(0.0, F(data[valueName]))
+            else:
+                self.values[graphIndex] += F(data[valueName])
             self.current[graphIndex] -= 1
             if self.valueLabel:
                 self.valueArgs['value%d' % graphIndex] = F(data[valueName])
