@@ -191,34 +191,33 @@ class ComplexPlotter(Applet):
         self.constraintsEvent(Plasma.FormFactorConstraint)
 
     def showConfigurationInterface(self):
-        if False: # TODO: standardConfigurationDialog crashes. isKDEVersion(4,3,74):
-            self.dlg = self.standardConfigurationDialog()
-        else:
-            cfgId = QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
-            if KConfigDialog.showDialog(cfgId):
-                return
-            self.nullManager = KConfigSkeleton()
-            self.dlg = KConfigDialog(None, cfgId, self.nullManager)
-            self.dlg.setFaceType(KPageDialog.Auto)
-            self.dlg.setWindowTitle(i18nc('@title:window', '%1 Settings', self.applet.name()))
-            self.dlg.setAttribute(Qt.WA_DeleteOnClose, True)
-            self.dlg.showButton(KDialog.Apply, False)
-            self.connect(self.dlg, SIGNAL('finished()'), self.nullManager, SLOT('deleteLater()'))
+        if isKDEVersion(4,3,74):
+            Applet.showConfigurationInterface(self)
+            return
 
-        self.connect(self.dlg, SIGNAL('applyClicked()'), self, SLOT('configAccepted()'))
-        self.connect(self.dlg, SIGNAL('okClicked()'), self, SLOT('configAccepted()'))
+        # KDE 4.3
+        cfgId = QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
+        if KConfigDialog.showDialog(cfgId):
+            return
+        self.nullManager = KConfigSkeleton()
+        self.dlg = KConfigDialog(None, cfgId, self.nullManager)
+        self.dlg.setFaceType(KPageDialog.Auto)
+        self.dlg.setWindowTitle(i18nc('@title:window', '%1 Settings', self.applet.name()))
+        self.dlg.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.dlg.showButton(KDialog.Apply, False)
+        self.connect(self.dlg, SIGNAL('finished()'), self.nullManager, SLOT('deleteLater()'))
 
+        self.createConfigurationInterface(self, self.dlg)
+        self.dlg.show()
+
+    def createConfigurationInterface(self, dlg):
+        # KDE 4.4
         self.configPage = ConfigPage(None, self.applet)
         self.configPage.setData(self.cfg)
+        dlg.addPage(self.configPage, i18n('General'), 'applications-utilities')
 
-        current = self.dlg.currentPage()
-        if current:
-            pageItem = self.dlg.insertPage(current, self.configPage, i18n('General'))
-        else:
-            pageItem = self.dlg.addPage(self.configPage, i18n('General'))
-        pageItem.setIcon(KIcon('applications-utilities'))
-        self.dlg.setCurrentPage(pageItem)
-        self.dlg.show()
+        self.connect(dlg, SIGNAL('applyClicked()'), self, SLOT('configAccepted()'))
+        self.connect(dlg, SIGNAL('okClicked()'), self, SLOT('configAccepted()'))
 
     def constraintsEvent(self, constraints):
         if constraints & Plasma.FormFactorConstraint:
