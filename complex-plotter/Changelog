@@ -1,3 +1,11 @@
+2009-11-12  Version 0.9
+  * Fix background color and svg
+  * Fix network data has sometimes invalid negative values
+  * Fix plotter scale
+  * Fix items get hidden when up/down pressed
+  * Value labels on top of plotter (KDE 4.4)
+  * Configurable header font (KDE 4.4)
+
 2009-10-19  Version 0.8
   * Panel support
 
