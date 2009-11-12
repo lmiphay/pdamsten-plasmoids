@@ -309,11 +309,11 @@ class Rocking(Applet):
 
     def associateWidgets(self):
         if self.controller != None and self.bar != None:
-            self.controller.associateWidget(self.positionWidget, 'seek');
-            self.controller.associateWidget(self.volumeWidget, 'volume');
-            self.controller.associateWidget(self.prev, 'previous');
-            self.controller.associateWidget(self.next, 'next');
-            self.controller.associateWidget(self.stop, 'stop');
+            self.controller.associateWidget(self.positionWidget, 'seek')
+            self.controller.associateWidget(self.volumeWidget, 'volume')
+            self.controller.associateWidget(self.prev, 'previous')
+            self.controller.associateWidget(self.next, 'next')
+            self.controller.associateWidget(self.stop, 'stop')
             self.checkPlayPause()
 
     def connectToEngine(self):
@@ -371,15 +371,15 @@ class Rocking(Applet):
         if self.controller == None:
             return
         operation = self.controller.operationDescription('seek')
-        operation.writeEntry('seconds', QVariant(value));
-        self.controller.startOperationCall(operation);
+        operation.writeEntry('seconds', QVariant(value))
+        self.controller.startOperationCall(operation)
 
     def volumeChanged(self, value):
         if self.controller == None:
             return
         operation = self.controller.operationDescription('volume')
-        operation.writeEntry('level', QVariant(F(value) / 1000.0));
-        self.controller.startOperationCall(operation);
+        operation.writeEntry('level', QVariant(F(value) / 1000.0))
+        self.controller.startOperationCall(operation)
 
     def constraintsEvent(self, constraints):
         #print ('main.py constraintsEvent')
@@ -395,10 +395,10 @@ class Rocking(Applet):
         if self.controller == None or self.bar == None:
             return
         if self.state == Rocking.Playing:
-            self.controller.associateWidget(self.play, 'pause');
+            self.controller.associateWidget(self.play, 'pause')
             self.play.setPrefix('pause')
         else:
-            self.controller.associateWidget(self.play, 'play');
+            self.controller.associateWidget(self.play, 'play')
             self.play.setPrefix('play')
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
