@@ -235,7 +235,7 @@ class ConfigPage(QWidget, UiHelper):
         else:
             parent = item.parent()
             items = parent.takeRow(index.row())
-            parent.insertRow(index.row() + dir, items)
+            parent.insertRow(index.row() + direction, items)
         self.selectAndScroll(items[0])
 
     def selectAndScroll(self, item):
