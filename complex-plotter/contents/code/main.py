@@ -36,10 +36,9 @@ class ComplexPlotter(Applet):
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
         self.cfg = {}
-        self.sources = {}
-        self.plotterData = {}
         self.halfSecondSource = {}
         self.keepAlive = False
+        self.plotters = {}
 
     def init(self):
         # To find ui files from package dir
@@ -127,8 +126,6 @@ class ComplexPlotter(Applet):
         return result
 
     def createPlotters(self):
-        self.sources.clear()
-        self.plotterData.clear()
         layout = self.applet.layout()
         if layout is None:
             layout = QGraphicsLinearLayout(Qt.Vertical, self.applet)
@@ -151,7 +148,7 @@ class ComplexPlotter(Applet):
                 f.fromString(cfg['headerfont'])
                 h.setFont(f)
             layout.addItem(h)
-        self.plotters = {}
+        self.plotters.clear()
         for plotter in self.cfg['plotters']:
             p = ComplexPlotterWidget(self.applet, plotter, self.cfg['plotterheader'])
             for source in p.sources().values():
