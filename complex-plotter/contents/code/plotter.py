@@ -43,6 +43,7 @@ class PlotterDialog(KDialog, UiHelper):
         self.connect(self.valueFormatEdit, SIGNAL('textChanged(const QString&)'), self.setExample)
         self.connect(self.valueLabelFont, SIGNAL('fontSelected(const QFont&)'), self.setExample)
         self.enableItems()
+        self.bgSvgCombo.comboBox().addItem(i18n('Default'))
 
     def setData(self, data):
         interval = data['interval']
@@ -68,8 +69,10 @@ class PlotterDialog(KDialog, UiHelper):
             self.bgColorCombo.setColor(QColor(data['bgcolor']))
         else:
             self.backgroundCombo.setCurrentIndex(2)
-            self.bgSvgCombo.setText(data['bgsvg'])
-        self.bgSvgCombo.comboBox().addItem(i18n('Default'))
+            if data['bgsvg'] == u'widgets/plot-background':
+                self.bgSvgCombo.comboBox().setCurrentIndex(0)
+            else:
+                self.bgSvgCombo.setText(data['bgsvg'])
         self.stackCheck.setChecked(data['stack'])
         self.autorangeCheck.setChecked(data['autorange'])
         self.maxEdit.setText(U(data['max']))
@@ -105,8 +108,12 @@ class PlotterDialog(KDialog, UiHelper):
         data['bgsvg'] = u''
         if self.backgroundCombo.currentIndex() == 1:
             data['bgcolor'] = U(self.bgColorCombo)
-        elif self.backgroundCombo.currentIndex() == 1:
-            data['bgsvg'] = U(self.bgSvgCombo)
+        elif self.backgroundCombo.currentIndex() == 2:
+            if self.bgSvgCombo.comboBox().currentIndex() == 0:
+                s = u'widgets/plot-background'
+            else:
+                s = U(self.bgSvgCombo)
+            data['bgsvg'] = s
         data['stack'] = self.stackCheck.isChecked()
         data['autorange'] = self.autorangeCheck.isChecked()
         data['max'] = F(self.maxEdit)

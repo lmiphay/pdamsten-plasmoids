@@ -55,12 +55,16 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.plotter.setFont(f)
         self.plotter.setFontColor(QColor(self.cfg['fontcolor']))
         self.plotter.setShowTopBar(self.cfg['topbar'])
-        if len(self.cfg['bgcolor']) != 0:
+        if len(self.cfg['bgcolor']) > 0:
+            self.plotter.setSvgBackground('')
             self.plotter.setBackgroundColor(QColor(self.cfg['bgcolor']))
-        elif QFile.exists(self.cfg['bgsvg']):
+        elif len(self.cfg['bgsvg']) > 0:
             self.plotter.setSvgBackground(self.cfg['bgsvg'])
         else:
-            self.plotter.setSvgBackground('widgets/plot-background')
+            color = QColor()
+            color.setAlpha(0)
+            self.plotter.setBackgroundColor(color)
+            self.plotter.setSvgBackground('')
         self.plotter.setStackPlots(self.cfg['stack'])
         self.plotter.setVerticalRange(self.cfg['min'], self.cfg['max'])
         self.plotter.setUseAutoRange(self.cfg['autorange'])
