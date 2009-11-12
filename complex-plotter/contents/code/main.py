@@ -207,7 +207,7 @@ class ComplexPlotter(Applet):
         self.dlg.showButton(KDialog.Apply, False)
         self.connect(self.dlg, SIGNAL('finished()'), self.nullManager, SLOT('deleteLater()'))
 
-        self.createConfigurationInterface(self, self.dlg)
+        self.createConfigurationInterface(self.dlg)
         self.dlg.show()
 
     def createConfigurationInterface(self, dlg):
