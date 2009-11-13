@@ -198,6 +198,9 @@ class Rocking(Applet):
             self.cover.setImage(self.logo)
 
         self.layout.invalidate()
+        (left, top, right, bottom) = self.getContentsMargins()
+        margins = QSizeF(left + right, top + bottom)
+        self.setMinimumSize(self.layout.minimumSize() + margins)
 
     def createButtonBar(self):
         # Button bar
