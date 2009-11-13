@@ -1,3 +1,7 @@
+2009-11-13  Version 0.10
+  * Set proper minimum size for applet
+  * Hide toolbar when resizing
+
 2009-11-06  Version 0.9
   * German translation. Thanks to Kirilo.
   * Don't use FastTransformation. Users did not like it.
