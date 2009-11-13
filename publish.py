@@ -188,11 +188,15 @@ def readInfo():
     version = origVersion
     return True
 
+def newVersion(version):
+    v = version.split('.')
+    return '%d.%d' % (int(v[0]), int(v[1]) + 1)
+
 def updateVersion():
     global version
 
     print 'Updating version and changelog.'
-    version = str(float(origVersion) + 0.1)
+    version = newVersion(origVersion)
     version = inputWithDefault('New version', version)
     if (origVersion != version):
         # RawConfigParser messes file don't use that for writing
