@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-06 12:50+0200\n"
+"POT-Creation-Date: 2009-11-13 14:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Petri Damstén <damu@iki.fi>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,22 +80,22 @@ msgstr "Logon polku"
 msgid "Make cover &square"
 msgstr "Skaalaa kuva neliöksi"
 
-#: code/main.py:427
+#: code/main.py:433
 msgid "No Player"
 msgstr "Ei Soitinta"
 
-#: code/main.py:437
+#: code/main.py:443
 msgid " (paused)"
 msgstr " (tauko)"
 
-#: code/main.py:439
+#: code/main.py:445
 msgid " (stopped)"
 msgstr " (pysäytetty)"
 
-#: code/main.py:442
+#: code/main.py:448
 msgid "Stopped"
 msgstr "Pysäytetty"
 
-#: code/main.py:444
+#: code/main.py:450
 msgid "N/A"
 msgstr "Ei tiedossa"
