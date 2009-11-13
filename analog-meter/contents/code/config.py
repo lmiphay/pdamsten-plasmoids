@@ -29,20 +29,12 @@ from PyKDE4.kdeui import *
 from add import AddDialog
 from helpers import *
 
-class ConfigDialog(KConfigDialog, UiHelper):
-    def __init__(self, parent, id, applet):
-        UiHelper.__init__(self, 'config.ui')
-        self.nullManager = KConfigSkeleton()
-        KConfigDialog.__init__(self, parent, id, self.nullManager)
+class ConfigPage(QWidget, UiHelper):
+    def __init__(self, parent, applet):
+        QWidget.__init__(self, parent)
+        UiHelper.__init__(self, 'config.ui', self)
 
         self.applet = applet
-        self.connect(self, SIGNAL('finished()'), self.nullManager, SLOT('deleteLater()'))
-        self.setFaceType(KPageDialog.Auto)
-        title = i18nc('@title:window', '%1 Settings', applet.name())
-        self.setWindowTitle(title)
-        self.setAttribute(Qt.WA_DeleteOnClose, True)
-        self.addPage(self.ui, title, 'settings')
-
         palette = self.sourceEdit.palette()
         palette.setColor(QPalette.Disabled, QPalette.Text, \
                 palette.color(QPalette.Active, QPalette.Text))

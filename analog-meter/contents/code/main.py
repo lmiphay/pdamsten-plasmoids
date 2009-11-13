@@ -25,7 +25,7 @@ from PyKDE4.plasma import Plasma
 from PyKDE4.plasmascript import Applet
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
-from config import ConfigDialog
+from config import ConfigPage
 from helpers import *
 
 class AnalogMeter(Applet):
@@ -148,7 +148,7 @@ class AnalogMeter(Applet):
     @pyqtSignature("configAccepted()")
     def configAccepted(self):
         cg = self.config()
-        self.cfg = self.dlg.data()
+        self.cfg = self.configPage.data()
         cg.writeEntry('header', self.cfg['header'])
         cg.writeEntry('autorange', self.cfg['autorange'])
         cg.writeEntry('min', self.cfg['min'])
@@ -160,17 +160,34 @@ class AnalogMeter(Applet):
         self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createMeter()
 
-    def configDialogId(self):
-        return QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
-
     def showConfigurationInterface(self):
-        if KConfigDialog.showDialog(self.configDialogId()):
+        if isKDEVersion(4,3,74):
+            Applet.showConfigurationInterface(self)
             return
-        self.dlg = ConfigDialog(None, self.configDialogId(), self.applet)
-        self.connect(self.dlg, SIGNAL('applyClicked()'), self, SLOT('configAccepted()'))
-        self.connect(self.dlg, SIGNAL('okClicked()'), self, SLOT('configAccepted()'))
-        self.dlg.setData(self.cfg)
+
+        # KDE 4.3
+        cfgId = QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
+        if KConfigDialog.showDialog(cfgId):
+            return
+        self.nullManager = KConfigSkeleton()
+        self.dlg = KConfigDialog(None, cfgId, self.nullManager)
+        self.dlg.setFaceType(KPageDialog.Auto)
+        self.dlg.setWindowTitle(i18nc('@title:window', '%1 Settings', self.applet.name()))
+        self.dlg.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.dlg.showButton(KDialog.Apply, False)
+        self.connect(self.dlg, SIGNAL('finished()'), self.nullManager, SLOT('deleteLater()'))
+
+        self.createConfigurationInterface(self.dlg)
         self.dlg.show()
+
+    def createConfigurationInterface(self, dlg):
+        # KDE 4.4
+        self.configPage = ConfigPage(None, self.applet)
+        self.configPage.setData(self.cfg)
+        dlg.addPage(self.configPage, i18n('General'), 'applications-utilities')
+
+        self.connect(dlg, SIGNAL('applyClicked()'), self, SLOT('configAccepted()'))
+        self.connect(dlg, SIGNAL('okClicked()'), self, SLOT('configAccepted()'))
 
     def constraintsEvent(self, constraints):
         if constraints & Plasma.FormFactorConstraint:
