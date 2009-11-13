@@ -390,6 +390,9 @@ class Rocking(Applet):
             else:
                 self.setAspectRatioMode(Plasma.IgnoreAspectRatio)
                 self.createArtistAndTitle()
+        elif constraints & Plasma.SizeConstraint:
+            # Hide Bar if visible and resizing
+            self.hideBar()
 
     def checkPlayPause(self):
         if self.controller == None or self.bar == None:
@@ -517,7 +520,8 @@ class Rocking(Applet):
         self.bar.fadeIn(Fader.Medium)
 
     def hideBar(self):
-        self.bar.fadeOut(Fader.Medium)
+        if self.bar.isVisible():
+            self.bar.fadeOut(Fader.Medium)
 
     def hoverEnterEvent(self, event):
         if self.connected and self.cover.size().width() > Rocking.ButtonWidth * 9:
