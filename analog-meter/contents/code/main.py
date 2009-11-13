@@ -28,6 +28,9 @@ from PyKDE4.kdeui import *
 from config import ConfigPage
 from helpers import *
 
+MAX=1000000000
+MIN=-1000000000
+
 class AnalogMeter(Applet):
     def __init__(self, parent, args = None):
         Applet.__init__(self, parent)
@@ -104,8 +107,12 @@ class AnalogMeter(Applet):
         self.meter.setLabelColor(1, self.cfg['fontcolor'])
         self.meter.setLabelAlignment(1, Qt.AlignCenter)
         self.meter.setLabelFont(1, self.cfg['font'])
-        self.meter.setMinimum(self.cfg['min'])
-        self.meter.setMaximum(self.cfg['max'])
+        if self.cfg['autorange']:
+            self.meter.setMinimum(MAX)
+            self.meter.setMaximum(MIN)
+        else:
+            self.meter.setMinimum(self.cfg['min'])
+            self.meter.setMaximum(self.cfg['max'])
         layout.addItem(self.meter)
         c = self.cfg['source']
         self.valueName = QString(c['value'])
@@ -134,6 +141,13 @@ class AnalogMeter(Applet):
                     self.meter.setMinimum(F(data[self.minName]))
                 if self.meter.maximum() != F(data[self.maxName]):
                     self.meter.setMaximum(F(data[self.maxName]))
+            elif self.cfg['autorange']:
+                if self.meter.minimum() > F(data[self.valueName]):
+                    self.meter.setMinimum(F(data[self.valueName]))
+                if self.meter.maximum() < F(data[self.valueName]):
+                    self.meter.setMaximum(F(data[self.valueName]))
+                print self.meter.minimum(), self.meter.maximum()
+
             self.meter.setValue(F(data[self.valueName]))
             try:
                 s = self.cfg['header'].format(value = F(data[self.valueName]),
