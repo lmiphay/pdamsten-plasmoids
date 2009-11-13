@@ -46,6 +46,7 @@ class Label(Fader, QGraphicsWidget):
         self._text = text
         if self.isVisible():
             self.startFade(Fader.Slow)
+        self.updateGeometry()
 
     def text(self):
         return self._text
@@ -69,20 +70,16 @@ class Label(Fader, QGraphicsWidget):
         self.update()
 
     def sizeHint(self, which, constraint):
-        if which != Qt.PreferredSize and which != Qt.MinimumSize:
-            hint = QGraphicsWidget.sizeHint(self, which, constraint)
-        else:
+        hint = QGraphicsWidget.sizeHint(self, which, constraint)
+        if which == Qt.PreferredSize or which == Qt.MinimumSize:
             txt = self._text
             if txt == '':
                 txt = u'Äg'
             fm = QFontMetricsF(self.font())
             if not self._tight:
-                hint = fm.boundingRect(txt).size()
+                hint.setHeight(fm.boundingRect(txt).height())
             else:
-                hint = fm.tightBoundingRect(txt).size()
-            if hint.width() < 1:
-                hint = QSizeF(1, 1)
-            #print which, self._text, hint, self._tight, fm.height(), self.font().family()
+                hint.setHeight(fm.tightBoundingRect(txt).height())
         return hint
 
     def paint(self, painter, option, widget = None):
