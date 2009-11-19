@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-19 08:59+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Cyril Brosch <info@cyrilbrosch.net>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Language: de\n"
+
+#: rc.py:3
+msgid "Cover"
+msgstr "Kovrilo"
+
+#: rc.py:6
+msgid "Logo:"
+msgstr "Emblemo:"
+
+#: rc.py:9
+msgid "Keep Aspect Ratio"
+msgstr "Konservu proporciojn"
+
+# Achtung: Durch Aktivieren dieser Funktion wird Now-Rocking ohne aktiven Player unsichtbar sein.
+#: rc.py:12
+msgid ""
+"Warning: when this feature is on you are not able to access now-rocking if "
+"player is not playing (or paused)."
+msgstr ""
+"Atentu: Post ŝalto de ĉi tiu funkcio Now-Rocking nevideblas, se ne estas "
+"muziko."
+
+#: rc.py:15 rc.py:35
+msgid "Visible only when player active"
+msgstr "Nur videbla, se ludilo estas ŝaltita"
+
+#: rc.py:18
+msgid "Artist and Title"
+msgstr "Artisto kaj titolo"
+
+#: rc.py:21
+msgid "&Artist:"
+msgstr "&Artisto:"
+
+#: rc.py:24
+msgid "&Title:"
+msgstr "&Titolo:"
+
+#: rc.py:27
+msgid "Use Capital letters"
+msgstr "Uzu majusklojn"
+
+#: rc.py:29
+msgid "Artist Font"
+msgstr "Tiparo por la artisto"
+
+#: rc.py:31
+msgid "Title Font"
+msgstr "Tiparo por la titolo"
+
+#: rc.py:33
+msgid "Keep aspect ratio"
+msgstr "Konservu proporciojn"
+
+#: rc.py:37
+msgid "Use capital letters for artist and title"
+msgstr "Uzu majusklojn por artisto kaj titolo"
+
+#: rc.py:39
+msgid "Url of the logo"
+msgstr "URL de la emblemo"
+
+#: code/main.py:110
+msgid "Make cover &square"
+msgstr "&Rektangula kovrilo"
+
+#: code/main.py:433
+msgid "No Player"
+msgstr "Neniu ludilo"
+
+#: code/main.py:443
+msgid " (paused)"
+msgstr " (paŭzita)"
+
+#: code/main.py:445
+msgid " (stopped)"
+msgstr " (haltita)"
+
+#: code/main.py:448
+msgid "Stopped"
+msgstr "Haltita"
+
+#: code/main.py:450
+msgid "N/A"
+msgstr "Neaplikebla"
