@@ -69,7 +69,7 @@ plasmoid.loadFinished = function(success)
 plasmoid.formFactorChanged = function()
 {
     //print("formFactorChanged")
-    switch (plasmoid.formFactor()) {
+    switch (plasmoid.formFactor) {
         case Planar:
         case MediaCenter:
             plasmoid.setAspectRatioMode(IgnoreAspectRatio);
