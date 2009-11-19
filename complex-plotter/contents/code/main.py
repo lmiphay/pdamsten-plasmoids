@@ -145,7 +145,7 @@ class ComplexPlotter(Applet):
             h.setText(self.cfg['header'])
             if isKDEVersion(4,3,74):
                 f = QFont()
-                f.fromString(cfg['headerfont'])
+                f.fromString(self.cfg['headerfont'])
                 h.setFont(f)
             layout.addItem(h)
         self.plotters.clear()
