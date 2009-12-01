@@ -150,7 +150,7 @@ class ComplexPlotter(Applet):
             layout.addItem(h)
         self.plotters.clear()
         for plotter in self.cfg['plotters']:
-            p = ComplexPlotterWidget(self.applet, plotter, self.cfg['plotterheader'])
+            p = ComplexPlotterWidget(self.applet, plotter, self.cfg)
             for source in p.sources().values():
                 self.plotters[source['source']] = p
                 if source['dataengine'] == 'systemmonitor':

@@ -26,11 +26,11 @@ from helpers import *
 from string import Formatter
 
 class ComplexPlotterWidget(QGraphicsWidget):
-    def __init__(self, parent, cfg, header):
+    def __init__(self, parent, cfg, maincfg):
         QGraphicsWidget.__init__(self, parent)
+        self.maincfg = maincfg
         self.name = cfg['name']
-        self.header = header
-        self.cfg =  DEFAULTCFG.copy()
+        self.cfg = DEFAULTCFG.copy()
         self.cfg.update(cfg['cfg'])
         self.graphs = cfg['graphs']
         self.setLayout(QGraphicsLinearLayout(Qt.Vertical))
@@ -39,11 +39,11 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.formatter = Formatter()
 
         f = QFont()
-        if self.header:
+        if self.maincfg['header']:
             header = Plasma.Frame(self)
             header.setText(self.name)
             if isKDEVersion(4,3,74):
-                f.fromString(self.cfg['headerfont'])
+                f.fromString(self.maincfg['headerfont'])
                 header.setFont(f)
             self.layout().addItem(header)
 
