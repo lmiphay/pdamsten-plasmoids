@@ -41,11 +41,11 @@ class ComplexPlotterWidget(QGraphicsWidget):
         f = QFont()
         if self.header:
             header = Plasma.Frame(self)
-            header.setText(plotter['name'])
+            header.setText(self.name)
             if isKDEVersion(4,3,74):
                 f.fromString(self.cfg['headerfont'])
                 header.setFont(f)
-            layout().addItem(header)
+            self.layout().addItem(header)
 
         self.plotter = Plasma.SignalPlotter(self)
         self.plotter.setTitle(self.name)
