@@ -39,7 +39,7 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.formatter = Formatter()
 
         f = QFont()
-        if self.maincfg['header']:
+        if self.maincfg['plotterheader']:
             header = Plasma.Frame(self)
             header.setText(self.name)
             if isKDEVersion(4,3,74):
