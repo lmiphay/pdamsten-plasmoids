@@ -1,3 +1,6 @@
+2009-12-01  Version 0.10
+  * Fix plotter headers
+
 2009-11-12  Version 0.9
   * Fix background color and svg
   * Fix network data has sometimes invalid negative values
