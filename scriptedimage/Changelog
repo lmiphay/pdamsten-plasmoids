@@ -1,3 +1,6 @@
+2009-12-20  Version 0.9
+  * Fix multiple instances of scripted image
+
 2009-09-27  Version 0.8
   * Add combobox to select background type
   * Add fi translation
