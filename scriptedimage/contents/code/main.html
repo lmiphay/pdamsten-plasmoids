@@ -33,6 +33,8 @@ var g_interval = -1;
 var g_intervalUnit = -1;
 var g_img;
 var g_src = "";
+var g_kde44 = false;
+var g_plasmoid;
 
 function init()
 {
@@ -40,6 +42,12 @@ function init()
     g_img = new Image();
     g_img.onload = widhtHeightReady;
 
+    if (typeof window.plasmoid == 'object') {
+        g_plasmoid = window.plasmoid;
+        g_kde44 = true;
+    } else {
+        g_plasmoid = window.applet;
+    }
     configChanged();
     constraintsEvent(FormFactorConstraint);
 }
@@ -47,9 +55,8 @@ function init()
 function connectEngine()
 {
     //alert("connectEngine")
-    if (typeof window.applet.setBusy == 'function') {
-        // KDE 4.4
-        window.applet.setBusy(true);
+    if (g_kde44) {
+        g_plasmoid.setBusy(true);
     }
     var script = g_script.replace("file://", "");
     var interval;
@@ -66,10 +73,10 @@ function connectEngine()
             break;
     }
     if (g_useScript) {
-        var engine = window.applet.dataEngine("executable");
+        var engine = g_plasmoid.dataEngine("executable");
         engine.connectSource(script, interval * 1000);
     } else  {
-        var engine = window.applet.dataEngine("time");
+        var engine = g_plasmoid.dataEngine("time");
         engine.connectSource("Local", interval * 1000);
     }
 }
@@ -78,14 +85,14 @@ function constraintsEvent(constraints)
 {
     //alert("constraintsEvent")
     if (constraints & FormFactorConstraint) {
-        switch (window.applet.formFactor) {
+        switch (g_plasmoid.formFactor) {
             case Planar:
             case MediaCenter:
-                window.applet.setAspectRatioMode(IgnoreAspectRatio);
+                g_plasmoid.setAspectRatioMode(IgnoreAspectRatio);
                 break;
             case Horizontal:
             case Vertical:
-                window.applet.setAspectRatioMode(Square);
+                g_plasmoid.setAspectRatioMode(Square);
                 break;
         }
     } else if (constraints & SizeConstraint) {
@@ -127,15 +134,14 @@ function widhtHeightReady()
 function updateImage()
 {
     //alert("updateImage")
-    if (typeof window.applet.setBusy == 'function') {
-        // KDE 4.4
-        window.applet.setBusy(false);
+    if (g_kde44) {
+        g_plasmoid.setBusy(false);
     }
     if (g_img.width == 0 || g_img.height == 0) {
         return;
     }
-    var size = window.applet.size();
-    var margins = window.applet.getContentsMargins();
+    var size = g_plasmoid.size();
+    var margins = g_plasmoid.getContentsMargins();
     var w = size[size_width] - margins[margin_left] - margins[margin_right];
     var h = size[size_height] - margins[margin_top] - margins[margin_bottom];
     switch (g_scaling) {
@@ -163,7 +169,7 @@ function updateImage()
             document.getElementById('image').height = g_img.height;
             w = g_img.width + margins[margin_left] + margins[margin_right];
             h = g_img.height + margins[margin_top] + margins[margin_bottom];
-            window.applet.resize(w, h);
+            g_plasmoid.resize(w, h);
             break;
     }
     //alert(g_img.src)
@@ -173,37 +179,37 @@ function updateImage()
 function configChanged()
 {
     //alert("configChanged")
-    var cfg = window.applet.config();
+    var cfg = g_plasmoid.config();
     g_useScript = cfg.readEntry("imageScriptRadio", false);
     g_script = cfg.readEntry("imageScript", "");
     g_image = cfg.readEntry("imageUrl", "");
     g_scaling = cfg.readEntry("scaling", 0);
     g_interval = cfg.readEntry("interval", 0);
     g_intervalUnit = cfg.readEntry("intervalUnit", 1);
-    window.applet.setBackgroundHints(cfg.readEntry("backgroundHint", 1));
+    g_plasmoid.setBackgroundHints(cfg.readEntry("backgroundHint", 1));
 
     switch (g_scaling) {
         case 0: // No scaling
-            window.applet.setScrollBarPolicy(Vertical, ScrollBarAsNeeded);
-            window.applet.setScrollBarPolicy(Horizontal, ScrollBarAsNeeded);
-            window.applet.setAspectRatioMode(IgnoreAspectRatio);
+            g_plasmoid.setScrollBarPolicy(Vertical, ScrollBarAsNeeded);
+            g_plasmoid.setScrollBarPolicy(Horizontal, ScrollBarAsNeeded);
+            g_plasmoid.setAspectRatioMode(IgnoreAspectRatio);
             break;
         case 1: // Scale content to applet
         case 2: // Scale content to applet, keep aspect ratio
-            window.applet.setScrollBarPolicy(Vertical, ScrollBarAlwaysOff);
-            window.applet.setScrollBarPolicy(Horizontal, ScrollBarAlwaysOff);
-            window.applet.setAspectRatioMode(IgnoreAspectRatio);
+            g_plasmoid.setScrollBarPolicy(Vertical, ScrollBarAlwaysOff);
+            g_plasmoid.setScrollBarPolicy(Horizontal, ScrollBarAlwaysOff);
+            g_plasmoid.setAspectRatioMode(IgnoreAspectRatio);
             break;
         case 3: // Scale applet to content
-            window.applet.setScrollBarPolicy(Vertical, ScrollBarAlwaysOff);
-            window.applet.setScrollBarPolicy(Horizontal, ScrollBarAlwaysOff);
-            window.applet.setAspectRatioMode(FixedSize);
+            g_plasmoid.setScrollBarPolicy(Vertical, ScrollBarAlwaysOff);
+            g_plasmoid.setScrollBarPolicy(Horizontal, ScrollBarAlwaysOff);
+            g_plasmoid.setAspectRatioMode(FixedSize);
             break;
     }
     if ((g_useScript && g_script == "") || (!g_useScript && g_image == "")) {
-        window.applet.setConfigurationRequired(true);
+        g_plasmoid.setConfigurationRequired(true);
     } else {
-        window.applet.setConfigurationRequired(false);
+        g_plasmoid.setConfigurationRequired(false);
         connectEngine();
     }
 }
