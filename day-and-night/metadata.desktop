@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Day and Night
+Comment=Day and Night Wallpaper
+Type=Service
+Icon=weather-clear-night
+
+X-KDE-ServiceTypes=Plasma/Wallpaper
+X-KDE-PluginInfo-Author=Petri Damstén
+X-KDE-PluginInfo-Email=damu@iki.fi
+X-KDE-PluginInfo-Name=day-and-night
+X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-Website=http://www.kde-look.org/
+X-KDE-PluginInfo-Depends=
+X-KDE-PluginInfo-License=GPLv2+
+X-KDE-PluginInfo-EnabledByDefault=true
+X-Plasma-API=python
+X-Plasma-MainScript=code/main.py
