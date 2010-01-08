@@ -254,6 +254,9 @@ class DayAndNight(Wallpaper):
         self.dayModel.reload(self.usersWallpapers)
         delegate = BackgroundDelegate(ratio, self)
         ui.dayCombo.setItemDelegate(delegate)
+        index = self.dayModel.indexOf(self.dayWallpaper)
+        if index.isValid():
+            ui.dayCombo.setCurrentIndex(index.row())
         self.connect(ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
 
         self.nightModel = BackgroundListModel(ratio, self.wallpaper, self)
@@ -263,6 +266,9 @@ class DayAndNight(Wallpaper):
         self.nightModel.reload(self.usersWallpapers)
         delegate = BackgroundDelegate(ratio, self)
         ui.nightCombo.setItemDelegate(delegate)
+        index = self.nightModel.indexOf(self.nightWallpaper)
+        if index.isValid():
+            ui.nightCombo.setCurrentIndex(index.row())
         self.connect(ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
 
         ui.openButton.setIcon(KIcon('document-open'));

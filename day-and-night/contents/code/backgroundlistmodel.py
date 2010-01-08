@@ -180,7 +180,7 @@ class BackgroundListModel(QAbstractListModel):
             self.endInsertRows()
 
     def indexOf(self, path):
-        for p in self.packages:
+        for i, p in enumerate(self.packages):
             # packages will end with a '/', but the path passed in may not
             package = p.path()
 
@@ -192,7 +192,7 @@ class BackgroundListModel(QAbstractListModel):
                 # package.path does not contain the actual file name
                 if ((not self.packages[i].structure().contentsPrefix().isEmpty()) or
                     (path == self.packages[i].filePath('preferred'))):
-                    return index(i, 0)
+                    return self.index(i, 0)
         return QModelIndex()
 
     def contains(self, path):
