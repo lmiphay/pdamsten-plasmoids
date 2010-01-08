@@ -39,6 +39,7 @@ from backgroundlistmodel import BackgroundListModel
 from backgrounddelegate import BackgroundDelegate
 
 class DayAndNight(Wallpaper):
+    UPDATE_INTERVAL = 1.0 # minutes
     NoRendering, Day, Twilight, Night = (0, 1, 2, 4)
 
     def __init__(self, parent, args = None):
@@ -102,7 +103,7 @@ class DayAndNight(Wallpaper):
             print self.elevation
             # DEBUG self.elevation = -3.0
             timeOfDay = self.timeOfDay()
-            if timeOfDay != self.lastTimeOfDay:
+            if timeOfDay == self.Twilight or timeOfDay != self.lastTimeOfDay:
                 self.lastTimeOfDay = timeOfDay
                 self.update(self.boundingRect())
         else:
@@ -333,7 +334,7 @@ class DayAndNight(Wallpaper):
         if self.source != '':
             engine.disconnectSource(self.source, self)
         self.source = 'Local|Solar|Latitude=%f|Longitude=%f' % (self.latitude, self.longitude)
-        engine.connectSource(self.source, self, 5 * 60 * 1000)
+        engine.connectSource(self.source, self, int(self.UPDATE_INTERVAL * 60 * 1000))
 
     def dayWallpaperChanged(self, row):
         self.dayWallpaper = self.dayModel.data(self.dayModel.index(row, 0), \
