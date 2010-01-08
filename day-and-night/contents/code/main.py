@@ -75,9 +75,13 @@ class DayAndNight(Wallpaper):
         self.nightWallpaper = self.checkIfEmpty(config.readEntry('nightwallpaper', \
                 '').toString())
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
-        self.longitude = config.readEntry('longitude', 0.0).toDouble()[0]
-        self.latitude = config.readEntry('latitude', 0.0).toDouble()[0]
-        self.longitudeLatitudeEditingFinished()
+        self.longitude = config.readEntry('longitude', 100.0).toDouble()[0]
+        self.latitude = config.readEntry('latitude', 100.0).toDouble()[0]
+        if self.latitude > 90.0 or self.longitude > 90.0:
+            engine = self.dataEngine('geolocation')
+            engine.connectSource('location', self)
+        else:
+            self.longitudeLatitudeEditingFinished()
 
     def save(self, config):
         print '### save'
@@ -93,13 +97,23 @@ class DayAndNight(Wallpaper):
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
         print '### dataUpdated',
-        self.elevation = data[QString(u'Corrected Elevation')]
-        print self.elevation
-        # DEBUG self.elevation = -3.0
-        timeOfDay = self.timeOfDay()
-        if timeOfDay != self.lastTimeOfDay:
-            self.lastTimeOfDay = timeOfDay
-            self.update(self.boundingRect())
+        if QString(u'Corrected Elevation') in data:
+            self.elevation = data[QString(u'Corrected Elevation')]
+            print self.elevation
+            # DEBUG self.elevation = -3.0
+            timeOfDay = self.timeOfDay()
+            if timeOfDay != self.lastTimeOfDay:
+                self.lastTimeOfDay = timeOfDay
+                self.update(self.boundingRect())
+        else:
+            try:
+                print data[QString(u'latitude')], data[QString(u'longitude')]
+                self.latitude = float(data[QString(u'latitude')])
+                self.longitude = float(data[QString(u'longitude')])
+            except:
+                self.latitude = 0.0
+                self.longitude = 0.0
+            self.longitudeLatitudeEditingFinished()
 
     def checkIfEmpty(self, wallpaper):
         if wallpaper.isEmpty():
