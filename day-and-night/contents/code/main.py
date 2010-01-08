@@ -58,6 +58,7 @@ class DayAndNight(Wallpaper):
         self.newStuffDialog = None
         self.fileDialog = None
         self.widget = None
+        self.source = ''
 
     def init(self, config):
         print '### init',
@@ -76,8 +77,7 @@ class DayAndNight(Wallpaper):
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
         self.longitude = config.readEntry('longitude', 0.0).toDouble()[0]
         self.latitude = config.readEntry('latitude', 0.0).toDouble()[0]
-        self.dataEngine('time').connectSource('Local|Solar|Latitude=%f|Longitude=%f' % \
-                (self.latitude, self.longitude), self, 5 * 60 * 1000)
+        self.longitudeLatitudeEditingFinished()
 
     def save(self, config):
         print '### save'
@@ -242,6 +242,16 @@ class DayAndNight(Wallpaper):
         ui.colorButton.setColor(self.color)
         self.connect(ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
 
+        ui.latitudeEdit.setText(str(self.latitude))
+        self.connect(ui.latitudeEdit, SIGNAL('textChanged(const QString&)'), self.latitudeChanged)
+        self.connect(ui.latitudeEdit, SIGNAL('editingFinished()'), \
+                self.longitudeLatitudeEditingFinished)
+
+        ui.longitudeEdit.setText(str(self.longitude))
+        self.connect(ui.longitudeEdit, SIGNAL('textChanged(const QString&)'), self.longitudeChanged)
+        self.connect(ui.longitudeEdit, SIGNAL('editingFinished()'), \
+                self.longitudeLatitudeEditingFinished)
+
         if self.size.isEmpty():
             ratio = 1.0
         else:
@@ -297,6 +307,19 @@ class DayAndNight(Wallpaper):
     def colorChanged(self, color):
         self.color = color
         self.fullUpdate()
+
+    def latitudeChanged(self, txt):
+        self.latitude = float(txt)
+
+    def longitudeChanged(self, txt):
+        self.longitude = float(txt)
+
+    def longitudeLatitudeEditingFinished(self):
+        engine = self.dataEngine('time')
+        if self.source != '':
+            engine.disconnectSource(self.source, self)
+        self.source = 'Local|Solar|Latitude=%f|Longitude=%f' % (self.latitude, self.longitude)
+        engine.connectSource(self.source, self, 5 * 60 * 1000)
 
     def dayWallpaperChanged(self, row):
         self.dayWallpaper = self.dayModel.data(self.dayModel.index(row, 0), \
