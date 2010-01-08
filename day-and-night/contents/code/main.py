@@ -39,8 +39,9 @@ from backgroundlistmodel import BackgroundListModel
 from backgrounddelegate import BackgroundDelegate
 
 class DayAndNight(Wallpaper):
-    UPDATE_INTERVAL = 1.0 # minutes
+    UpdateInterval = 1.0 # minutes
     NoRendering, Day, Twilight, Night = (0, 1, 2, 4)
+    DayAngle, NightAngle = (50.0 / 60.0, -6.0)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
@@ -101,7 +102,8 @@ class DayAndNight(Wallpaper):
         if QString(u'Corrected Elevation') in data:
             self.elevation = data[QString(u'Corrected Elevation')]
             print self.elevation
-            # DEBUG self.elevation = -3.0
+            # DEBUG
+            self.elevation = -3.0
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Twilight or timeOfDay != self.lastTimeOfDay:
                 self.lastTimeOfDay = timeOfDay
@@ -132,9 +134,9 @@ class DayAndNight(Wallpaper):
             self.dayModel.setWallpaperSize(self.size)
 
     def timeOfDay(self):
-        if self.elevation > 5.0 / 6.0:
+        if self.elevation > self.DayAngle:
             return self.Day
-        elif self.elevation > -6.0:
+        elif self.elevation > self.NightAngle:
             return self.Twilight
         else:
             return self.Night
@@ -144,7 +146,7 @@ class DayAndNight(Wallpaper):
         day = False
         night = False
 
-        if self.elevation:
+        if self.elevation != None:
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Day:
                 if self.dayPixmap:
@@ -153,7 +155,8 @@ class DayAndNight(Wallpaper):
                     day = True
             elif timeOfDay == self.Twilight:
                 if self.nightPixmap and self.dayPixmap:
-                    n = (self.elevation + 6.0) / (6.0 + (5.0 / 6.0))
+                    nightAngle = abs(self.NightAngle)
+                    n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
                     p = Plasma.PaintUtils.transition(self.nightPixmap, self.dayPixmap, n)
                     self.paintPixmap(painter, exposedRect, p)
                 else:
@@ -217,7 +220,7 @@ class DayAndNight(Wallpaper):
         self.setWallpaperPath(job.destUrl().toLocalFile())
 
     def setWallpaperPath(self, path):
-        if self.elevation > -3.0:
+        if self.elevation > (self.NightAngle + self.DayAngle) / 2.0:
             self.dayWallpaper = path
             self.dayPixmap = None
         else:
@@ -334,7 +337,7 @@ class DayAndNight(Wallpaper):
         if self.source != '':
             engine.disconnectSource(self.source, self)
         self.source = 'Local|Solar|Latitude=%f|Longitude=%f' % (self.latitude, self.longitude)
-        engine.connectSource(self.source, self, int(self.UPDATE_INTERVAL * 60 * 1000))
+        engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
 
     def dayWallpaperChanged(self, row):
         self.dayWallpaper = self.dayModel.data(self.dayModel.index(row, 0), \
@@ -398,4 +401,3 @@ class DayAndNight(Wallpaper):
 
 def CreateWallpaper(parent):
     return DayAndNight(parent)
-
