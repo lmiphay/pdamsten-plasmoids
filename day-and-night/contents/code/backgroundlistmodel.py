@@ -288,8 +288,8 @@ class BackgroundListModel(QAbstractListModel):
             return
 
         self.previews[b] = preview
-        # TODO signal ??
-        #self.listener.updateScreenshot(index)
+        self.emit(SIGNAL('dataChanged(const QModelIndex&, const QModelIndex&)'), \
+                QModelIndex(index), QModelIndex(index))
 
     def previewFailed(self, item):
         del self.previewJobs[item.url().prettyUrl()]
