@@ -37,7 +37,7 @@ from backgroundlistmodel import BackgroundListModel
 from backgrounddelegate import BackgroundDelegate
 
 class DayAndNight(Wallpaper):
-    NoRendering, Day, Night = (0, 1, 2)
+    NoRendering, Day, Twilight, Night = (0, 1, 2, 4)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
@@ -50,8 +50,9 @@ class DayAndNight(Wallpaper):
         self.usersWallpapers = None
         self.dayModel = None
         self.nightModel = None
-        self.elevation = 90.0
+        self.elevation = None
         self.rendering = self.NoRendering
+        self.lastTimeOfDay = None
 
     def init(self, config):
         print '### init',
@@ -68,6 +69,10 @@ class DayAndNight(Wallpaper):
         self.nightWallpaper = self.checkIfEmpty(config.readEntry('nightwallpaper', \
                 QString()).toString())
         self.usersWallpapers = config.readEntry("userswallpapers", QStringList()).toStringList()
+        self.longitude = config.readEntry("longitude", 0.0).toDouble()[0]
+        self.latitude = config.readEntry("latitude", 0.0).toDouble()[0]
+        self.dataEngine('time').connectSource('Local|Solar|Latitude=%f|Longitude=%f' % \
+                (self.latitude, self.longitude), self, 5 * 60 * 1000)
 
     def save(self, config):
         print '### save'
@@ -76,6 +81,18 @@ class DayAndNight(Wallpaper):
         config.writeEntry('daywallpaper',self.dayWallpaper)
         config.writeEntry('nightwallpaper',self.nightWallpaper)
         config.writeEntry("userswallpapers", self.usersWallpapers)
+        config.writeEntry("longitude", self.longitude)
+        config.writeEntry("latitude", self.latitude)
+
+    @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
+    def dataUpdated(self, sourceName, data):
+        print '### dataUpdated',
+        self.elevation = data[QString(u'Corrected Elevation')]
+        print self.elevation
+        timeOfDay = self.timeOfDay()
+        if timeOfDay != self.lastTimeOfDay:
+            self.lastTimeOfDay = timeOfDay
+            self.update(self.boundingRect())
 
     def checkIfEmpty(self, wallpaper):
         if wallpaper.isEmpty():
@@ -92,37 +109,47 @@ class DayAndNight(Wallpaper):
         if self.nightModel:
             self.dayModel.setWallpaperSize(self.size)
 
+    def timeOfDay(self):
+        if self.elevation > 5.0 / 6.0:
+            return self.Day
+        elif self.elevation > -6.0:
+            return self.Twilight
+        else:
+            return self.Night
+
     def paint(self, painter, exposedRect):
         print '### paint'
         day = False
         night = False
 
-        if self.elevation > 5.0 / 6.0: # Day
-            if self.dayPixmap:
-                self.paintPixmap(painter, exposedRect, self.dayPixmap)
-            else:
-                day = True
-        elif self.elevation > -6.0: # Twilight
-            if self.nightPixmap and self.dayPixmap:
-                self.paintPixmap(painter, exposedRect, self.dayPixmap)
-                # TODO faded night
-            else:
-                if not self.nightPixmap:
-                    night = True
-                if not self.dayPixmap:
+        if self.elevation:
+            timeOfDay = self.timeOfDay()
+            if timeOfDay == self.Day:
+                if self.dayPixmap:
+                    self.paintPixmap(painter, exposedRect, self.dayPixmap)
+                else:
                     day = True
-        else: # Night
-            if self.nightPixmap:
-                self.paintPixmap(painter, exposedRect, self.nightPixmap)
-            else:
-                night = True
+            elif timeOfDay == self.Twilight:
+                if self.nightPixmap and self.dayPixmap:
+                    self.paintPixmap(painter, exposedRect, self.dayPixmap)
+                    # TODO faded night
+                else:
+                    if not self.nightPixmap:
+                        night = True
+                    if not self.dayPixmap:
+                        day = True
+            else: # Night
+                if self.nightPixmap:
+                    self.paintPixmap(painter, exposedRect, self.nightPixmap)
+                else:
+                    night = True
 
-        if day or night:
+        if day or night or not self.elevation:
             painter.fillRect(exposedRect, self.color)
-            if day:
+            if day and not self.rendering & self.Day:
                 self.rendering |= self.Day
                 self.renderWallpaper(self.dayWallpaper)
-            if night:
+            if night and not self.rendering & self.Night:
                 self.rendering |= self.Night
                 if not day:
                     self.renderWallpaper(self.nightWallpaper)
@@ -151,7 +178,7 @@ class DayAndNight(Wallpaper):
 
         if img.isEmpty():
             img = wallpaper
-
+        print img, self.rendering
         self.render(img, self.size, self.method, self.color)
 
     def fileDropped(self, url):
@@ -180,7 +207,7 @@ class DayAndNight(Wallpaper):
             self.usersWallpapers.append(path)
 
     def renderCompleted(self, image):
-        print '### renderCompleted', image.size()
+        print '### renderCompleted', image.size(), self.rendering
         if self.rendering & self.Day:
             self.dayPixmap = QPixmap(image)
             self.rendering &= ~self.Day
