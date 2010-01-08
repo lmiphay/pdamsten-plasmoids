@@ -33,7 +33,7 @@ def qBound(minValue, value, maxValue):
 
 
 class BackgroundDelegate(QAbstractItemDelegate):
-    AuthorRole, ScreenshotRole, ResolutionRole = range(Qt.UserRole, Qt.UserRole + 3)
+    AuthorRole, ScreenshotRole, ResolutionRole, PathRole = range(Qt.UserRole, Qt.UserRole + 4)
     SCREENSHOT_SIZE = 60
     MARGIN = 5
 
@@ -42,9 +42,10 @@ class BackgroundDelegate(QAbstractItemDelegate):
         self.ratio = ratio
 
     def paint(self, painter, option, index):
-        title = index.model().data(index, Qt.DisplayRole)
-        author = index.model().data(index, self.AuthorRole)
-        resolution = index.model().data(index, self.ResolutionRole)
+        v = index.model().data(index, Qt.DisplayRole)
+        title = index.model().data(index, Qt.DisplayRole).toString()
+        author = index.model().data(index, self.AuthorRole).toString()
+        resolution = index.model().data(index, self.ResolutionRole).toString()
         pix = QPixmap(index.model().data(index, self.ScreenshotRole))
 
         # highlight selected item
@@ -108,7 +109,7 @@ class BackgroundDelegate(QAbstractItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
-        title = index.model().data(index, Qt.DisplayRole)
+        title = index.model().data(index, Qt.DisplayRole).toString()
         maxwidth = int(self.SCREENSHOT_SIZE * self.ratio)
         font = option.font
 

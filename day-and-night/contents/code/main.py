@@ -73,9 +73,9 @@ class DayAndNight(Wallpaper):
                 QString()).toString())
         self.nightWallpaper = self.checkIfEmpty(config.readEntry('nightwallpaper', \
                 QString()).toString())
-        self.usersWallpapers = config.readEntry("userswallpapers", QStringList()).toStringList()
-        self.longitude = config.readEntry("longitude", 0.0).toDouble()[0]
-        self.latitude = config.readEntry("latitude", 0.0).toDouble()[0]
+        self.usersWallpapers = config.readEntry('userswallpapers', QStringList()).toStringList()
+        self.longitude = config.readEntry('longitude', 0.0).toDouble()[0]
+        self.latitude = config.readEntry('latitude', 0.0).toDouble()[0]
         self.dataEngine('time').connectSource('Local|Solar|Latitude=%f|Longitude=%f' % \
                 (self.latitude, self.longitude), self, 5 * 60 * 1000)
 
@@ -85,9 +85,9 @@ class DayAndNight(Wallpaper):
         config.writeEntry('wallpapercolor', self.color)
         config.writeEntry('daywallpaper',self.dayWallpaper)
         config.writeEntry('nightwallpaper',self.nightWallpaper)
-        config.writeEntry("userswallpapers", self.usersWallpapers)
-        config.writeEntry("longitude", self.longitude)
-        config.writeEntry("latitude", self.latitude)
+        config.writeEntry('userswallpapers', self.usersWallpapers)
+        config.writeEntry('longitude', self.longitude)
+        config.writeEntry('latitude', self.latitude)
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
@@ -184,7 +184,6 @@ class DayAndNight(Wallpaper):
 
         if img.isEmpty():
             img = wallpaper
-        print img, self.rendering
         self.render(img, self.size, self.method, self.color)
 
     def fileDropped(self, url):
@@ -192,7 +191,7 @@ class DayAndNight(Wallpaper):
         if url.isLocalFile():
             self.setWallpaperPath(url.toLocalFile())
         else:
-            wallpaperPath = KGlobal.dirs().locateLocal("wallpaper", url.fileName())
+            wallpaperPath = KGlobal.dirs().locateLocal('wallpaper', url.fileName())
             if not wallpaperPath.isEmpty():
                 job = KIO.file_copy(url, KUrl(wallpaperPath))
                 self.connect(job, SIGNAL('result(KJob*)'), self.wallpaperRetrieved)
@@ -233,9 +232,13 @@ class DayAndNight(Wallpaper):
         self.widget = QWidget(parent)
         self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
         ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
+        self.dayCombo = ui.dayCombo
 
         ui.positioningCombo.setCurrentIndex(self.method)
         self.connect(ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
+
+        ui.colorButton.setColor(self.color)
+        self.connect(ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
 
         if self.size.isEmpty():
             ratio = 1.0
@@ -249,6 +252,7 @@ class DayAndNight(Wallpaper):
         self.dayModel.reload(self.usersWallpapers)
         delegate = BackgroundDelegate(ratio, self)
         ui.dayCombo.setItemDelegate(delegate)
+        self.connect(ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
 
         self.nightModel = BackgroundListModel(ratio, self.wallpaper, self)
         ui.nightCombo.setModel(self.nightModel)
@@ -257,14 +261,21 @@ class DayAndNight(Wallpaper):
         self.nightModel.reload(self.usersWallpapers)
         delegate = BackgroundDelegate(ratio, self)
         ui.nightCombo.setItemDelegate(delegate)
+        self.connect(ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
 
-        ui.openButton.setIcon(KIcon("document-open"));
+        ui.openButton.setIcon(KIcon('document-open'));
         self.connect(ui.openButton, SIGNAL('clicked()'), self.showFileDialog)
 
-        ui.getNewButton.setIcon(KIcon("get-hot-new-stuff"));
+        ui.getNewButton.setIcon(KIcon('get-hot-new-stuff'));
         self.connect(ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
 
         return self.widget
+
+    def fullUpdate(self):
+        self.settingsChanged(True)
+        self.dayPixmap = None
+        self.nightPixmap = None
+        self.update(self.boundingRect())
 
     def configWidgetDestroyed(self):
         self.widget = None
@@ -272,17 +283,33 @@ class DayAndNight(Wallpaper):
         self.nightModel = None
 
     def resizeChanged(self, index):
-        print '### resizeChanged'
         self.method = index
+        self.fullUpdate()
+
+    def colorChanged(self, color):
+        self.color = color
+        self.fullUpdate()
+
+    def dayWallpaperChanged(self, row):
+        self.dayWallpaper = self.dayModel.data(self.dayModel.index(row, 0), \
+                BackgroundDelegate.PathRole).toString()
         self.settingsChanged(True)
         self.dayPixmap = None
+        if self.timeOfDay() != self.Night:
+            self.update(self.boundingRect())
+
+    def nightWallpaperChanged(self, row):
+        self.nightWallpaper = self.nightModel.data(self.nightModel.index(row, 0), \
+                BackgroundDelegate.PathRole).toString()
+        self.settingsChanged(True)
         self.nightPixmap = None
-        self.update(self.boundingRect())
+        if self.timeOfDay() != self.Day:
+            self.update(self.boundingRect())
 
     def getNewWallpaper(self):
         # TODO not yet in pykde4 bindings
         if not self.newStuffDialog:
-            self.newStuffDialog = KNS3.DownloadDialog("wallpaper.knsrc", self.widget)
+            self.newStuffDialog = KNS3.DownloadDialog('wallpaper.knsrc', self.widget)
             self.connect(self.newStuffDialog, SIGNAL('accepted()'), self.newStuffFinished)
         self.newStuffDialog.show()
 
@@ -293,11 +320,11 @@ class DayAndNight(Wallpaper):
 
     def showFileDialog(self):
         if not self.fileDialog:
-            self.fileDialog = KFileDialog(KUrl(), "*.png *.jpeg *.jpg *.xcf *.svg *.svgz", \
+            self.fileDialog = KFileDialog(KUrl(), '*.png *.jpeg *.jpg *.xcf *.svg *.svgz', \
                     self.widget)
             self.fileDialog.setOperationMode(KFileDialog.Opening)
             self.fileDialog.setInlinePreviewShown(True)
-            self.fileDialog.setCaption(i18n("Select Wallpaper Image File"))
+            self.fileDialog.setCaption(i18n('Select Wallpaper Image File'))
             self.fileDialog.setModal(False)
             self.connect(self.fileDialog, SIGNAL('okClicked()'), self.wallpaperBrowseCompleted)
             self.connect(self.fileDialog, SIGNAL('destroyed(QObject*)'), self.fileDialogFinished)

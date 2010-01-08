@@ -176,7 +176,7 @@ class BackgroundListModel(QAbstractListModel):
             self.beginInsertRows(QModelIndex(), 0, 0)
             structure = Plasma.Wallpaper.packageStructure(self.structureParent)
             pkg = Plasma.Package(path, structure)
-            self.packages.prepend(pkg)
+            self.packages.insert(0, pkg)
             self.endInsertRows()
 
     def indexOf(self, path):
@@ -237,9 +237,10 @@ class BackgroundListModel(QAbstractListModel):
         if role == Qt.DisplayRole:
             title = b.metadata().name()
             if title.isEmpty():
-                return QFileInfo(b.filePath('preferred')).completeBaseName()
-            return title
-        elif role == BackgroundDelegate.ScreenshotRole:
+                title = QFileInfo(b.filePath('preferred')).completeBaseName()
+            return QVariant(unicode(title))
+
+        elif role == Qt.DecorationRole or role == BackgroundDelegate.ScreenshotRole:
             if b in self.previews:
                 return self.previews[b]
             file = KUrl(b.filePath('preferred'))
@@ -256,13 +257,21 @@ class BackgroundListModel(QAbstractListModel):
             pix.fill(Qt.transparent)
             self.previews[b] = pix
             return pix
+
         elif role == BackgroundDelegate.AuthorRole:
-            return b.metadata().author()
+            return QVariant(unicode(b.metadata().author()))
+
         elif role == BackgroundDelegate.ResolutionRole:
             size = self.bestSize(b)
             if size.isValid():
-                return QString('%1x%2').arg(size.width()).arg(size.height())
-            return QString()
+                return QVariant(u'%dx%d' % (size.width(), size.height()))
+            return QVariant()
+
+        elif role == BackgroundDelegate.PathRole:
+            if b.structure().contentsPrefix().isEmpty():
+                return QVariant(unicode(b.filePath('preferred')))
+            else:
+                return QVariant(unicode(b.path()))
         else:
             return QVariant()
 
