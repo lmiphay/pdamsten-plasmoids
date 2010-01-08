@@ -32,6 +32,8 @@ from PyKDE4.plasma import Plasma
 from PyKDE4.plasmascript import Wallpaper
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
+from PyKDE4.kio import *
+from PyKDE4.knewstuff import *
 
 from backgroundlistmodel import BackgroundListModel
 from backgrounddelegate import BackgroundDelegate
@@ -53,6 +55,9 @@ class DayAndNight(Wallpaper):
         self.elevation = None
         self.rendering = self.NoRendering
         self.lastTimeOfDay = None
+        self.newStuffDialog = None
+        self.fileDialog = None
+        self.widget = None
 
     def init(self, config):
         print '### init',
@@ -131,8 +136,9 @@ class DayAndNight(Wallpaper):
                     day = True
             elif timeOfDay == self.Twilight:
                 if self.nightPixmap and self.dayPixmap:
-                    self.paintPixmap(painter, exposedRect, self.dayPixmap)
-                    # TODO faded night
+                    n = (self.elevation + 6.0) / (6.0 + (5.0 / 6.0))
+                    p = Plasma.PaintUtils.transition(self.nightPixmap, self.dayPixmap, n)
+                    self.paintPixmap(painter, exposedRect, p)
                 else:
                     if not self.nightPixmap:
                         night = True
@@ -224,35 +230,97 @@ class DayAndNight(Wallpaper):
 
     def createConfigurationInterface(self, parent):
         print '### createConfigurationInterface '
-        self.currentColor = self.color
-        widget = QWidget(parent)
-        ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), widget)
-        ui.positioningCombo.setCurrentIndex(self.method)
+        self.widget = QWidget(parent)
+        self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
+        ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
 
-        model = BackgroundListModel(4/3, self.wallpaper, self) # TODO
-        ui.dayCombo.setModel(model)
-        model.setResizeMethod(self.method)
-        model.setWallpaperSize(self.size) # TODO
-        model.reload([]) # TODO
-        delegate = BackgroundDelegate(4/3, self)
+        ui.positioningCombo.setCurrentIndex(self.method)
+        self.connect(ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
+
+        if self.size.isEmpty():
+            ratio = 1.0
+        else:
+            ratio = self.size.width() / float(self.size.height())
+
+        self.dayModel = BackgroundListModel(ratio, self.wallpaper, self)
+        ui.dayCombo.setModel(self.dayModel)
+        self.dayModel.setResizeMethod(self.method)
+        self.dayModel.setWallpaperSize(self.size)
+        self.dayModel.reload(self.usersWallpapers)
+        delegate = BackgroundDelegate(ratio, self)
         ui.dayCombo.setItemDelegate(delegate)
 
-        model = BackgroundListModel(4/3, self.wallpaper, self)
-        ui.nightCombo.setModel(model)
-        model.setResizeMethod(self.method)
-        model.setWallpaperSize(self.size) # TODO
-        model.reload([]) # TODO
-        delegate = BackgroundDelegate(4/3, self)
+        self.nightModel = BackgroundListModel(ratio, self.wallpaper, self)
+        ui.nightCombo.setModel(self.nightModel)
+        self.nightModel.setResizeMethod(self.method)
+        self.nightModel.setWallpaperSize(self.size)
+        self.nightModel.reload(self.usersWallpapers)
+        delegate = BackgroundDelegate(ratio, self)
         ui.nightCombo.setItemDelegate(delegate)
 
-        self.connect(ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
-        return widget
+        ui.openButton.setIcon(KIcon("document-open"));
+        self.connect(ui.openButton, SIGNAL('clicked()'), self.showFileDialog)
+
+        ui.getNewButton.setIcon(KIcon("get-hot-new-stuff"));
+        self.connect(ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
+
+        return self.widget
+
+    def configWidgetDestroyed(self):
+        self.widget = None
+        self.dayModel = None
+        self.nightModel = None
 
     def resizeChanged(self, index):
         print '### resizeChanged'
         self.method = index
         self.settingsChanged(True)
-        self.render(self.image, self.size, self.method, self.color)
+        self.dayPixmap = None
+        self.nightPixmap = None
+        self.update(self.boundingRect())
+
+    def getNewWallpaper(self):
+        # TODO not yet in pykde4 bindings
+        if not self.newStuffDialog:
+            self.newStuffDialog = KNS3.DownloadDialog("wallpaper.knsrc", self.widget)
+            self.connect(self.newStuffDialog, SIGNAL('accepted()'), self.newStuffFinished)
+        self.newStuffDialog.show()
+
+    def newStuffFinished(self):
+        if self.newStuffDialog.changedEntries().size() > 0:
+            self.dayModel.reload()
+            self.nightModel.reload()
+
+    def showFileDialog(self):
+        if not self.fileDialog:
+            self.fileDialog = KFileDialog(KUrl(), "*.png *.jpeg *.jpg *.xcf *.svg *.svgz", \
+                    self.widget)
+            self.fileDialog.setOperationMode(KFileDialog.Opening)
+            self.fileDialog.setInlinePreviewShown(True)
+            self.fileDialog.setCaption(i18n("Select Wallpaper Image File"))
+            self.fileDialog.setModal(False)
+            self.connect(self.fileDialog, SIGNAL('okClicked()'), self.wallpaperBrowseCompleted)
+            self.connect(self.fileDialog, SIGNAL('destroyed(QObject*)'), self.fileDialogFinished)
+
+        self.fileDialog.show()
+        self.fileDialog.raise_()
+        self.fileDialog.activateWindow()
+
+    def fileDialogFinished(self):
+        self.fileDialog = None
+
+    def wallpaperBrowseCompleted(self):
+        info = QFileInfo(self.fileDialog.selectedFile())
+        # the full file path, so it isn't broken when dealing with symlinks
+        wallpaper = info.canonicalFilePath()
+        if wallpaper.isEmpty():
+            return
+        if not self.dayModel.contains(wallpaper):
+            self.dayModel.addBackground(wallpaper)
+        if not self.nightModel.contains(wallpaper):
+            self.nightModel.addBackground(wallpaper)
+        if not self.usersWallpapers.contains(wallpaper):
+            self.usersWallpapers.append(wallpaper)
 
 
 def CreateWallpaper(parent):
