@@ -70,10 +70,10 @@ class DayAndNight(Wallpaper):
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
         self.color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
         self.dayWallpaper = self.checkIfEmpty(config.readEntry('daywallpaper', \
-                QString()).toString())
+                '').toString())
         self.nightWallpaper = self.checkIfEmpty(config.readEntry('nightwallpaper', \
-                QString()).toString())
-        self.usersWallpapers = config.readEntry('userswallpapers', QStringList()).toStringList()
+                '').toString())
+        self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
         self.longitude = config.readEntry('longitude', 0.0).toDouble()[0]
         self.latitude = config.readEntry('latitude', 0.0).toDouble()[0]
         self.dataEngine('time').connectSource('Local|Solar|Latitude=%f|Longitude=%f' % \
@@ -81,19 +81,21 @@ class DayAndNight(Wallpaper):
 
     def save(self, config):
         print '### save'
-        config.writeEntry('resizemethod', self.method)
+        # For some reason QStrings must be converted to python strings before writing?
+        config.writeEntry('resizemethod', int(self.method))
         config.writeEntry('wallpapercolor', self.color)
-        config.writeEntry('daywallpaper',self.dayWallpaper)
-        config.writeEntry('nightwallpaper',self.nightWallpaper)
-        config.writeEntry('userswallpapers', self.usersWallpapers)
-        config.writeEntry('longitude', self.longitude)
-        config.writeEntry('latitude', self.latitude)
+        config.writeEntry('daywallpaper', unicode(self.dayWallpaper))
+        config.writeEntry('nightwallpaper', unicode(self.nightWallpaper))
+        config.writeEntry('userswallpapers', [unicode(x) for x in self.usersWallpapers])
+        config.writeEntry('longitude', float(self.longitude))
+        config.writeEntry('latitude', float(self.latitude))
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
         print '### dataUpdated',
         self.elevation = data[QString(u'Corrected Elevation')]
         print self.elevation
+        # DEBUG self.elevation = -3.0
         timeOfDay = self.timeOfDay()
         if timeOfDay != self.lastTimeOfDay:
             self.lastTimeOfDay = timeOfDay
@@ -221,9 +223,9 @@ class DayAndNight(Wallpaper):
             self.rendering &= ~self.Night
 
         if self.rendering & self.Night:
-            self.render(self.nightWallpaper, self.size, self.method, self.color)
+            self.renderWallpaper(self.nightWallpaper)
         elif self.rendering & self.Day:
-            self.render(self.dayWallpaper, self.size, self.method, self.color)
+            self.renderWallpaper(self.dayWallpaper)
         else:
             self.update(self.boundingRect())
 
