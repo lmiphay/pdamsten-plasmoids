@@ -180,19 +180,13 @@ class BackgroundListModel(QAbstractListModel):
             self.endInsertRows()
 
     def indexOf(self, path):
+        info = QFileInfo(path)
+        if info.isDir() and not path.endsWith('/'):
+            path += '/'
         for i, p in enumerate(self.packages):
-            # packages will end with a '/', but the path passed in may not
-            package = p.path()
-
-            if package.at(package.length() - 1) == '/':
-                package.truncate(package.length() - 1)
-
-            if path.startsWith(package):
-                # FIXME: ugly hack to make a difference between local files in the same dir
-                # package.path does not contain the actual file name
-                if ((not self.packages[i].structure().contentsPrefix().isEmpty()) or
-                    (path == self.packages[i].filePath('preferred'))):
-                    return self.index(i, 0)
+            print path, p.path(), p.filePath('preferred')
+            if path == p.path() or path == p.filePath('preferred'):
+                return self.index(i, 0)
         return QModelIndex()
 
     def contains(self, path):
@@ -298,7 +292,7 @@ class BackgroundListModel(QAbstractListModel):
         return self.packages[index]
 
     def findAllBackgrounds(self, structureParent, container, p):
-        # TODO: put self in a thread so that it can run in the background without blocking
+        # TODO: put this in a thread so that it can run in the background without blocking
         localEventLoop = QEventLoop()
         finder = BackgroundFinder(structureParent, container, p, localEventLoop)
 
