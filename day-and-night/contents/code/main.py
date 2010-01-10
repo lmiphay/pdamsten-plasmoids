@@ -277,9 +277,9 @@ class DayAndNight(Wallpaper):
         self.wallpaperModel.setResizeMethod(self.method)
         self.wallpaperModel.setWallpaperSize(self.size)
         self.wallpaperModel.reload(self.usersWallpapers)
+        delegate = BackgroundDelegate(ratio, self)
 
         ui.dayCombo.setModel(self.wallpaperModel)
-        delegate = BackgroundDelegate(ratio, self)
         ui.dayCombo.setItemDelegate(delegate)
         index = self.wallpaperModel.indexOf(self.dayWallpaper)
         if index.isValid():
@@ -287,7 +287,6 @@ class DayAndNight(Wallpaper):
         self.connect(ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
 
         ui.nightCombo.setModel(self.wallpaperModel)
-        delegate = BackgroundDelegate(ratio, self)
         ui.nightCombo.setItemDelegate(delegate)
         index = self.wallpaperModel.indexOf(self.nightWallpaper)
         if index.isValid():
