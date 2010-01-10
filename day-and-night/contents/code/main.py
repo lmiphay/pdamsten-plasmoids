@@ -45,9 +45,10 @@ class DayAndNight(Wallpaper):
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
-        self.firstPaint = True
         self.dayPixmap = None
         self.nightPixmap = None
+        self.twilightPixmap = None
+        self.twilightAmount = 0.0
         self.method = None
         self.color = None
         self.dayWallpaper = None
@@ -148,40 +149,48 @@ class DayAndNight(Wallpaper):
         night = False
         pixmap = None
 
-        if self.elevation != None:
+        # get pixmap
+        if self.elevation:
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Day:
                 if self.dayPixmap:
                     pixmap = self.dayPixmap
                 else:
                     day = True
+
             elif timeOfDay == self.Twilight:
                 if self.nightPixmap and self.dayPixmap:
                     nightAngle = abs(self.NightAngle)
                     n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
-                    pixmap = Plasma.PaintUtils.transition(self.nightPixmap, self.dayPixmap, n)
-                else:
-                    if not self.nightPixmap:
-                        night = True
-                    if not self.dayPixmap:
-                        day = True
+                    if not self.twilightPixmap or n != self.twilightAmount:
+                        self.twilightPixmap = \
+                                Plasma.PaintUtils.transition(self.nightPixmap, self.dayPixmap, n)
+                        self.twilightAmount = n
+                    pixmap = self.twilightPixmap
+                elif self.nightPixmap:
+                    pixmap = self.nightPixmap
+                    day = True
+                elif self.dayPixmap:
+                    pixmap = self.nightPixmap
+                    night = True
+
             else: # Night
                 if self.nightPixmap:
                     pixmap = self.nightPixmap
                 else:
                     night = True
 
-        if day or night or not self.elevation:
-            if self.firstPaint:
-                painter.fillRect(exposedRect, self.color)
-            if day and not self.rendering & self.Day:
-                self.rendering |= self.Day
-                self.renderWallpaper(self.dayWallpaper)
-            if night and not self.rendering & self.Night:
-                self.rendering |= self.Night
-                if not day:
-                    self.renderWallpaper(self.nightWallpaper)
-        else:
+        # render missing pixmaps
+        if day and not self.rendering & self.Day:
+            self.rendering |= self.Day
+            self.renderWallpaper(self.dayWallpaper)
+        if night and not self.rendering & self.Night:
+            self.rendering |= self.Night
+            if not day:
+                self.renderWallpaper(self.nightWallpaper)
+
+        # paint
+        if pixmap:
             if painter.worldMatrix() == QMatrix():
                 # draw the background untransformed when possible; (saves lots of per-pixel-math)
                 painter.resetTransform()
@@ -193,7 +202,8 @@ class DayAndNight(Wallpaper):
             # bitmapBackground already has the size of the viewport)
             painter.drawPixmap(exposedRect, pixmap,
                             exposedRect.translated(-self.boundingRect().topLeft()))
-        self.firstPaint = False
+        else:
+            painter.fillRect(exposedRect, self.color)
 
     def renderWallpaper(self, wallpaper):
         if wallpaper.isEmpty():
