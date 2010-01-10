@@ -115,7 +115,11 @@ class DayAndNight(Wallpaper):
             except:
                 self.latitude = 0.0
                 self.longitude = 0.0
-            self.longitudeLatitudeEditingFinished()
+                if self.ui:
+                    self.ui.latitudeEdit.setText(str(self.latitude))
+                    self.ui.longitudeEdit.setText(str(self.longitude))
+
+                self.longitudeLatitudeEditingFinished()
 
     def checkIfEmpty(self, wallpaper):
         if wallpaper.isEmpty():
@@ -249,23 +253,23 @@ class DayAndNight(Wallpaper):
         print '### createConfigurationInterface '
         self.widget = QWidget(parent)
         self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
-        ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
-        self.dayCombo = ui.dayCombo
+        self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
+        self.dayCombo = self.ui.dayCombo
 
-        ui.positioningCombo.setCurrentIndex(self.method)
-        self.connect(ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
+        self.ui.positioningCombo.setCurrentIndex(self.method)
+        self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
 
-        ui.colorButton.setColor(self.color)
-        self.connect(ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
+        self.ui.colorButton.setColor(self.color)
+        self.connect(self.ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
 
-        ui.latitudeEdit.setText(str(self.latitude))
-        self.connect(ui.latitudeEdit, SIGNAL('textChanged(const QString&)'), self.latitudeChanged)
-        self.connect(ui.latitudeEdit, SIGNAL('editingFinished()'), \
+        self.ui.latitudeEdit.setText(str(self.latitude))
+        self.connect(self.ui.latitudeEdit, SIGNAL('textChanged(const QString&)'), self.latitudeChanged)
+        self.connect(self.ui.latitudeEdit, SIGNAL('editingFinished()'), \
                 self.longitudeLatitudeEditingFinished)
 
-        ui.longitudeEdit.setText(str(self.longitude))
-        self.connect(ui.longitudeEdit, SIGNAL('textChanged(const QString&)'), self.longitudeChanged)
-        self.connect(ui.longitudeEdit, SIGNAL('editingFinished()'), \
+        self.ui.longitudeEdit.setText(str(self.longitude))
+        self.connect(self.ui.longitudeEdit, SIGNAL('textChanged(const QString&)'), self.longitudeChanged)
+        self.connect(self.ui.longitudeEdit, SIGNAL('editingFinished()'), \
                 self.longitudeLatitudeEditingFinished)
 
         if self.size.isEmpty():
@@ -279,25 +283,25 @@ class DayAndNight(Wallpaper):
         self.wallpaperModel.reload(self.usersWallpapers)
         delegate = BackgroundDelegate(ratio, self)
 
-        ui.dayCombo.setModel(self.wallpaperModel)
-        ui.dayCombo.setItemDelegate(delegate)
+        self.ui.dayCombo.setModel(self.wallpaperModel)
+        self.ui.dayCombo.setItemDelegate(delegate)
         index = self.wallpaperModel.indexOf(self.dayWallpaper)
         if index.isValid():
-            ui.dayCombo.setCurrentIndex(index.row())
-        self.connect(ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
+            self.ui.dayCombo.setCurrentIndex(index.row())
+        self.connect(self.ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
 
-        ui.nightCombo.setModel(self.wallpaperModel)
-        ui.nightCombo.setItemDelegate(delegate)
+        self.ui.nightCombo.setModel(self.wallpaperModel)
+        self.ui.nightCombo.setItemDelegate(delegate)
         index = self.wallpaperModel.indexOf(self.nightWallpaper)
         if index.isValid():
-            ui.nightCombo.setCurrentIndex(index.row())
-        self.connect(ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
+            self.ui.nightCombo.setCurrentIndex(index.row())
+        self.connect(self.ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
 
-        ui.openButton.setIcon(KIcon('document-open'));
-        self.connect(ui.openButton, SIGNAL('clicked()'), self.showFileDialog)
+        self.ui.openButton.setIcon(KIcon('document-open'));
+        self.connect(self.ui.openButton, SIGNAL('clicked()'), self.showFileDialog)
 
-        ui.getNewButton.setIcon(KIcon('get-hot-new-stuff'));
-        self.connect(ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
+        self.ui.getNewButton.setIcon(KIcon('get-hot-new-stuff'));
+        self.connect(self.ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
 
         return self.widget
 
@@ -310,6 +314,7 @@ class DayAndNight(Wallpaper):
     def configWidgetDestroyed(self):
         self.widget = None
         self.wallpaperModel = None
+        self.ui = None
 
     def resizeChanged(self, index):
         self.method = index
