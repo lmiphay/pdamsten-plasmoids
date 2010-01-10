@@ -184,7 +184,6 @@ class BackgroundListModel(QAbstractListModel):
         if info.isDir() and not path.endsWith('/'):
             path += '/'
         for i, p in enumerate(self.packages):
-            print path, p.path(), p.filePath('preferred')
             if path == p.path() or path == p.filePath('preferred'):
                 return self.index(i, 0)
         return QModelIndex()
@@ -204,14 +203,14 @@ class BackgroundListModel(QAbstractListModel):
             return QSize()
 
         info = KFileMetaInfo(image, QString(), KFileMetaInfo.TechnicalInfo)
-        size = QSize(info.item('http://freedesktop.org/standards/xesam/1.0/core#width').
+        size = QSize(info.item('http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#width').
                             value().toInt()[0],
-                     info.item('http://freedesktop.org/standards/xesam/1.0/core#height').
+                     info.item('http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#height').
                             value().toInt()[0])
 
-        # backup solution if strigi does not work
+        # backup solution if there is no size info
         if (size.width() == 0) or (size.height() == 0):
-            print 'fall back to QImage, check your strigi'
+            print '### fall back to QImage'
             size = QImage(image).size()
 
         self.sizeCache[package] = size
