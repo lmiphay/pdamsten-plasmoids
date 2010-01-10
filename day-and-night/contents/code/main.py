@@ -45,6 +45,7 @@ class DayAndNight(Wallpaper):
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
+        self.firstPaint = True
         self.dayPixmap = None
         self.nightPixmap = None
         self.method = None
@@ -102,8 +103,7 @@ class DayAndNight(Wallpaper):
         if QString(u'Corrected Elevation') in data:
             self.elevation = data[QString(u'Corrected Elevation')]
             print self.elevation
-            # DEBUG
-            self.elevation = -3.0
+            # DEBUG self.elevation = -3.0
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Twilight or timeOfDay != self.lastTimeOfDay:
                 self.lastTimeOfDay = timeOfDay
@@ -145,20 +145,20 @@ class DayAndNight(Wallpaper):
         print '### paint'
         day = False
         night = False
+        pixmap = None
 
         if self.elevation != None:
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Day:
                 if self.dayPixmap:
-                    self.paintPixmap(painter, exposedRect, self.dayPixmap)
+                    pixmap = self.dayPixmap
                 else:
                     day = True
             elif timeOfDay == self.Twilight:
                 if self.nightPixmap and self.dayPixmap:
                     nightAngle = abs(self.NightAngle)
                     n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
-                    p = Plasma.PaintUtils.transition(self.nightPixmap, self.dayPixmap, n)
-                    self.paintPixmap(painter, exposedRect, p)
+                    pixmap = Plasma.PaintUtils.transition(self.nightPixmap, self.dayPixmap, n)
                 else:
                     if not self.nightPixmap:
                         night = True
@@ -166,12 +166,13 @@ class DayAndNight(Wallpaper):
                         day = True
             else: # Night
                 if self.nightPixmap:
-                    self.paintPixmap(painter, exposedRect, self.nightPixmap)
+                    pixmap = self.nightPixmap
                 else:
                     night = True
 
         if day or night or not self.elevation:
-            painter.fillRect(exposedRect, self.color)
+            if self.firstPaint:
+                painter.fillRect(exposedRect, self.color)
             if day and not self.rendering & self.Day:
                 self.rendering |= self.Day
                 self.renderWallpaper(self.dayWallpaper)
@@ -179,19 +180,19 @@ class DayAndNight(Wallpaper):
                 self.rendering |= self.Night
                 if not day:
                     self.renderWallpaper(self.nightWallpaper)
+        else:
+            if painter.worldMatrix() == QMatrix():
+                # draw the background untransformed when possible; (saves lots of per-pixel-math)
+                painter.resetTransform()
 
-    def paintPixmap(self, painter, exposedRect, pixmap):
-        if painter.worldMatrix() == QMatrix():
-            # draw the background untransformed when possible; (saves lots of per-pixel-math)
-            painter.resetTransform()
+            # blit the background (saves all the per-pixel-products that blending does)
+            painter.setCompositionMode(QPainter.CompositionMode_Source)
 
-        # blit the background (saves all the per-pixel-products that blending does)
-        painter.setCompositionMode(QPainter.CompositionMode_Source)
-
-        # for pixmaps we draw only the exposed part (untransformed since the
-        # bitmapBackground already has the size of the viewport)
-        painter.drawPixmap(exposedRect, pixmap,
-                           exposedRect.translated(-self.boundingRect().topLeft()))
+            # for pixmaps we draw only the exposed part (untransformed since the
+            # bitmapBackground already has the size of the viewport)
+            painter.drawPixmap(exposedRect, pixmap,
+                            exposedRect.translated(-self.boundingRect().topLeft()))
+        self.firstPaint = False
 
     def renderWallpaper(self, wallpaper):
         if wallpaper.isEmpty():
