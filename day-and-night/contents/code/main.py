@@ -53,8 +53,7 @@ class DayAndNight(Wallpaper):
         self.dayWallpaper = None
         self.nightWallpaper = None
         self.usersWallpapers = None
-        self.dayModel = None
-        self.nightModel = None
+        self.wallpaperModel = None
         self.elevation = None
         self.rendering = self.NoRendering
         self.lastTimeOfDay = None
@@ -128,10 +127,8 @@ class DayAndNight(Wallpaper):
 
     def checkGeometry(self):
         self.size = self.boundingRect().size().toSize()
-        if self.dayModel:
-            self.dayModel.setWallpaperSize(self.size)
-        if self.nightModel:
-            self.dayModel.setWallpaperSize(self.size)
+        if self.wallpaperModel:
+            self.wallpaperModel.setWallpaperSize(self.size)
 
     def timeOfDay(self):
         if self.elevation > self.DayAngle:
@@ -276,26 +273,23 @@ class DayAndNight(Wallpaper):
         else:
             ratio = self.size.width() / float(self.size.height())
 
-        self.dayModel = BackgroundListModel(ratio, self.wallpaper, self)
-        ui.dayCombo.setModel(self.dayModel)
-        self.dayModel.setResizeMethod(self.method)
-        self.dayModel.setWallpaperSize(self.size)
-        self.dayModel.reload(self.usersWallpapers)
+        self.wallpaperModel = BackgroundListModel(ratio, self.wallpaper, self)
+        self.wallpaperModel.setResizeMethod(self.method)
+        self.wallpaperModel.setWallpaperSize(self.size)
+        self.wallpaperModel.reload(self.usersWallpapers)
+
+        ui.dayCombo.setModel(self.wallpaperModel)
         delegate = BackgroundDelegate(ratio, self)
         ui.dayCombo.setItemDelegate(delegate)
-        index = self.dayModel.indexOf(self.dayWallpaper)
+        index = self.wallpaperModel.indexOf(self.dayWallpaper)
         if index.isValid():
             ui.dayCombo.setCurrentIndex(index.row())
         self.connect(ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
 
-        self.nightModel = BackgroundListModel(ratio, self.wallpaper, self)
-        ui.nightCombo.setModel(self.nightModel)
-        self.nightModel.setResizeMethod(self.method)
-        self.nightModel.setWallpaperSize(self.size)
-        self.nightModel.reload(self.usersWallpapers)
+        ui.nightCombo.setModel(self.wallpaperModel)
         delegate = BackgroundDelegate(ratio, self)
         ui.nightCombo.setItemDelegate(delegate)
-        index = self.nightModel.indexOf(self.nightWallpaper)
+        index = self.wallpaperModel.indexOf(self.nightWallpaper)
         if index.isValid():
             ui.nightCombo.setCurrentIndex(index.row())
         self.connect(ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
@@ -316,8 +310,7 @@ class DayAndNight(Wallpaper):
 
     def configWidgetDestroyed(self):
         self.widget = None
-        self.dayModel = None
-        self.nightModel = None
+        self.wallpaperModel = None
 
     def resizeChanged(self, index):
         self.method = index
@@ -341,7 +334,7 @@ class DayAndNight(Wallpaper):
         engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
 
     def dayWallpaperChanged(self, row):
-        self.dayWallpaper = self.dayModel.data(self.dayModel.index(row, 0), \
+        self.dayWallpaper = self.wallpaperModel.data(self.wallpaperModel.index(row, 0), \
                 BackgroundDelegate.PathRole).toString()
         self.settingsChanged(True)
         self.dayPixmap = None
@@ -349,7 +342,7 @@ class DayAndNight(Wallpaper):
             self.update(self.boundingRect())
 
     def nightWallpaperChanged(self, row):
-        self.nightWallpaper = self.nightModel.data(self.nightModel.index(row, 0), \
+        self.nightWallpaper = self.wallpaperModel.data(self.wallpaperModel.index(row, 0), \
                 BackgroundDelegate.PathRole).toString()
         self.settingsChanged(True)
         self.nightPixmap = None
@@ -365,8 +358,7 @@ class DayAndNight(Wallpaper):
 
     def newStuffFinished(self):
         if self.newStuffDialog.changedEntries().size() > 0:
-            self.dayModel.reload()
-            self.nightModel.reload()
+            self.wallpaperModel.reload()
 
     def showFileDialog(self):
         if not self.fileDialog:
@@ -392,10 +384,8 @@ class DayAndNight(Wallpaper):
         wallpaper = info.canonicalFilePath()
         if wallpaper.isEmpty():
             return
-        if not self.dayModel.contains(wallpaper):
-            self.dayModel.addBackground(wallpaper)
-        if not self.nightModel.contains(wallpaper):
-            self.nightModel.addBackground(wallpaper)
+        if not self.wallpaperModel.contains(wallpaper):
+            self.wallpaperModel.addBackground(wallpaper)
         if not self.usersWallpapers.contains(wallpaper):
             self.usersWallpapers.append(wallpaper)
 
