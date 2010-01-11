@@ -43,32 +43,30 @@ class WallpaperCache:
 
     def __init__(self, wallpaper):
         self.cache = {}
-        self.wallpaperScript = wallpaper.wallpaper_script
-        self.wallpaper = wallpaper.wallpaper
+        self.parent = wallpaper
+        self.wallpaperScript = None
+        self.wallpaper = None
         self.rendering = None
         self._size = None
         self._method = None
         self._color = None
-        self.wallpaper.connect(self.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
-                               self.renderCompleted)
-
-    def renderCompleted(self, image):
-        self.cache[self.rendering][self.Dirty] = False
-        self.cache[self.rendering][self.Pixmap] = QPixmap(image)
-        self.rendering = None
-        self.render()
 
     def checkId(self, id):
         if id not in self.cache.keys():
             self.cache[id] = ['', True, None, None]
 
-    def dirty(self, id):
+    def isDirty(self, id):
         self.checkId(id)
         return self.cache[id][self.Dirty]
 
     def setDirty(self, id):
         self.checkId(id)
         self.cache[id][self.Dirty] = True
+        self.render()
+
+    def setAllDirty(self):
+        for id in self.cache.keys():
+            self.cache[id][self.Dirty] = True
         self.render()
 
     def data(self, id):
@@ -79,14 +77,13 @@ class WallpaperCache:
         self.checkId(id)
         self.cache[id][self.Data] = data
 
-    def setAllDirty(self):
-        for id in self.cache.keys():
-            self.cache[id][self.Dirty] = True
-        self.render()
-
     def pixmap(self, id):
         self.checkId(id)
-        return self.cache[id][self.Pixmap]
+        pixmap = self.cache[id][self.Pixmap]
+        if pixmap == None:
+            self.cache[id][self.Dirty] = True
+            self.render()
+        return pixmap
 
     def setPixmap(self, id, pixmap):
         self.checkId(id)
@@ -126,18 +123,23 @@ class WallpaperCache:
 
     def ratio(self):
         if self._size == None or self._size.isEmpty() or self._size.height() == 0:
-            ratio = 1.0
+            return 1.0
         else:
-            ratio = self._size.width() / float(self._size.height())
+            return self._size.width() / float(self._size.height())
 
-    def contains(self, id):
-        return (id in self.cache and self.cache[id][self.Pixmap] != None)
+    def checkWallpaperMembers(self):
+        if not self.wallpaper:
+            self.wallpaperScript = self.parent.wallpaper_script
+            self.wallpaper = self.parent.wallpaper
+            self.wallpaper.connect(self.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
+                                   self.renderCompleted)
 
     def render(self):
         if self.rendering != None:
             return
         if self._size == None or self._method == None or self._color == None:
             return
+        self.checkWallpaperMembers()
         for id in self.cache.keys():
             if self.cache[id][self.Dirty] and self.cache[id][self.Path] != '':
                 self.rendering = id
@@ -149,6 +151,12 @@ class WallpaperCache:
                 self.wallpaperScript.render(path, self._size, self._method, self._color)
                 return
         self.wallpaperScript.update(self.wallpaperScript.boundingRect())
+
+    def renderCompleted(self, image):
+        self.cache[self.rendering][self.Dirty] = False
+        self.cache[self.rendering][self.Pixmap] = QPixmap(image)
+        self.rendering = None
+        self.render()
 
 
 class DayAndNight(Wallpaper):
@@ -167,10 +175,10 @@ class DayAndNight(Wallpaper):
         self.fileDialog = None
         self.widget = None
         self.source = ''
+        self.cache = WallpaperCache(self)
 
     def init(self, config):
         print '### init',
-        self.cache = WallpaperCache(self)
 
         self.checkGeometry()
         print self.cache.size()
@@ -263,33 +271,27 @@ class DayAndNight(Wallpaper):
         if self.elevation:
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Day:
-                if self.cache.contains(self.Day):
-                    pixmap = self.cache.pixmap(self.Day)
-                else:
-                    self.cache.setDirty(self.Day)
+                pixmap = self.cache.pixmap(self.Day)
 
             elif timeOfDay == self.Twilight:
-                if self.cache.contains(self.Night) and self.cache.contains(self.Day):
-                    if self.cache.dirty(self.Twilight):
+                if self.cache.isDirty(self.Twilight):
+                    night = self.cache.pixmap(self.Night)
+                    day = self.cache.pixmap(self.Day)
+                    if day and night:
                         nightAngle = abs(self.NightAngle)
                         n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
                         pixmap = Plasma.PaintUtils.transition(
                                 self.cache.pixmap(self.Night), self.cache.pixmap(self.Day), n)
                         self.cache.setPixmap(self.Twilight, pixmap)
-                    else:
-                        pixmap = self.cache.pixmap(self.Twilight)
-                elif self.cache.contains(self.Night):
-                    pixmap = self.cache.pixmap(self.Night)
-                    self.cache.setDirty(self.Day)
-                elif self.cache.contains(self.Night):
-                    pixmap = self.cache.pixmap(self.Day)
-                    self.cache.setDirty(self.Night)
+                    elif day:
+                        pixmap = day
+                    elif night:
+                        pixmap = night
+                else:
+                    pixmap = self.cache.pixmap(self.Twilight)
 
             else: # Night
-                if  self.cache.contains(self.Night):
-                    pixmap = self.cache.pixmap(self.Night)
-                else:
-                    self.cache.setDirty(self.Night)
+                pixmap = self.cache.pixmap(self.Night)
 
         # paint
         if pixmap:
