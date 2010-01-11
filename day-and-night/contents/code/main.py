@@ -92,7 +92,9 @@ class WallpaperCache:
     def setPath(self, id, path, preAdd = False):
         self.checkId(id)
         self.cache[id][self.Path] = path
-        if not preAdd:
+        if preAdd:
+            self.cache[id][self.Dirty] = False
+        else:
             self.cache[id][self.Dirty] = True
             self.render()
 
@@ -263,7 +265,7 @@ class DayAndNight(Wallpaper):
             return self.Night
 
     def paint(self, painter, exposedRect):
-        print '### paint'
+        print '### paint', exposedRect
         self.checkGeometry()
         pixmap = None
 
