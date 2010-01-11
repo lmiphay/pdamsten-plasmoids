@@ -38,6 +38,111 @@ from PyKDE4.knewstuff import *
 from backgroundlistmodel import BackgroundListModel
 from backgrounddelegate import BackgroundDelegate
 
+class WallpaperCache:
+    Path, Dirty, Pixmap, Data = range(4)
+
+    def __init__(self, wallpaper):
+        self.cache = {}
+        self.wallpaperScript = wallpaper.wallpaper_script
+        self.wallpaper = wallpaper.wallpaper
+        self.rendering = None
+        self._size = None
+        self._method = None
+        self._color = None
+        self.wallpaper.connect(self.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
+                               self.renderCompleted)
+
+    def renderCompleted(self, image):
+        self.cache[self.rendering][self.Dirty] = False
+        self.cache[self.rendering][self.Pixmap] = QPixmap(image)
+        self.rendering = None
+        self.render()
+
+    def set(self, id, path):
+        if id in self.cache:
+            self.cache[id][self.Dirty] = True
+            self.cache[id][self.Path] = path
+        else:
+            self.cache[id] = [path, True, None, None]
+        self.render()
+
+    def dirty(self, id):
+        return self.cache[id][self.Dirty]
+
+    def setDirty(self, id):
+        self.cache[id][self.Dirty] = True
+        self.render()
+
+    def data(self, id):
+        return self.cache[id][self.Data]
+
+    def setData(self, id, data):
+        self.cache[id][self.Data] = data
+
+    def setAllDirty(self):
+        for id in self.cache.keys():
+            self.cache[id][self.Dirty] = True
+        self.render()
+
+    def pixmap(self, id):
+        return self.cache[id][self.Pixmap]
+
+    def setPixmap(self, id, pixmap):
+        self.cache[id][self.Pixmap] = pixmap
+
+    def setPath(self, id, path):
+        self.cache[id][self.Path] = path
+        self.cache[id][self.Dirty] = True
+        self.render()
+
+    def setColor(self, color):
+        self._color = color
+        self.setAllDirty()
+
+    def color(self):
+        return self._color
+
+    def setMethod(self, method):
+        self._method = method
+        self.setAllDirty()
+
+    def method(self):
+        return self._method
+
+    def setSize(self, size):
+        self._size = size
+        self.setAllDirty()
+
+    def size(self):
+        return self._size
+
+    def ratio(self):
+        if self._size == None or self._size.isEmpty() or self._size.height() == 0:
+            ratio = 1.0
+        else:
+            ratio = self._size.width() / float(self._size.height())
+
+    def contains(self, id):
+        return (id in self.cache and self.cache[id][self.Pixmap] != None)
+
+    def render(self):
+        if self.rendering != None:
+            return
+        if self._size == None or self._method == None or self._color == None:
+            return
+        for id in self.cache.keys():
+            if self.cache[id][self.Dirty] and self.cache[id][self.Path] != '':
+                self.rendering = id
+                package = Plasma.Package(self.cache[id][self.Path], \
+                                         self.wallpaper.packageStructure(self.wallpaper))
+                path = package.filePath('preferred')
+                if path.isEmpty():
+                    path = self.cache[id][self.Path]
+                self.wallpaperScript.render(path, self._size, self._method, self._color)
+                return
+        self.wallpaperScript.update(self.wallpaperScript.boundingRect())
+
+
 class DayAndNight(Wallpaper):
     UpdateInterval = 1.0 # minutes
     NoRendering, Day, Twilight, Night = (0, 1, 2, 4)
@@ -45,12 +150,6 @@ class DayAndNight(Wallpaper):
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
-        self.dayPixmap = None
-        self.nightPixmap = None
-        self.twilightPixmap = None
-        self.twilightAmount = 0.0
-        self.method = None
-        self.color = None
         self.dayWallpaper = None
         self.nightWallpaper = None
         self.usersWallpapers = None
@@ -65,14 +164,15 @@ class DayAndNight(Wallpaper):
 
     def init(self, config):
         print '### init',
-        self.connect(self, SIGNAL('urlDropped(KUrl)'), self.fileDropped)
+        self.cache = WallpaperCache(self)
 
         self.checkGeometry()
-        print self.size
+        print self.cache.size()
 
-        self.method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
-                Plasma.Wallpaper.ScaledResize).toInt()[0])
-        self.color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
+        self.cache.setMethod(Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
+                Plasma.Wallpaper.ScaledResize).toInt()[0]))
+        self.cache.setColor(QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150))))
+
         self.dayWallpaper = self.checkIfEmpty(config.readEntry('daywallpaper', \
                 '').toString())
         self.nightWallpaper = self.checkIfEmpty(config.readEntry('nightwallpaper', \
@@ -89,8 +189,8 @@ class DayAndNight(Wallpaper):
     def save(self, config):
         print '### save'
         # For some reason QStrings must be converted to python strings before writing?
-        config.writeEntry('resizemethod', int(self.method))
-        config.writeEntry('wallpapercolor', self.color)
+        config.writeEntry('resizemethod', int(self.cache.method()))
+        config.writeEntry('wallpapercolor', self.cache.color())
         config.writeEntry('daywallpaper', unicode(self.dayWallpaper))
         config.writeEntry('nightwallpaper', unicode(self.nightWallpaper))
         config.writeEntry('userswallpapers', [unicode(x) for x in self.usersWallpapers])
@@ -131,9 +231,10 @@ class DayAndNight(Wallpaper):
         return wallpaper
 
     def checkGeometry(self):
-        self.size = self.boundingRect().size().toSize()
-        if self.wallpaperModel:
-            self.wallpaperModel.setWallpaperSize(self.size)
+        if self.cache.size() != self.boundingRect().size().toSize():
+            self.cache.setSize(self.boundingRect().size().toSize())
+            if self.wallpaperModel:
+                self.wallpaperModel.setWallpaperSize(self.cache.size())
 
     def timeOfDay(self):
         if self.elevation > self.DayAngle:
@@ -145,49 +246,38 @@ class DayAndNight(Wallpaper):
 
     def paint(self, painter, exposedRect):
         print '### paint'
-        day = False
-        night = False
+        self.checkGeometry()
         pixmap = None
 
         # get pixmap
         if self.elevation:
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Day:
-                if self.dayPixmap:
-                    pixmap = self.dayPixmap
+                if self.cache.contains(self.Day):
+                    pixmap = self.cache.pixmap(self.Day)
                 else:
-                    day = True
+                    self.cache.set(self.Day, self.dayWallpaper)
 
             elif timeOfDay == self.Twilight:
-                if self.nightPixmap and self.dayPixmap:
-                    nightAngle = abs(self.NightAngle)
-                    n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
-                    if not self.twilightPixmap or n != self.twilightAmount:
-                        self.twilightPixmap = \
-                                Plasma.PaintUtils.transition(self.nightPixmap, self.dayPixmap, n)
-                        self.twilightAmount = n
-                    pixmap = self.twilightPixmap
-                elif self.nightPixmap:
-                    pixmap = self.nightPixmap
-                    day = True
-                elif self.dayPixmap:
-                    pixmap = self.nightPixmap
-                    night = True
+                if self.cache.contains(self.Night) and self.cache.contains(self.Day):
+                    if not self.cache.contains(self.Twilight) or self.cache.dirty(self.Twilight):
+                        nightAngle = abs(self.NightAngle)
+                        n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
+                        self.cache.setPixmap(Plasma.PaintUtils.transition(
+                                self.cache.pixmap(self.Night), self.cache.pixmap(self.Day), n))
+                    pixmap = self.cache.pixmap(self.Twilight)
+                elif self.cache.contains(self.Night):
+                    pixmap = self.cache.pixmap(self.Night)
+                    self.cache.set(self.Day, self.dayWallpaper)
+                elif self.cache.contains(self.Night):
+                    pixmap = self.cache.pixmap(self.Day)
+                    self.cache.set(self.Night, self.nightWallpaper)
 
             else: # Night
-                if self.nightPixmap:
-                    pixmap = self.nightPixmap
+                if  self.cache.contains(self.Night):
+                    pixmap = self.cache.pixmap(self.Night)
                 else:
-                    night = True
-
-        # render missing pixmaps
-        if day and not self.rendering & self.Day:
-            self.rendering |= self.Day
-            self.renderWallpaper(self.dayWallpaper)
-        if night and not self.rendering & self.Night:
-            self.rendering |= self.Night
-            if not day:
-                self.renderWallpaper(self.nightWallpaper)
+                    self.cache.set(self.Night, self.nightWallpaper)
 
         # paint
         if pixmap:
@@ -203,22 +293,9 @@ class DayAndNight(Wallpaper):
             painter.drawPixmap(exposedRect, pixmap,
                             exposedRect.translated(-self.boundingRect().topLeft()))
         else:
-            painter.fillRect(exposedRect, self.color)
+            painter.fillRect(exposedRect, self.cache.color())
 
-    def renderWallpaper(self, wallpaper):
-        if wallpaper.isEmpty():
-            return
-        if self.size.isEmpty():
-            return
-
-        b = Plasma.Package(wallpaper, self.packageStructure(self.wallpaper))
-        img = b.filePath('preferred')
-
-        if img.isEmpty():
-            img = wallpaper
-        self.render(img, self.size, self.method, self.color)
-
-    def fileDropped(self, url):
+    def urlDropped(self, url):
         # TODO TEST
         if url.isLocalFile():
             self.setWallpaperPath(url.toLocalFile())
@@ -234,30 +311,13 @@ class DayAndNight(Wallpaper):
     def setWallpaperPath(self, path):
         if self.elevation > (self.NightAngle + self.DayAngle) / 2.0:
             self.dayWallpaper = path
-            self.dayPixmap = None
+            self.cache.setPath(self.Day, path)
         else:
             self.nightWallpaper = path
-            self.nightPixmap = None
-        self.update(self.boundingRect())
+            self.cache.setPath(self.Night, path)
 
         if self.usersWallpapers.contains(path):
             self.usersWallpapers.append(path)
-
-    def renderCompleted(self, image):
-        print '### renderCompleted', image.size(), self.rendering
-        if self.rendering & self.Day:
-            self.dayPixmap = QPixmap(image)
-            self.rendering &= ~self.Day
-        elif self.rendering & self.Night:
-            self.nightPixmap = QPixmap(image)
-            self.rendering &= ~self.Night
-
-        if self.rendering & self.Night:
-            self.renderWallpaper(self.nightWallpaper)
-        elif self.rendering & self.Day:
-            self.renderWallpaper(self.dayWallpaper)
-        else:
-            self.update(self.boundingRect())
 
     def createConfigurationInterface(self, parent):
         print '### createConfigurationInterface '
@@ -266,10 +326,10 @@ class DayAndNight(Wallpaper):
         self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
         self.dayCombo = self.ui.dayCombo
 
-        self.ui.positioningCombo.setCurrentIndex(self.method)
+        self.ui.positioningCombo.setCurrentIndex(self.cache.method())
         self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
 
-        self.ui.colorButton.setColor(self.color)
+        self.ui.colorButton.setColor(self.cache.color())
         self.connect(self.ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
 
         self.ui.latitudeEdit.setText(str(self.latitude))
@@ -282,16 +342,11 @@ class DayAndNight(Wallpaper):
         self.connect(self.ui.longitudeEdit, SIGNAL('editingFinished()'), \
                 self.longitudeLatitudeEditingFinished)
 
-        if self.size.isEmpty():
-            ratio = 1.0
-        else:
-            ratio = self.size.width() / float(self.size.height())
-
-        self.wallpaperModel = BackgroundListModel(ratio, self.wallpaper, self)
-        self.wallpaperModel.setResizeMethod(self.method)
-        self.wallpaperModel.setWallpaperSize(self.size)
+        self.wallpaperModel = BackgroundListModel(self.cache.ratio(), self.wallpaper, self)
+        self.wallpaperModel.setResizeMethod(self.cache.method())
+        self.wallpaperModel.setWallpaperSize(self.cache.size())
         self.wallpaperModel.reload(self.usersWallpapers)
-        delegate = BackgroundDelegate(ratio, self)
+        delegate = BackgroundDelegate(self.cache.ratio(), self)
 
         self.ui.dayCombo.setModel(self.wallpaperModel)
         self.ui.dayCombo.setItemDelegate(delegate)
@@ -315,24 +370,18 @@ class DayAndNight(Wallpaper):
 
         return self.widget
 
-    def fullUpdate(self):
-        self.settingsChanged(True)
-        self.dayPixmap = None
-        self.nightPixmap = None
-        self.update(self.boundingRect())
-
     def configWidgetDestroyed(self):
         self.widget = None
         self.wallpaperModel = None
         self.ui = None
 
     def resizeChanged(self, index):
-        self.method = index
-        self.fullUpdate()
+        self.settingsChanged(True)
+        self.cache.setMethod(index)
 
     def colorChanged(self, color):
-        self.color = color
-        self.fullUpdate()
+        self.settingsChanged(True)
+        self.cache.setColor(color)
 
     def latitudeChanged(self, txt):
         self.latitude = float(txt)
@@ -348,20 +397,16 @@ class DayAndNight(Wallpaper):
         engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
 
     def dayWallpaperChanged(self, row):
+        self.settingsChanged(True)
         self.dayWallpaper = self.wallpaperModel.data(self.wallpaperModel.index(row, 0), \
                 BackgroundDelegate.PathRole).toString()
-        self.settingsChanged(True)
-        self.dayPixmap = None
-        if self.timeOfDay() != self.Night:
-            self.update(self.boundingRect())
+        self.cache.setPath(self.Day, self.dayWallpaper)
 
     def nightWallpaperChanged(self, row):
+        self.settingsChanged(True)
         self.nightWallpaper = self.wallpaperModel.data(self.wallpaperModel.index(row, 0), \
                 BackgroundDelegate.PathRole).toString()
-        self.settingsChanged(True)
-        self.nightPixmap = None
-        if self.timeOfDay() != self.Day:
-            self.update(self.boundingRect())
+        self.cache.setPath(self.Day, self.nightWallpaper)
 
     def getNewWallpaper(self):
         # TODO not yet in pykde4 bindings
