@@ -119,29 +119,32 @@ class WallpaperCache:
     def size(self):
         return self._size
 
-    def setSize(self, size):
-        self._size = size
-        self.setAllDirty()
-
     def ratio(self):
         if self._size == None or self._size.isEmpty() or self._size.height() == 0:
             return 1.0
         else:
             return self._size.width() / float(self._size.height())
 
-    def checkWallpaperMembers(self):
+    def checkGeometry(self):
+        if self._size != self.wallpaperScript.boundingRect().size().toSize():
+            self._size = self.wallpaperScript.boundingRect().size().toSize()
+            self.setAllDirty()
+            return True
+        return False
+
+    def init(self):
         if not self.wallpaper:
             self.wallpaperScript = self.parent.wallpaper_script
             self.wallpaper = self.parent.wallpaper
             self.wallpaper.connect(self.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
                                    self.renderCompleted)
+        self.checkGeometry()
 
     def render(self):
         if self.rendering != None:
             return
         if self._size == None or self._method == None or self._color == None:
             return
-        self.checkWallpaperMembers()
         for id in self.cache.keys():
             if self.cache[id][self.Dirty] and self.cache[id][self.Path] != '':
                 self.rendering = id
@@ -182,7 +185,7 @@ class DayAndNight(Wallpaper):
     def init(self, config):
         print '### init',
 
-        self.checkGeometry()
+        self.cache.init()
         print self.cache.size()
 
         self.cache.setMethod(Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
@@ -251,10 +254,8 @@ class DayAndNight(Wallpaper):
         return wallpaper
 
     def checkGeometry(self):
-        if self.cache.size() != self.boundingRect().size().toSize():
-            self.cache.setSize(self.boundingRect().size().toSize())
-            if self.wallpaperModel:
-                self.wallpaperModel.setWallpaperSize(self.cache.size())
+        if self.cache.checkGeometry() and self.wallpaperModel:
+            self.wallpaperModel.setWallpaperSize(self.cache.size())
 
     def timeOfDay(self):
         if self.elevation > self.DayAngle:
