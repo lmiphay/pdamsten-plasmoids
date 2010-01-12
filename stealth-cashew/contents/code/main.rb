@@ -18,7 +18,6 @@
 #
 
 require 'plasma_applet'
-#require 'Qt4'
 require 'korundum4'
 
 module StealthCashew
@@ -70,9 +69,21 @@ class Main < PlasmaScripting::Applet
         end
         for containment in containment().corona().containments()
             for item in containment.childItems()
-                if item.zValue() == 10000000.0 and item.isWidget() == false:
-                    item.setOpacity(opacity)
-                    item.setFlag(Qt::GraphicsItem::ItemDoesntPropagateOpacityToChildren, true)
+                if item.zValue() == 10000000.0
+                    cashew = false
+                    if item.isWidget() == false # <= KDE 4.3
+                        cashew = true
+                    else # Test for >= KDE 4.4
+                        i = Qt::Internal.cast_object_to(item, Qt::GraphicsWidget)
+                        # TODO Handle Plasma::DesktopToolBox & Plasma::PanelToolBox separately
+                        if i.inherits("Plasma::InternalToolBox"):
+                            cashew = true
+                        end
+                    end
+                    if cashew:
+                        item.setOpacity(opacity)
+                        item.setFlag(Qt::GraphicsItem::ItemDoesntPropagateOpacityToChildren, true)
+                    end
                 end
             end
         end
