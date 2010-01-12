@@ -38,10 +38,11 @@ from PyKDE4.knewstuff import *
 from backgroundlistmodel import BackgroundListModel
 from backgrounddelegate import BackgroundDelegate
 
-class WallpaperCache:
+class WallpaperCache(QObject):
     Path, Dirty, Pixmap, Data = range(4)
 
     def __init__(self, wallpaper):
+        QObject.__init__(self, wallpaper)
         self.cache = {}
         self.parent = wallpaper
         self.wallpaperScript = None
@@ -136,8 +137,8 @@ class WallpaperCache:
         if not self.wallpaper:
             self.wallpaperScript = self.parent.wallpaper_script
             self.wallpaper = self.parent.wallpaper
-            self.wallpaper.connect(self.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
-                                   self.renderCompleted)
+            self.connect(self.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
+                         self.renderCompleted)
         self.checkGeometry()
 
     def render(self):
@@ -155,7 +156,7 @@ class WallpaperCache:
                     path = self.cache[id][self.Path]
                 self.wallpaperScript.render(path, self._size, self._method, self._color)
                 return
-        self.wallpaperScript.update(self.wallpaperScript.boundingRect())
+        self.emit(SIGNAL('renderingsCompleted()'))
 
     def renderCompleted(self, image):
         self.cache[self.rendering][self.Dirty] = False
@@ -185,6 +186,7 @@ class DayAndNight(Wallpaper):
     def init(self, config):
         print '### init',
 
+        self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
         self.cache.init()
         print self.cache.size()
 
@@ -256,6 +258,9 @@ class DayAndNight(Wallpaper):
     def checkGeometry(self):
         if self.cache.checkGeometry() and self.wallpaperModel:
             self.wallpaperModel.setWallpaperSize(self.cache.size())
+
+    def renderingsCompleted(self):
+        self.update(self.boundingRect())
 
     def timeOfDay(self):
         if self.elevation > self.DayAngle:
