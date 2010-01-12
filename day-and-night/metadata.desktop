@@ -15,3 +15,4 @@ X-KDE-PluginInfo-License=GPLv2+
 X-KDE-PluginInfo-EnabledByDefault=true
 X-Plasma-API=python
 X-Plasma-MainScript=code/main.py
+X-Plasma-DropMimeTypes=image/jpeg,image/png,image/svg+xml,image/svg+xml-compressed

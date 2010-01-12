@@ -192,7 +192,7 @@ class DayAndNight(Wallpaper):
             painter.fillRect(exposedRect, self.cache.color())
 
     def urlDropped(self, url):
-        # TODO TEST
+        print '### url', url
         if url.isLocalFile():
             self.setWallpaperPath(url.toLocalFile())
         else:
@@ -210,7 +210,7 @@ class DayAndNight(Wallpaper):
         else:
             self.cache.setPath(self.Night, path)
 
-        if self.usersWallpapers.contains(path):
+        if not self.usersWallpapers.contains(path):
             self.usersWallpapers.append(path)
 
     def createConfigurationInterface(self, parent):
@@ -309,7 +309,7 @@ class DayAndNight(Wallpaper):
 
     def newStuffFinished(self):
         if self.newStuffDialog.changedEntries().size() > 0:
-            self.wallpaperModel.reload()
+            self.wallpaperModel.reload(self.usersWallpapers)
 
     def showFileDialog(self):
         if not self.fileDialog:
