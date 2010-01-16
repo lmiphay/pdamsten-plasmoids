@@ -17,4 +17,4 @@ X-Plasma-API=python
 X-Plasma-MainScript=code/main.py
 X-Plasma-DropMimeTypes=image/jpeg,image/png,image/svg+xml,image/svg+xml-compressed
 
-X-PublishInfo-Depends=plasma-scriptengine-python
+X-PublishInfo-Depends=plasma-scriptengine-python_4.4
