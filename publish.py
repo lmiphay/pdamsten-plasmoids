@@ -25,6 +25,7 @@ import ConfigParser, os, sys
 from xml.dom import minidom
 from datetime import datetime
 from subprocess import *
+from urlparse import urlparse
 import codecs
 
 #---------------------------------------------------------------------------------------------------
@@ -42,27 +43,35 @@ onlyText = False
 if len(sys.argv) > 2:
     onlyText = (sys.argv[2] == '0')
 
-plasmoidid = ''
-origVersion = ''
-version = ''
-comment = ''
-name = ''
+plasmoidData = {
+    'id': '',
+    'name': '',
+    'description': '',
+    'origVersion': '',
+    'version': '',
+    'contact': '',
+    'depends': '',
+    'vcs': '',
+    'wiki': ''
+}
+
 buf = ''
-depends = ''
-contentType = '77'  # Plasmoid Script
-depend = '50'       # KDE 4.x
-license = '1'       # GPL
+
+PlasmoidScript = '77'
+KDE4x          = '50'
+GPL            = '1'
+UploadedFile   = '0'
+Wiki           = '70'
+Other          = '500'
+
 gitCommitCmd = './git-commit-gui.py "%s"'
 config = ConfigParser.ConfigParser()
 config.read(os.path.expanduser('~/.kde-look.org/credentials'))
 user = config.get('Credentials', 'user')
 password = config.get('Credentials', 'password')
 url = 'http://www.kde-look.org/'
-defaultText = 'If you want to contact me by email, send patches or bug reports address can \n\
-be found from the about dialog and plasmoid package.\n\
-\n\
-Source can also be found from the git repository:\n\
-http://www.gitorious.org/pdamsten/plasmoids'
+defaultText = 'Please send longer messages like patches, ' + \
+'bug reports with outputs, etc. to my email.'
 
 #---------------------------------------------------------------------------------------------------
 
@@ -164,28 +173,35 @@ def gitCommit(msg = ''):
         return False
     return True
 
-def makePackages():
+def makePackage():
     return (_('cd %s && zip -9 -v -o -r ../%s.plasmoid * -x \*~ && cd ..' % \
            (plasmoid, plasmoid))[0] == 0)
 
+def readEntry(config, group, entry, default = ''):
+    try:
+        return config.get(group, entry)
+    except:
+        return default
+
 def readInfo():
-    global plasmoidid
-    global origVersion
-    global version
-    global comment
-    global name
-    global depends
+    global plasmoidData
 
     print 'Reading info.'
     config = ConfigParser.RawConfigParser()
     config.read('./%s/metadata.desktop' % plasmoid)
-    origVersion = config.get('Desktop Entry', 'X-KDE-PluginInfo-Version')
-    plasmoidid = config.get('Desktop Entry', 'X-KDE-PluginInfo-Website')
-    depends = config.get('Desktop Entry', 'X-Script-Depends')
-    plasmoidid = plasmoidid[plasmoidid.find('=') + 1:]
-    comment = config.get('Desktop Entry', 'Comment')
-    name = config.get('Desktop Entry', 'Name')
-    version = origVersion
+    plasmoidid = readEntry(config, 'Desktop Entry', 'X-KDE-PluginInfo-Website')
+    plasmoidData['id'] = plasmoidid[plasmoidid.find('=') + 1:]
+    plasmoidData['name'] = readEntry(config, 'Desktop Entry', 'Name')
+    plasmoidData['description'] = readEntry(config, 'Desktop Entry', \
+                                            'X-PublishInfo-LongDescription')
+    if plasmoidData['description'] == '':
+        plasmoidData['description'] = readEntry(config, 'Desktop Entry', 'Comment')
+    plasmoidData['origVersion'] = readEntry(config, 'Desktop Entry', 'X-KDE-PluginInfo-Version')
+    plasmoidData['version'] = plasmoidData['origVersion']
+    plasmoidData['depends'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-Depends')
+    plasmoidData['contact'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-Contact')
+    plasmoidData['vcs'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-VCS')
+    plasmoidData['wiki'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-Wiki')
     return True
 
 def newVersion(version):
@@ -193,58 +209,73 @@ def newVersion(version):
     return '%d.%d' % (int(v[0]), int(v[1]) + 1)
 
 def updateVersion():
-    global version
+    global plasmoidData
 
     print 'Updating version and changelog.'
-    version = newVersion(origVersion)
-    version = inputWithDefault('New version', version)
-    if (origVersion != version):
+    plasmoidData['version'] = newVersion(plasmoidData['origVersion'])
+    plasmoidData['version'] = inputWithDefault('New version', plasmoidData['version'])
+    if (plasmoidData['origVersion'] != plasmoidData['version']):
         # RawConfigParser messes file don't use that for writing
         replaceInFile('./%s/metadata.desktop' % plasmoid, \
-                      'X-KDE-PluginInfo-Version=%s' % origVersion, \
-                      'X-KDE-PluginInfo-Version=%s' % version)
-        log = gitLog(name + ' ' + origVersion)
+                      'X-KDE-PluginInfo-Version=%s' % plasmoidData['origVersion'], \
+                      'X-KDE-PluginInfo-Version=%s' % plasmoidData['version'])
+        log = gitLog(name + ' ' + plasmoidData['origVersion'])
         appendToFrontOfFile('./%s/Changelog' % plasmoid, \
-                '%s  Version %s\n%s\n\n' % (datetime.today().strftime('%Y-%m-%d'), version, log))
+                '%s  Version %s\n%s\n\n' % \
+                (datetime.today().strftime('%Y-%m-%d'), plasmoidData['version'], log))
     editor = os.environ['EDITOR']
     os.system(editor + ' ./%s/Changelog' % plasmoid)
     return True
 
 def uploadFile():
     print 'Uploading file: ./%s.plasmoid' % plasmoid
-    if plasmoidid == '':
+    if plasmoidData['id'] == '':
         return False
     params = [
         ('localfile', (pycurl.FORM_FILE, '%s.plasmoid' % plasmoid))
     ]
-    return upload('v1/content/uploaddownload/%s' % plasmoidid, params)
+    return upload('v1/content/uploaddownload/%s' % plasmoidData['id'], params)
+
+def link(name, link):
+    if name == '@domain':
+        name = urlparse(link).netloc.split('.')[-2]
+    #return '[url=%s]%s[/url]' % (link, name)
+    # Does not support url=
+    return '[url]%s[/url]' % (link)
 
 def uploadInfo():
-    print 'Updating info: %s' % plasmoidid
-    if plasmoidid == '':
+    print 'Updating info: %s' % plasmoidData['id']
+    if plasmoidData['id'] == '':
         return False
-    description = comment + '\n\n' + defaultText
-    if depends != '':
-        description += '\n\n' + 'Plasmoid depends on: ' + depends
+    description = plasmoidData['description'] + '\n\n' + defaultText+ '\n'
+    if plasmoidData['depends'] != '':
+        description += '\n' + 'Plasmoid depends on: ' + plasmoidData['depends']
+    if plasmoidData['contact'] != '':
+        description += '\n' + 'Contact: ' + link('email', plasmoidData['contact'])
+    if plasmoidData['vcs'] != '':
+        description += '\n' + 'Browse Source: ' + link('@domain', plasmoidData['vcs'])
     if onlyText:
-        tmp = '0'
+        announce = '0'
     else:
-        tmp = '1'
+        announce = '1'
     params = [
-        ('name', name),
-        ('type', contentType),
-        ('depend', depend),
-        ('downloadtyp1', '0'), # uploaded file
+        ('name', plasmoidData['name']),
+        ('type', PlasmoidScript),
+        ('depend', plasmoidData['depends']),
+        ('downloadtyp1', UploadedFile),
         ('downloadname1', 'Plasmoid'),
         ('description', description),
-        ('licensetype', license),
-        ('version', version),
-        ('homepage', ''),
+        ('licensetype', GPL),
+        ('version', plasmoidData['version']),
         ('changelog', open('./%s/Changelog' % plasmoid).read()),
-        ('announceupdate', tmp)
+        ('announceupdate', announce)
     ]
+    if plasmoidData['wiki'] != '':
+        params['homepage'] = plasmoidData['wiki']
+        params['homepagetype'] = Wiki
+
     #print params
-    return upload('v1/content/edit/%s' % plasmoidid, params)
+    return upload('v1/content/edit/%s' % plasmoidData['id'], params)
 
 #---------------------------------------------------------------------------------------------------
 
@@ -253,15 +284,12 @@ if not onlyText:
 X(readInfo())
 if not onlyText:
     X(updateVersion())
-    X(makePackages())
+    X(makePackage())
 
-if inputWithDefault('Continue with upload?', 'yes') != 'yes':
-    sys.exit(0)
-
-X(uploadInfo())
-if not onlyText:
-    X(uploadFile())
-    X(gitCommit('Update version and changelog'))
-    if origVersion != version:
-        X(gitTag(name + ' ' + version))
-
+if inputWithDefault('Continue with upload?', 'yes') == 'yes':
+    X(uploadInfo())
+    if not onlyText:
+        X(uploadFile())
+        X(gitCommit('Update version and changelog'))
+        if plasmoidData['origVersion'] != plasmoidData['version']:
+            X(gitTag(name + ' ' + plasmoidData['version']))
