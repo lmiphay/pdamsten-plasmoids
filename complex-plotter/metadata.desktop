@@ -17,4 +17,5 @@ X-KDE-PluginInfo-EnabledByDefault=true
 X-Plasma-API=python
 X-Plasma-MainScript=code/main.py
 X-Plasma-DefaultSize=400,200
-X-Script-Depends=plasma-scriptengine-python
+
+X-PublishInfo-Depends=plasma-scriptengine-python

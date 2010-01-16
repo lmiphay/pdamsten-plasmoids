@@ -19,4 +19,5 @@ X-KDE-PluginInfo-EnabledByDefault=true
 X-Plasma-API=webkit
 X-Plasma-MainScript=code/main.html
 X-Plasma-DefaultSize=250,300
-X-Script-Depends=plasma-scriptengine-webkit
+
+X-PublishInfo-Depends=plasma-scriptengine-webkit

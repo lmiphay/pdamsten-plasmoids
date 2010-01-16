@@ -17,4 +17,5 @@ X-KDE-PluginInfo-EnabledByDefault=true
 X-Plasma-API=ruby-script
 X-Plasma-MainScript=code/main.rb
 X-Plasma-DefaultSize=1,1
-X-Script-Depends=plasma-scriptengine-ruby
+
+X-PublishInfo-Depends=plasma-scriptengine-ruby
