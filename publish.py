@@ -52,7 +52,8 @@ plasmoidData = {
     'contact': '',
     'depends': '',
     'vcs': '',
-    'wiki': ''
+    'wiki': '',
+    'installing': ''
 }
 
 buf = ''
@@ -202,6 +203,7 @@ def readInfo():
     plasmoidData['contact'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-Contact')
     plasmoidData['vcs'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-VCS')
     plasmoidData['wiki'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-Wiki')
+    plasmoidData['installing'] = readEntry(config, 'Desktop Entry', 'X-PublishInfo-Installing')
     return True
 
 def newVersion(version):
@@ -254,6 +256,8 @@ def uploadInfo():
         description += '\n' + 'Contact: ' + link('email', plasmoidData['contact'])
     if plasmoidData['vcs'] != '':
         description += '\n' + 'Browse Source: ' + link('@domain', plasmoidData['vcs'])
+    if plasmoidData['installing'] != '':
+        description += '\n' + 'Installing: ' + link('Howto', plasmoidData['installing'])
     if onlyText:
         announce = '0'
     else:
