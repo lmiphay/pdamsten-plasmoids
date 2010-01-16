@@ -187,7 +187,7 @@ def readEntry(config, group, entry, default = ''):
 def readInfo():
     global plasmoidData
 
-    print 'Reading info.'
+    print 'Reading info for ' + plasmoid + '.'
     config = ConfigParser.RawConfigParser()
     config.read('./%s/metadata.desktop' % plasmoid)
     plasmoidid = readEntry(config, 'Desktop Entry', 'X-KDE-PluginInfo-Website')
