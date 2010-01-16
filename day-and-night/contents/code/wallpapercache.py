@@ -51,7 +51,8 @@ class WallpaperCache(QObject):
 
     def setAllDirty(self):
         for id in self.cache.keys():
-            self.cache[id][self.Dirty] = True
+            if self.cache[id][self.Pixmap]:
+                self.cache[id][self.Dirty] = True
         self.render()
 
     def data(self, id):
@@ -73,6 +74,7 @@ class WallpaperCache(QObject):
     def setPixmap(self, id, pixmap):
         self.checkId(id)
         self.cache[id][self.Pixmap] = pixmap
+        self.cache[id][self.Dirty] = False
 
     def setPath(self, id, path, preAdd = False):
         self.checkId(id)
