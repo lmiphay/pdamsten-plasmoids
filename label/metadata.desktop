@@ -18,3 +18,5 @@ X-Plasma-MainScript=code/main.js
 X-Plasma-API=javascript
 
 X-PublishInfo-Depends=plasma-scriptengine-javascript
+X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master
+X-PublishInfo-Contact=http://mailhide.recaptcha.net/d?k=01LDM-GPWx__fLz6sBxdsiYg==&c=R1tBKwTq6EDT3PcmQ8k2B8gV9lAnWGRB-kNkoYlOh2E=
