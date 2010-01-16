@@ -19,3 +19,6 @@ X-Plasma-MainScript=code/main.py
 X-Plasma-DefaultSize=400,200
 
 X-PublishInfo-Depends=plasma-scriptengine-python
+X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master
+X-PublishInfo-Contact=http://bit.ly/damu-email
+X-PublishInfo-Installing=http://userbase.kde.org/Plasma/Installing_Plasmoids

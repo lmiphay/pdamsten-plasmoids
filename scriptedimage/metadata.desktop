@@ -21,3 +21,6 @@ X-Plasma-MainScript=code/main.html
 X-Plasma-DefaultSize=250,300
 
 X-PublishInfo-Depends=plasma-scriptengine-webkit
+X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master
+X-PublishInfo-Contact=http://bit.ly/damu-email
+X-PublishInfo-Installing=http://userbase.kde.org/Plasma/Installing_Plasmoids

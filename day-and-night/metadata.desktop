@@ -20,4 +20,5 @@ X-Plasma-DropMimeTypes=image/jpeg,image/png,image/svg+xml,image/svg+xml-compress
 X-PublishInfo-Depends=plasma-scriptengine-python_4.4
 X-PublishInfo-LongDescription=Wallpaper plugin that allows you to select different wallpaper for day and night. During twilight wallpapers are blended together. Using longitude and latitude information and Plasma time dataengine it can get accurate times for sun set and rise.
 X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master
-X-PublishInfo-Contact=http://mailhide.recaptcha.net/d?k=01LDM-GPWx__fLz6sBxdsiYg==&c=R1tBKwTq6EDT3PcmQ8k2B8gV9lAnWGRB-kNkoYlOh2E=
+X-PublishInfo-Contact=http://bit.ly/damu-email
+X-PublishInfo-Installing=http://userbase.kde.org/Plasma/Installing_Plasmoids
