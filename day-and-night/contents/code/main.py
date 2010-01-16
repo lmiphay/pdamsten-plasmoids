@@ -58,11 +58,8 @@ class DayAndNight(Wallpaper):
         self.cache = WallpaperCache(self)
 
     def init(self, config):
-        print '### init',
-
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
         self.cache.init()
-        print self.cache.size()
 
         self.cache.setMethod(Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0]))
@@ -83,7 +80,6 @@ class DayAndNight(Wallpaper):
             self.longitudeLatitudeEditingFinished()
 
     def save(self, config):
-        print '### save'
         # For some reason QStrings must be converted to python strings before writing?
         config.writeEntry('resizemethod', int(self.cache.method()))
         config.writeEntry('wallpapercolor', self.cache.color())
@@ -95,10 +91,8 @@ class DayAndNight(Wallpaper):
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
-        print '### dataUpdated',
         if QString(u'Corrected Elevation') in data:
             self.elevation = data[QString(u'Corrected Elevation')]
-            print self.elevation
             # DEBUG self.elevation = -3.0
             timeOfDay = self.timeOfDay()
             if timeOfDay == self.Twilight or timeOfDay != self.lastTimeOfDay:
@@ -109,7 +103,6 @@ class DayAndNight(Wallpaper):
                     self.update(self.boundingRect())
         else:
             try:
-                print data[QString(u'latitude')], data[QString(u'longitude')]
                 self.latitude = float(data[QString(u'latitude')])
                 self.longitude = float(data[QString(u'longitude')])
             except:
@@ -145,7 +138,6 @@ class DayAndNight(Wallpaper):
             return self.Night
 
     def paint(self, painter, exposedRect):
-        print '### paint', exposedRect
         self.checkGeometry()
         pixmap = None
 
@@ -192,7 +184,6 @@ class DayAndNight(Wallpaper):
             painter.fillRect(exposedRect, self.cache.color())
 
     def urlDropped(self, url):
-        print '### url', url
         if url.isLocalFile():
             self.setWallpaperPath(url.toLocalFile())
         else:
@@ -214,7 +205,6 @@ class DayAndNight(Wallpaper):
             self.usersWallpapers.append(path)
 
     def createConfigurationInterface(self, parent):
-        print '### createConfigurationInterface '
         self.widget = QWidget(parent)
         self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
         self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
