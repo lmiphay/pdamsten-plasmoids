@@ -251,6 +251,8 @@ class DayAndNight(Wallpaper):
 
         self.ui.getNewButton.setIcon(KIcon('get-hot-new-stuff'));
         self.connect(self.ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
+        # TODO KNS3 not yet in pykde4 bindings
+        self.ui.getNewButton.hide()
 
         return self.widget
 
