@@ -67,8 +67,8 @@ class DayAndNight(Wallpaper):
         dayPath = self.checkIfEmpty(config.readEntry('daywallpaper', '').toString())
         nightPath = self.checkIfEmpty(config.readEntry('nightwallpaper', '').toString())
 
-        self.cache.initId(self.Day, dayPath, color, method)
-        self.cache.initId(self.Night, nightPath, color, method)
+        self.cache.initId(self.Day, (WallpaperCache.FromDisk, dayPath, color, method))
+        self.cache.initId(self.Night, (WallpaperCache.FromDisk, nightPath, color, method))
 
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
         self.longitude = config.readEntry('longitude', 100.0).toDouble()[0]
@@ -81,10 +81,13 @@ class DayAndNight(Wallpaper):
 
     def save(self, config):
         # For some reason QStrings must be converted to python strings before writing?
-        config.writeEntry('resizemethod', int(self.cache.method(self.Day)))
-        config.writeEntry('wallpapercolor', self.cache.color(self.Day))
-        config.writeEntry('daywallpaper', unicode(self.cache.path(self.Day)))
-        config.writeEntry('nightwallpaper', unicode(self.cache.path(self.Night)))
+        config.writeEntry('resizemethod',
+                int(self.cache.operation(self.Day)[WallpaperCache.Method]))
+        config.writeEntry('wallpapercolor', self.cache.operation(self.Day)[WallpaperCache.Color])
+        config.writeEntry('daywallpaper',
+                unicode(self.cache.operation(self.Day)[WallpaperCache.Path]))
+        config.writeEntry('nightwallpaper',
+                unicode(self.cache.operation(self.Night)[WallpaperCache.Path]))
         config.writeEntry('userswallpapers', [unicode(x) for x in self.usersWallpapers])
         config.writeEntry('longitude', float(self.longitude))
         config.writeEntry('latitude', float(self.latitude))
@@ -98,7 +101,10 @@ class DayAndNight(Wallpaper):
             if timeOfDay == self.Twilight or timeOfDay != self.lastTimeOfDay:
                 self.lastTimeOfDay = timeOfDay
                 if timeOfDay == self.Twilight:
-                    self.cache.setDirty(self.Twilight)
+                    nightAngle = abs(self.NightAngle)
+                    n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
+                    self.cache.setOperation(self.Twilight, \
+                            (WallpaperCache.Transition, self.Day, self.Night, n))
                 else:
                     self.update(self.boundingRect())
         else:
@@ -144,27 +150,11 @@ class DayAndNight(Wallpaper):
         # get pixmap
         if self.elevation:
             timeOfDay = self.timeOfDay()
-            if timeOfDay == self.Day:
+            if timeOfDay == self.Twilight:
+                pixmap = self.cache.pixmap(self.Twilight)
+            elif timeOfDay == self.Day:
                 pixmap = self.cache.pixmap(self.Day)
-
-            elif timeOfDay == self.Twilight:
-                if self.cache.isDirty(self.Twilight):
-                    night = self.cache.pixmap(self.Night)
-                    day = self.cache.pixmap(self.Day)
-                    if day and night:
-                        nightAngle = abs(self.NightAngle)
-                        n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
-                        pixmap = Plasma.PaintUtils.transition(
-                                self.cache.pixmap(self.Night), self.cache.pixmap(self.Day), n)
-                        self.cache.setPixmap(self.Twilight, pixmap)
-                    elif day:
-                        pixmap = day
-                    elif night:
-                        pixmap = night
-                else:
-                    pixmap = self.cache.pixmap(self.Twilight)
-
-            else: # Night
+            elif timeOfDay == self.Night:
                 pixmap = self.cache.pixmap(self.Night)
 
         # paint
@@ -179,9 +169,9 @@ class DayAndNight(Wallpaper):
             # for pixmaps we draw only the exposed part (untransformed since the
             # bitmapBackground already has the size of the viewport)
             painter.drawPixmap(exposedRect, pixmap,
-                            exposedRect.translated(-self.boundingRect().topLeft()))
+                               exposedRect.translated(-self.boundingRect().topLeft()))
         else:
-            painter.fillRect(exposedRect, self.cache.color(self.Day))
+            painter.fillRect(exposedRect, self.cache.operation(self.Day)[WallpaperCache.Color])
 
     def urlDropped(self, url):
         if url.isLocalFile():
@@ -210,39 +200,45 @@ class DayAndNight(Wallpaper):
         self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
         self.dayCombo = self.ui.dayCombo
 
-        self.ui.positioningCombo.setCurrentIndex(self.cache.method(self.Day))
-        self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
+        self.ui.positioningCombo.setCurrentIndex(
+                self.cache.operation(self.Day)[WallpaperCache.Method])
+        self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), \
+                     self.resizeChanged)
 
-        self.ui.colorButton.setColor(self.cache.color(self.Day))
+        self.ui.colorButton.setColor(self.cache.operation(self.Day)[WallpaperCache.Color])
         self.connect(self.ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
 
         self.ui.latitudeEdit.setText(str(self.latitude))
-        self.connect(self.ui.latitudeEdit, SIGNAL('textChanged(const QString&)'), self.latitudeChanged)
+        self.connect(self.ui.latitudeEdit, SIGNAL('textChanged(const QString&)'), \
+                     self.latitudeChanged)
         self.connect(self.ui.latitudeEdit, SIGNAL('editingFinished()'), \
                 self.longitudeLatitudeEditingFinished)
 
         self.ui.longitudeEdit.setText(str(self.longitude))
-        self.connect(self.ui.longitudeEdit, SIGNAL('textChanged(const QString&)'), self.longitudeChanged)
+        self.connect(self.ui.longitudeEdit, SIGNAL('textChanged(const QString&)'), \
+                     self.longitudeChanged)
         self.connect(self.ui.longitudeEdit, SIGNAL('editingFinished()'), \
                 self.longitudeLatitudeEditingFinished)
 
         self.wallpaperModel = BackgroundListModel(self.cache.ratio(), self.wallpaper, self)
-        self.wallpaperModel.setResizeMethod(self.cache.method(self.Day))
+        self.wallpaperModel.setResizeMethod(self.cache.operation(self.Day)[WallpaperCache.Method])
         self.wallpaperModel.setWallpaperSize(self.cache.size())
         self.wallpaperModel.reload(self.usersWallpapers)
         delegate = BackgroundDelegate(self.cache.ratio(), self)
 
         self.ui.dayCombo.setModel(self.wallpaperModel)
         self.ui.dayCombo.setItemDelegate(delegate)
-        self.connect(self.ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
-        index = self.wallpaperModel.indexOf(self.cache.path(self.Day))
+        self.connect(self.ui.dayCombo, SIGNAL('currentIndexChanged(int)'), \
+                     self.dayWallpaperChanged)
+        index = self.wallpaperModel.indexOf(self.cache.operation(self.Day)[WallpaperCache.Path])
         if index.isValid():
             self.ui.dayCombo.setCurrentIndex(index.row())
 
         self.ui.nightCombo.setModel(self.wallpaperModel)
         self.ui.nightCombo.setItemDelegate(delegate)
-        self.connect(self.ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
-        index = self.wallpaperModel.indexOf(self.cache.path(self.Night))
+        self.connect(self.ui.nightCombo, SIGNAL('currentIndexChanged(int)'), \
+                     self.nightWallpaperChanged)
+        index = self.wallpaperModel.indexOf(self.cache.operation(self.Night)[WallpaperCache.Path])
         if index.isValid():
             self.ui.nightCombo.setCurrentIndex(index.row())
 
