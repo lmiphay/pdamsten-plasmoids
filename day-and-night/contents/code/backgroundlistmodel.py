@@ -46,7 +46,7 @@ class BackgroundFinder(QObject):
         progress.setLabelText(i18n('Finding images for the wallpaper slideshow.'))
         progress.progressBar().setRange(0, 0)
 
-        suffixes = set(['png', 'jpeg', 'jpg', 'svg', 'svgz'])
+        suffixes = ['png', 'jpeg', 'jpg', 'svg', 'svgz']
         dir = QDir()
         dir.setFilter(QDir.AllDirs | QDir.Files | QDir.Hidden | QDir.Readable)
 
@@ -54,9 +54,9 @@ class BackgroundFinder(QObject):
         allCount = 0
         setLabel = True
 
-        if not self.paths.isEmpty():
+        while not self.paths.isEmpty():
             path = self.paths.takeLast()
-            # print 'doing', path
+            # print '### doing', path
             dir.setPath(path)
             files = dir.entryInfoList()
             for wp in files:
@@ -87,8 +87,8 @@ class BackgroundFinder(QObject):
                     else:
                         self.paths.append(wp.filePath())
                 elif wp.suffix().toLower() in suffixes and \
-                     (not self.container or wp.filePath() not in self.container):
-                    # print 'adding', wp.filePath(), setLabel
+                     (self.container == None or not self.container.contains(wp.filePath())):
+                    # print '### adding', wp.filePath(), setLabel
                     if setLabel:
                         progress.setLabelText(
                                 i18n('Finding images for the wallpaper slideshow.') + '\n\n' +
@@ -139,6 +139,7 @@ class BackgroundListModel(QAbstractListModel):
 
     def reload(self, selected):
         dirs = KGlobal.dirs().findDirs('wallpaper', '')
+        #print [unicode(x) for x in dirs]
 
         if len(self.packages) > 0:
             self.beginRemoveRows(QModelIndex(), 0, len(self.packages) - 1)
