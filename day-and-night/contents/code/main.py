@@ -56,9 +56,9 @@ class DayAndNight(Wallpaper):
         self.widget = None
         self.source = ''
         self.cache = WallpaperCache(self)
+        self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
 
     def init(self, config):
-        self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
         self.cache.init()
 
         self.cache.setMethod(Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
