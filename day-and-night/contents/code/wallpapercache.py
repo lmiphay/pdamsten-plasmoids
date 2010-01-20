@@ -28,9 +28,7 @@ class WallpaperCache(QObject):
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
         self.cache = {}
-        self.parent = wallpaper
-        self.wallpaperScript = None
-        self.wallpaper = None
+        self.wallpaper = wallpaper
         self.rendering = None
         self._size = None
         self._method = None
@@ -113,18 +111,17 @@ class WallpaperCache(QObject):
             return self._size.width() / float(self._size.height())
 
     def checkGeometry(self):
-        if self._size != self.wallpaperScript.boundingRect().size().toSize():
-            self._size = self.wallpaperScript.boundingRect().size().toSize()
+        if self._size != self.wallpaper.boundingRect().size().toSize():
+            self._size = self.wallpaper.boundingRect().size().toSize()
             self.setAllDirty()
             return True
         return False
 
     def init(self):
-        if not self.wallpaper:
-            self.wallpaperScript = self.parent.wallpaper_script
-            self.wallpaper = self.parent.wallpaper
-            self.connect(self.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
-                         self.renderCompleted)
+        self.disconnect(self.wallpaper.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
+                        self.renderCompleted)
+        self.connect(self.wallpaper.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
+                     self.renderCompleted)
         self.checkGeometry()
 
     def render(self):
@@ -136,11 +133,11 @@ class WallpaperCache(QObject):
             if self.cache[id][self.Dirty] and self.cache[id][self.Path] != '':
                 self.rendering = id
                 package = Plasma.Package(self.cache[id][self.Path], \
-                                         self.wallpaper.packageStructure(self.wallpaper))
+                                         self.wallpaper.packageStructure(self.wallpaper.wallpaper))
                 path = package.filePath('preferred')
                 if path.isEmpty():
                     path = self.cache[id][self.Path]
-                self.wallpaperScript.render(path, self._size, self._method, self._color)
+                self.wallpaper.render(path, self._size, self._method, self._color)
                 return
         self.emit(SIGNAL('renderingsCompleted()'))
 
