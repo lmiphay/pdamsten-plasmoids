@@ -18,12 +18,14 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+import sys
 from PyQt4.QtCore import *
 from PyKDE4.plasma import Plasma
 from PyQt4.QtGui import *
 
 class WallpaperCache(QObject):
-    Path, Dirty, Pixmap, Data = range(4)
+    Path, Dirty, Pixmap, Color, Method, Data = range(6)
+    All = -sys.maxint - 1
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
@@ -31,75 +33,74 @@ class WallpaperCache(QObject):
         self.wallpaper = wallpaper
         self.rendering = None
         self._size = None
-        self._method = None
-        self._color = None
 
     def checkId(self, id):
         if id not in self.cache.keys():
-            self.cache[id] = ['', True, None, None]
+            self.cache[id] = ['', True, None, QColor(Qt.black), Plasma.Wallpaper.ScaledResize, None]
+
+    def initId(self, id, path, color, method, data = None):
+        self.checkId(id)
+        self.cache[id][self.Path] = path
+        self.cache[id][self.Color] = color
+        self.cache[id][self.Method] = method
+        self.cache[id][self.Data] = data
+
+    def setValue(self, id, type, value):
+        if id != self.All:
+            self.checkId(id)
+            self.cache[id][type] = value
+        else:
+            for id in self.cache.keys():
+                self.cache[id][type] = value
+
+    def value(self, id, type):
+        self.checkId(id)
+        return self.cache[id][type]
 
     def isDirty(self, id):
-        self.checkId(id)
-        return self.cache[id][self.Dirty]
+        return self.value(id, self.Dirty)
 
     def setDirty(self, id):
-        self.checkId(id)
-        self.cache[id][self.Dirty] = True
-        self.render()
-
-    def setAllDirty(self):
-        for id in self.cache.keys():
-            if self.cache[id][self.Pixmap]:
-                self.cache[id][self.Dirty] = True
+        self.setValue(id, self.Dirty, True)
         self.render()
 
     def data(self, id):
-        self.checkId(id)
-        return self.cache[id][self.Data]
+        return self.value(id, self.Data)
 
     def setData(self, id, data):
-        self.checkId(id)
-        self.cache[id][self.Data] = data
+        self.setValue(id, self.Data, data)
 
     def pixmap(self, id):
-        self.checkId(id)
-        pixmap = self.cache[id][self.Pixmap]
+        pixmap = self.value(id, self.Pixmap)
         if pixmap == None:
             self.cache[id][self.Dirty] = True
             self.render()
         return pixmap
 
     def setPixmap(self, id, pixmap):
-        self.checkId(id)
-        self.cache[id][self.Pixmap] = pixmap
+        self.setValue(id, self.Pixmap, pixmap)
         self.cache[id][self.Dirty] = False
 
-    def setPath(self, id, path, preAdd = False):
-        self.checkId(id)
-        self.cache[id][self.Path] = path
-        if preAdd:
-            self.cache[id][self.Dirty] = False
-        else:
-            self.cache[id][self.Dirty] = True
-            self.render()
-
     def path(self, id):
-        self.checkId(id)
-        return self.cache[id][self.Path]
+        return self.value(id, self.Path)
 
-    def color(self):
-        return self._color
+    def setPath(self, id, path):
+        self.setValue(id, self.Path, path)
+        self.setDirty(id)
 
-    def setColor(self, color):
-        self._color = color
-        self.setAllDirty()
+    def color(self, id):
+        return self.value(id, self.Color)
 
-    def method(self):
-        return self._method
+    def setColor(self, id, color):
+        self.setValue(id, self.Color, color)
+        self.setDirty(id)
 
-    def setMethod(self, method):
-        self._method = method
-        self.setAllDirty()
+    def method(self, id):
+        return self.value(id, self.Method)
+
+    def setMethod(self, id, method):
+        self.setValue(id, self.Method, method)
+        self.setDirty(id)
 
     def size(self):
         return self._size
@@ -113,7 +114,7 @@ class WallpaperCache(QObject):
     def checkGeometry(self):
         if self._size != self.wallpaper.boundingRect().size().toSize():
             self._size = self.wallpaper.boundingRect().size().toSize()
-            self.setAllDirty()
+            self.setDirty(self.All)
             return True
         return False
 
@@ -127,7 +128,7 @@ class WallpaperCache(QObject):
     def render(self):
         if self.rendering != None:
             return
-        if self._size == None or self._method == None or self._color == None:
+        if self._size == None:
             return
         for id in self.cache.keys():
             if self.cache[id][self.Dirty] and self.cache[id][self.Path] != '':
@@ -137,7 +138,8 @@ class WallpaperCache(QObject):
                 path = package.filePath('preferred')
                 if path.isEmpty():
                     path = self.cache[id][self.Path]
-                self.wallpaper.render(path, self._size, self._method, self._color)
+                self.wallpaper.render(path, self._size, self.cache[id][self.Method], \
+                                      self.cache[id][self.Color])
                 return
         self.emit(SIGNAL('renderingsCompleted()'))
 
