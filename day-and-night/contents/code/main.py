@@ -210,10 +210,10 @@ class DayAndNight(Wallpaper):
         self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
         self.dayCombo = self.ui.dayCombo
 
-        self.ui.positioningCombo.setCurrentIndex(self.cache.method())
+        self.ui.positioningCombo.setCurrentIndex(self.cache.method(self.Day))
         self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), self.resizeChanged)
 
-        self.ui.colorButton.setColor(self.cache.color())
+        self.ui.colorButton.setColor(self.cache.color(self.Day))
         self.connect(self.ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
 
         self.ui.latitudeEdit.setText(str(self.latitude))
@@ -227,33 +227,30 @@ class DayAndNight(Wallpaper):
                 self.longitudeLatitudeEditingFinished)
 
         self.wallpaperModel = BackgroundListModel(self.cache.ratio(), self.wallpaper, self)
-        self.wallpaperModel.setResizeMethod(self.cache.method())
+        self.wallpaperModel.setResizeMethod(self.cache.method(self.Day))
         self.wallpaperModel.setWallpaperSize(self.cache.size())
         self.wallpaperModel.reload(self.usersWallpapers)
         delegate = BackgroundDelegate(self.cache.ratio(), self)
 
         self.ui.dayCombo.setModel(self.wallpaperModel)
         self.ui.dayCombo.setItemDelegate(delegate)
+        self.connect(self.ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
         index = self.wallpaperModel.indexOf(self.cache.path(self.Day))
         if index.isValid():
             self.ui.dayCombo.setCurrentIndex(index.row())
-        self.connect(self.ui.dayCombo, SIGNAL('currentIndexChanged(int)'), self.dayWallpaperChanged)
 
         self.ui.nightCombo.setModel(self.wallpaperModel)
         self.ui.nightCombo.setItemDelegate(delegate)
+        self.connect(self.ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
         index = self.wallpaperModel.indexOf(self.cache.path(self.Night))
         if index.isValid():
             self.ui.nightCombo.setCurrentIndex(index.row())
-        self.connect(self.ui.nightCombo, SIGNAL('currentIndexChanged(int)'), self.nightWallpaperChanged)
 
         self.ui.openButton.setIcon(KIcon('document-open'));
         self.connect(self.ui.openButton, SIGNAL('clicked()'), self.showFileDialog)
 
         self.ui.getNewButton.setIcon(KIcon('get-hot-new-stuff'));
         self.connect(self.ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
-        # TODO KNS3 not yet in pykde4 bindings
-        self.ui.getNewButton.hide()
-
         return self.widget
 
     def configWidgetDestroyed(self):
@@ -263,11 +260,11 @@ class DayAndNight(Wallpaper):
 
     def resizeChanged(self, index):
         self.settingsChanged(True)
-        self.cache.setMethod(index)
+        self.cache.setMethod(WallpaperCache.All, index)
 
     def colorChanged(self, color):
         self.settingsChanged(True)
-        self.cache.setColor(color)
+        self.cache.setColor(WallpaperCache.All, color)
 
     def latitudeChanged(self, txt):
         self.latitude = float(txt)
@@ -293,15 +290,18 @@ class DayAndNight(Wallpaper):
                 BackgroundDelegate.PathRole).toString())
 
     def getNewWallpaper(self):
-        # TODO not yet in pykde4 bindings
         if not self.newStuffDialog:
             self.newStuffDialog = KNS3.DownloadDialog('wallpaper.knsrc', self.widget)
             self.connect(self.newStuffDialog, SIGNAL('accepted()'), self.newStuffFinished)
         self.newStuffDialog.show()
 
     def newStuffFinished(self):
-        if self.newStuffDialog.changedEntries().size() > 0:
-            self.wallpaperModel.reload(self.usersWallpapers)
+        for entry in self.newStuffDialog.changedEntries():
+            for wallpaper in entry.installedFiles():
+                wp = QFileInfo(wallpaper)
+                if wp.suffix().toLower() in BackgroundListModel.ValidSuffixes and \
+                    not self.wallpaperModel.contains(wallpaper):
+                    self.wallpaperModel.addBackground(wallpaper)
 
     def showFileDialog(self):
         if not self.fileDialog:

@@ -46,7 +46,6 @@ class BackgroundFinder(QObject):
         progress.setLabelText(i18n('Finding images for the wallpaper slideshow.'))
         progress.progressBar().setRange(0, 0)
 
-        suffixes = ['png', 'jpeg', 'jpg', 'svg', 'svgz']
         dir = QDir()
         dir.setFilter(QDir.AllDirs | QDir.Files | QDir.Hidden | QDir.Readable)
 
@@ -86,7 +85,7 @@ class BackgroundFinder(QObject):
                             self.paths.append(wp.filePath())
                     else:
                         self.paths.append(wp.filePath())
-                elif wp.suffix().toLower() in suffixes and \
+                elif wp.suffix().toLower() in BackgroundListModel.ValidSuffixes and \
                      (self.container == None or not self.container.contains(wp.filePath())):
                     # print '### adding', wp.filePath(), setLabel
                     if setLabel:
@@ -111,6 +110,8 @@ class BackgroundFinder(QObject):
 
 
 class BackgroundListModel(QAbstractListModel):
+    ValidSuffixes = ['png', 'jpeg', 'jpg', 'svg', 'svgz']
+
     def __init__(self, ratio, listener, parent):
         QAbstractListModel.__init__(self, parent)
         self.listener = listener
