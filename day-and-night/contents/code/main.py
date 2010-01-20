@@ -61,14 +61,14 @@ class DayAndNight(Wallpaper):
     def init(self, config):
         self.cache.init()
 
-        self.cache.setMethod(Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
-                Plasma.Wallpaper.ScaledResize).toInt()[0]))
-        self.cache.setColor(QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150))))
+        method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
+                Plasma.Wallpaper.ScaledResize).toInt()[0])
+        color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
+        dayPath = self.checkIfEmpty(config.readEntry('daywallpaper', '').toString())
+        nightPath = self.checkIfEmpty(config.readEntry('nightwallpaper', '').toString())
 
-        self.cache.setPath(self.Day, self.checkIfEmpty(config.readEntry('daywallpaper', \
-                '').toString()), True)
-        self.cache.setPath(self.Night, self.checkIfEmpty(config.readEntry('nightwallpaper', \
-                '').toString()), True)
+        self.cache.initId(self.Day, dayPath, color, method)
+        self.cache.initId(self.Night, nightPath, color, method)
 
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
         self.longitude = config.readEntry('longitude', 100.0).toDouble()[0]
@@ -81,8 +81,8 @@ class DayAndNight(Wallpaper):
 
     def save(self, config):
         # For some reason QStrings must be converted to python strings before writing?
-        config.writeEntry('resizemethod', int(self.cache.method()))
-        config.writeEntry('wallpapercolor', self.cache.color())
+        config.writeEntry('resizemethod', int(self.cache.method(self.Day)))
+        config.writeEntry('wallpapercolor', self.cache.color(self.Day))
         config.writeEntry('daywallpaper', unicode(self.cache.path(self.Day)))
         config.writeEntry('nightwallpaper', unicode(self.cache.path(self.Night)))
         config.writeEntry('userswallpapers', [unicode(x) for x in self.usersWallpapers])
@@ -181,7 +181,7 @@ class DayAndNight(Wallpaper):
             painter.drawPixmap(exposedRect, pixmap,
                             exposedRect.translated(-self.boundingRect().topLeft()))
         else:
-            painter.fillRect(exposedRect, self.cache.color())
+            painter.fillRect(exposedRect, self.cache.color(self.Day))
 
     def urlDropped(self, url):
         if url.isLocalFile():
