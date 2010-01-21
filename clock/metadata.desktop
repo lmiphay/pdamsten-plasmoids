@@ -1,0 +1,24 @@
+[Desktop Entry]
+Name=Wallpaper Clock
+Comment=Clock wallpaper plugin
+Type=Service
+Icon=clock
+
+X-KDE-ServiceTypes=Plasma/Wallpaper
+X-KDE-PluginInfo-Author=Petri Damstén
+X-KDE-PluginInfo-Email=damu@iki.fi
+X-KDE-PluginInfo-Name=clock
+X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-Website=http://www.kde-look.org/content/show.php?content=118636
+X-KDE-PluginInfo-Depends=
+X-KDE-PluginInfo-License=GPLv2+
+X-KDE-PluginInfo-EnabledByDefault=true
+X-Plasma-API=python
+X-Plasma-MainScript=code/main.py
+X-Plasma-DropMimeTypes=application/zip
+
+X-PublishInfo-Depends=plasma-scriptengine-python_4.4
+X-PublishInfo-LongDescription=Wallpaper plugin that allows you to show Wallpaper Clocks [url]http://www.vladstudio.com/wallpaperclock/[/url].
+X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master/clock
+X-PublishInfo-Contact=http://bit.ly/damu-email
+X-PublishInfo-Installing=http://userbase.kde.org/Plasma/Installing_Plasmoids

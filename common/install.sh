@@ -16,6 +16,8 @@ FILES=(
 "now-rocking/contents/code/helpers.py"
 "scriptedimage/contents/Messages.sh"
 "stealth-cashew/contents/Messages.sh"
+"day-and-night/contents/code/wallpapercache.py"
+"clock/contents/code/wallpapercache.py"
 )
 
 SCRIPT=$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")
