@@ -125,6 +125,7 @@ class BackgroundListModel(QAbstractListModel):
         self.previews = {}
         self.previewJobs = {}
         self.connect(self.dirwatch, SIGNAL('deleted(QString)'), self.removeBackground)
+        self.load()
 
     def removeBackground(self, path):
         index = self.indexOf(path)
@@ -135,10 +136,7 @@ class BackgroundListModel(QAbstractListModel):
             self.packages.removeAt(index.row())
             endRemoveRows()
 
-    def reload(self):
-        self.reload(QStringList())
-
-    def reload(self, selected):
+    def load(self):
         dirs = KGlobal.dirs().findDirs('wallpaper', '')
         #print [unicode(x) for x in dirs]
 
@@ -148,11 +146,6 @@ class BackgroundListModel(QAbstractListModel):
             self.endRemoveRows()
 
         tmp = []
-        for file in selected:
-            if not self.contains(file) and QFile.exists(file):
-                tmp.append(Plasma.Package(file,
-                                          Plasma.Wallpaper.packageStructure(self.structureParent)))
-
         backgrounds = self.findAllBackgrounds(self.structureParent, self, dirs)
         for background in backgrounds:
             package = Plasma.Package(background,
@@ -170,8 +163,14 @@ class BackgroundListModel(QAbstractListModel):
             self.packages = tmp
             self.endInsertRows()
 
+    def addBackgrounds(self, paths):
+        for path in paths:
+            self.addBackground(path)
+
     def addBackground(self, path):
-        if not self.contains(path):
+        wp = QFileInfo(path)
+        if not self.contains(path) and QFile.exists(path) and \
+           wp.suffix().toLower() in BackgroundListModel.ValidSuffixes:
             if not self.dirwatch.contains(path):
                 self.dirwatch.addFile(path)
 
