@@ -34,7 +34,7 @@ from PyKDE4.kdeui import *
 from PyKDE4.kio import *
 from PyKDE4.knewstuff import *
 
-from backgroundlistmodel import BackgroundListModel
+from wallpaperclockmodel import WallpaperClockModel
 from backgrounddelegate import BackgroundDelegate
 from wallpapercache import WallpaperCache
 
@@ -227,7 +227,7 @@ class Clock(Wallpaper):
         self.connect(self.ui.longitudeEdit, SIGNAL('editingFinished()'), \
                 self.longitudeLatitudeEditingFinished)
 
-        self.wallpaperModel = BackgroundListModel(self.cache.ratio(), self.wallpaper, self)
+        self.wallpaperModel = WallpaperClockModel(self.cache.ratio(), self.wallpaper, self)
         self.wallpaperModel.setResizeMethod( \
                 self.cache.operationParam(self.Day, WallpaperCache.Method))
         self.wallpaperModel.setWallpaperSize(self.cache.size())
