@@ -103,7 +103,7 @@ class DayAndNight(Wallpaper):
                 self.lastTimeOfDay = timeOfDay
                 if timeOfDay == self.Twilight:
                     nightAngle = abs(self.NightAngle)
-                    n = (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
+                    n = 1.0 - (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
                     self.cache.setOperation(self.Twilight, \
                             [WallpaperCache.Transition, self.Day, self.Night, n])
                 else:
