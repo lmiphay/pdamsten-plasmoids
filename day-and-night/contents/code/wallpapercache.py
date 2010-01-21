@@ -90,6 +90,13 @@ class WallpaperCache(QObject):
         self.setValue(id, self.Operation, operation)
         self.setDirty(id)
 
+    def operationParam(self, id, param):
+        return self.value(id, self.Operation)[param]
+
+    def setOperationParam(self, id, param, value):
+        self.value(id, self.Operation)[param] = value
+        self.setDirty(id)
+
     def size(self):
         return self._size
 
