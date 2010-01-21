@@ -27,8 +27,9 @@ class WallpaperCache(QObject):
     All = -sys.maxint - 1                           # id
     Operation, Dirty, Pixmap, Data = range(4)       # id properties
     FromDisk, Transition = range(2)                 # operations
+    OperationId = 0
     Path, Color, Method = range(1, 4)               # FromDisk operation
-    Pixmap1, Pixmap2, Amount = range(1, 4)          # Transition operation
+    Pixmaps, Amount = range(1, 3)                   # Transition operation
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
@@ -67,7 +68,13 @@ class WallpaperCache(QObject):
         return self.value(id, self.Dirty)
 
     def setDirty(self, id):
+        #print '### setDirty', id
         self.setValue(id, self.Dirty, True)
+        for key in self.cache.keys():
+            if self.cache[key][self.Operation][self.OperationId] == self.Transition and \
+               id in self.cache[key][self.Operation][self.Pixmaps]:
+                #print '   ### And setDirty', key
+                self.cache[key][self.Dirty] = True
         self.dirtyTimer.start()
 
     def data(self, id):
@@ -98,6 +105,7 @@ class WallpaperCache(QObject):
         return self.value(id, self.Operation)[param]
 
     def setOperationParam(self, id, param, value):
+        #print '### setOperationParam', id
         self.value(id, self.Operation)[param] = value
         self.setDirty(id)
 
@@ -125,11 +133,12 @@ class WallpaperCache(QObject):
         self.checkGeometry()
 
     def doOperation(self, operation):
+        #print '### doOperation', self.rendering, operation[self.OperationId]
         if operation == None:
             self.cache[self.rendering][self.Dirty] = False
             return True
 
-        elif operation[self.Operation] == self.FromDisk:
+        elif operation[self.OperationId] == self.FromDisk:
             package = Plasma.Package(operation[self.Path], \
                                      self.wallpaper.packageStructure(self.wallpaper.wallpaper))
             path = package.filePath('preferred')
@@ -138,10 +147,11 @@ class WallpaperCache(QObject):
             self.wallpaper.render(path, self._size, operation[self.Method], operation[self.Color])
             return False
 
-        elif operation[self.Operation] == self.Transition:
-            pix1 = self.pixmap(operation[self.Pixmap1])
-            pix2 = self.pixmap(operation[self.Pixmap2])
-            if pix1 and pix2:
+        elif operation[self.OperationId] == self.Transition:
+            pix1 = self.pixmap(operation[self.Pixmaps][0])
+            pix2 = self.pixmap(operation[self.Pixmaps][1])
+            if pix1 and not self.isDirty(operation[self.Pixmaps][0]) and \
+               pix2 and not self.isDirty(operation[self.Pixmaps][1]):
                 self.setPixmap(self.rendering,
                                Plasma.PaintUtils.transition(pix1, pix2, operation[self.Amount]))
             return True
@@ -149,26 +159,28 @@ class WallpaperCache(QObject):
         return True
 
     def renderCompleted(self, image):
-        self.cache[self.rendering][self.Dirty] = False
-        self.cache[self.rendering][self.Pixmap] = QPixmap(image)
+        #print '### renderCompleted', self.rendering
+        self.setPixmap(self.rendering, QPixmap(image))
         self.rendering = None
         self.dirtyTimer.start()
 
     def checkDirtyPixmaps(self):
-        #print '### checkDirtyPixmaps'
+        #print '### checkDirtyPixmaps', self.rendering
         if self.rendering != None:
             return
         if self._size == None:
             return
-        i = 0
+
         while True:
             dirty = False
             for id in self.cache.keys():
+                #print '### ID', id, self.cache[id][self.Dirty]
                 if self.cache[id][self.Dirty]:
                     dirty = True
                     self.rendering = id
                     if not self.doOperation(self.cache[id][self.Operation]):
                         return
             if dirty == False: # Handling dirty might set other pixmaps dirty
+                self.rendering = None
                 break
         self.emit(SIGNAL('renderingsCompleted()'))
