@@ -30,7 +30,7 @@ from PyKDE4.kio import *
 from PyKDE4.plasma import Plasma
 from backgrounddelegate import BackgroundDelegate
 
-class BackgroundFinder(QObject):
+class WallpaperFinder(QObject):
     def __init__(self, structureParent, container, paths, eventLoop):
         QObject.__init__(self, None)
         self.structureParent = structureParent
@@ -85,7 +85,7 @@ class BackgroundFinder(QObject):
                             self.paths.append(wp.filePath())
                     else:
                         self.paths.append(wp.filePath())
-                elif wp.suffix().toLower() in BackgroundListModel.ValidSuffixes and \
+                elif wp.suffix().toLower() in WallpaperModel.ValidSuffixes and \
                      (self.container == None or not self.container.contains(wp.filePath())):
                     # print '### adding', wp.filePath(), setLabel
                     if setLabel:
@@ -109,7 +109,7 @@ class BackgroundFinder(QObject):
         return self._papersFound
 
 
-class BackgroundListModel(QAbstractListModel):
+class WallpaperModel(QAbstractListModel):
     ValidSuffixes = ['png', 'jpeg', 'jpg', 'svg', 'svgz']
 
     def __init__(self, ratio, listener, parent):
@@ -170,7 +170,7 @@ class BackgroundListModel(QAbstractListModel):
     def addBackground(self, path):
         wp = QFileInfo(path)
         if not self.contains(path) and QFile.exists(path) and \
-           wp.suffix().toLower() in BackgroundListModel.ValidSuffixes:
+           wp.suffix().toLower() in WallpaperModel.ValidSuffixes:
             if not self.dirwatch.contains(path):
                 self.dirwatch.addFile(path)
 
@@ -294,7 +294,7 @@ class BackgroundListModel(QAbstractListModel):
     def findAllBackgrounds(self, structureParent, container, p):
         # TODO: put this in a thread so that it can run in the background without blocking
         localEventLoop = QEventLoop()
-        finder = BackgroundFinder(structureParent, container, p, localEventLoop)
+        finder = WallpaperFinder(structureParent, container, p, localEventLoop)
 
         self.connect(finder, SIGNAL('finished()'), localEventLoop, SLOT('quit()'))
         QTimer.singleShot(0, finder.start)
