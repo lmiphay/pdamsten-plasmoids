@@ -323,7 +323,7 @@ class Rocking(Applet):
         self.connected = False
         self.engine.disconnectSource(self.player, self)
         if not self.engine.sources().contains(self.player) and self.engine.sources().count() > 0:
-            self.player = QString(self.engine.sources().first())
+            self.player = U(self.engine.sources().first())
         if self.engine.sources().contains(self.player):
             self.engine.connectSource(self.player, self, 500)
             try:
