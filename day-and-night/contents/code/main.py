@@ -41,7 +41,7 @@ from wallpapercache import WallpaperCache
 
 class DayAndNight(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Null, Day, Twilight, Night = (0, 1, 2, 4)
+    Day, Twilight, Night = range(3)
     DayAngle, NightAngle = (50.0 / 60.0, -6.0)
 
     def __init__(self, parent, args = None):
@@ -49,7 +49,6 @@ class DayAndNight(Wallpaper):
         self.usersWallpapers = None
         self.wallpaperModel = None
         self.elevation = None
-        self.rendering = self.Null
         self.lastTimeOfDay = None
         self.newStuffDialog = None
         self.fileDialog = None
@@ -105,7 +104,7 @@ class DayAndNight(Wallpaper):
                     nightAngle = abs(self.NightAngle)
                     n = 1.0 - (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
                     self.cache.setOperation(self.Twilight, \
-                            [WallpaperCache.Transition, self.Day, self.Night, n])
+                            [WallpaperCache.Transition, (self.Day, self.Night), n])
                 else:
                     self.update(self.boundingRect())
         else:
