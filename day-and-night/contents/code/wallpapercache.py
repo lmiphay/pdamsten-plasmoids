@@ -36,6 +36,10 @@ class WallpaperCache(QObject):
         self.wallpaper = wallpaper
         self.rendering = None
         self._size = None
+        self.dirtyTimer = QTimer(self)
+        self.dirtyTimer.setInterval(0)
+        self.dirtyTimer.setSingleShot(True)
+        self.connect(self.dirtyTimer, SIGNAL('timeout()'), self.checkDirtyPixmaps)
 
     def checkId(self, id):
         if id not in self.cache.keys():
@@ -64,7 +68,7 @@ class WallpaperCache(QObject):
 
     def setDirty(self, id):
         self.setValue(id, self.Dirty, True)
-        self.checkDirtyPixmaps()
+        self.dirtyTimer.start()
 
     def data(self, id):
         return self.value(id, self.Data)
@@ -76,7 +80,7 @@ class WallpaperCache(QObject):
         pixmap = self.value(id, self.Pixmap)
         if pixmap == None:
             self.cache[id][self.Dirty] = True
-            self.checkDirtyPixmaps()
+            self.dirtyTimer.start()
         return pixmap
 
     def setPixmap(self, id, pixmap):
@@ -148,9 +152,10 @@ class WallpaperCache(QObject):
         self.cache[self.rendering][self.Dirty] = False
         self.cache[self.rendering][self.Pixmap] = QPixmap(image)
         self.rendering = None
-        self.checkDirtyPixmaps()
+        self.dirtyTimer.start()
 
     def checkDirtyPixmaps(self):
+        #print '### checkDirtyPixmaps'
         if self.rendering != None:
             return
         if self._size == None:
