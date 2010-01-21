@@ -62,12 +62,13 @@ class DayAndNight(Wallpaper):
 
         method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
-        color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
+        dayColor = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
+        nightColor = QColor(config.readEntry('nightwallpapercolor', QColor(0, 0, 0)))
         dayPath = self.checkIfEmpty(config.readEntry('daywallpaper', '').toString())
         nightPath = self.checkIfEmpty(config.readEntry('nightwallpaper', '').toString())
 
-        self.cache.initId(self.Day, [WallpaperCache.FromDisk, dayPath, color, method])
-        self.cache.initId(self.Night, [WallpaperCache.FromDisk, nightPath, color, method])
+        self.cache.initId(self.Day, [WallpaperCache.FromDisk, dayPath, dayColor, method])
+        self.cache.initId(self.Night, [WallpaperCache.FromDisk, nightPath, nightColor, method])
 
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
         self.longitude = config.readEntry('longitude', 100.0).toDouble()[0]
@@ -84,6 +85,8 @@ class DayAndNight(Wallpaper):
                 int(self.cache.operationParam(self.Day, WallpaperCache.Method)))
         config.writeEntry('wallpapercolor', \
                 self.cache.operationParam(self.Day, WallpaperCache.Color))
+        config.writeEntry('nightwallpapercolor', \
+                self.cache.operationParam(self.Night, WallpaperCache.Color))
         config.writeEntry('daywallpaper',
                 unicode(self.cache.operationParam(self.Day, WallpaperCache.Path)))
         config.writeEntry('nightwallpaper',
@@ -212,9 +215,6 @@ class DayAndNight(Wallpaper):
         self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), \
                      self.resizeChanged)
 
-        self.ui.colorButton.setColor(self.cache.operationParam(self.Day, WallpaperCache.Color))
-        self.connect(self.ui.colorButton, SIGNAL('changed(const QColor&)'), self.colorChanged)
-
         self.ui.latitudeEdit.setText(str(self.latitude))
         self.connect(self.ui.latitudeEdit, SIGNAL('textChanged(const QString&)'), \
                      self.latitudeChanged)
@@ -234,6 +234,11 @@ class DayAndNight(Wallpaper):
         self.wallpaperModel.addBackgrounds(self.usersWallpapers)
         delegate = BackgroundDelegate(self.cache.ratio(), self)
 
+        self.ui.dayColorButton.setColor(
+                self.cache.operationParam(self.Day, WallpaperCache.Color))
+        self.connect(self.ui.dayColorButton, SIGNAL('changed(const QColor&)'), \
+                     self.dayColorChanged)
+
         self.ui.dayCombo.setModel(self.wallpaperModel)
         self.ui.dayCombo.setItemDelegate(delegate)
         self.connect(self.ui.dayCombo, SIGNAL('currentIndexChanged(int)'), \
@@ -242,6 +247,11 @@ class DayAndNight(Wallpaper):
                 self.cache.operationParam(self.Day, WallpaperCache.Path))
         if index.isValid():
             self.ui.dayCombo.setCurrentIndex(index.row())
+
+        self.ui.nightColorButton.setColor(
+                self.cache.operationParam(self.Night, WallpaperCache.Color))
+        self.connect(self.ui.nightColorButton, SIGNAL('changed(const QColor&)'), \
+                     self.nightColorChanged)
 
         self.ui.nightCombo.setModel(self.wallpaperModel)
         self.ui.nightCombo.setItemDelegate(delegate)
@@ -269,9 +279,12 @@ class DayAndNight(Wallpaper):
         self.cache.setOperationParam(self.Day, WallpaperCache.Method, index)
         self.cache.setOperationParam(self.Night, WallpaperCache.Method, index)
 
-    def colorChanged(self, color):
+    def dayColorChanged(self, color):
         self.settingsChanged(True)
         self.cache.setOperationParam(self.Day, WallpaperCache.Color, color)
+
+    def nightColorChanged(self, color):
+        self.settingsChanged(True)
         self.cache.setOperationParam(self.Night, WallpaperCache.Color, color)
 
     def latitudeChanged(self, txt):

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>526</width>
-    <height>201</height>
+    <height>234</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -137,7 +137,7 @@
       </layout>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="colorLabel">
+      <widget class="QLabel" name="dayColorLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -145,17 +145,17 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Color:</string>
+        <string>Day Color:</string>
        </property>
        <property name="buddy">
-        <cstring>colorButton</cstring>
+        <cstring>dayColorButton</cstring>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="KColorButton" name="colorButton"/>
+      <widget class="KColorButton" name="dayColorButton"/>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="dayLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -171,7 +171,7 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <widget class="KComboBox" name="dayCombo">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -181,7 +181,7 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="nightLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -197,7 +197,7 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="6" column="1">
       <widget class="KComboBox" name="nightCombo">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -206,6 +206,19 @@
         </sizepolicy>
        </property>
       </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="nightColorLabel">
+       <property name="text">
+        <string>Night Color:</string>
+       </property>
+       <property name="buddy">
+        <cstring>nightColorButton</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="KColorButton" name="nightColorButton"/>
      </item>
     </layout>
    </item>
@@ -293,8 +306,9 @@
   <tabstop>positioningCombo</tabstop>
   <tabstop>latitudeEdit</tabstop>
   <tabstop>longitudeEdit</tabstop>
-  <tabstop>colorButton</tabstop>
+  <tabstop>dayColorButton</tabstop>
   <tabstop>dayCombo</tabstop>
+  <tabstop>nightColorButton</tabstop>
   <tabstop>nightCombo</tabstop>
   <tabstop>openButton</tabstop>
   <tabstop>getNewButton</tabstop>
