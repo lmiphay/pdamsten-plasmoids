@@ -37,6 +37,7 @@ from PyKDE4.knewstuff import *
 from wallpaperclockmodel import WallpaperClockModel
 from backgrounddelegate import BackgroundDelegate
 from wallpapercache import WallpaperCache
+from clockpackage import ClockPackage
 
 
 class Clock(Wallpaper):
@@ -56,6 +57,19 @@ class Clock(Wallpaper):
         self.source = ''
         self.cache = WallpaperCache(self)
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
+        # DEBUG
+        """
+        self.package = ClockPackage(self)
+        packageRoot = KStandardDirs.locateLocal("data", self.package.defaultPackageRoot())
+        #self.package.installPackage(os.path.expanduser('~/download/metal1920x1200.wcz'),packageRoot)
+        #self.package.uninstallPackage('metal1920x1200', packageRoot)
+        self.package.setPath(packageRoot + 'metal1920x1200')
+        print self.package.metadata().pluginName()
+        print self.package.metadata().name()
+        print self.package.metadata().author()
+        print self.package.metadata().email()
+        print self.package.metadata().description()
+        """
 
     def init(self, config):
         self.cache.init()
