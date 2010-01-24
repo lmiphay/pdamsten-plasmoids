@@ -20,6 +20,7 @@ FILES=(
 "clock/contents/code/wallpapercache.py"
 "day-and-night/contents/code/backgrounddelegate.py"
 "clock/contents/code/backgrounddelegate.py"
+"clock/contents/code/helpers.py"
 )
 
 SCRIPT=$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")
