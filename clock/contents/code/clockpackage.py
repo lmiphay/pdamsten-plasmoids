@@ -27,12 +27,14 @@ import re
 # Use Plasma.PackageStructure here although it does not get installed like other package structures
 
 class ClockPackage(Plasma.PackageStructure):
-    def __init__(self, parent):
+    def __init__(self, parent = None, path = None):
         Plasma.PackageStructure.__init__(self, parent, 'ClockWallpaper')
         self.setContentsPrefix(QString())
         self.setDefaultPackageRoot('plasma/clockwallpapers/')
         self.setServicePrefix('plasma-clockwallpaper')
         self._metadata = Plasma.PackageMetadata()
+        if path:
+            self.setPath(path)
 
     def installPackage(self, archivePath, packageRoot):
         name = os.path.splitext(os.path.basename(archivePath))[0]
@@ -60,11 +62,18 @@ class ClockPackage(Plasma.PackageStructure):
         pass
     """
 
+    def preview(self):
+        # TODO
+        return QPixmap()
+
+    def size(self):
+        return QSize(self.width, self.height)
+
     def metadata(self):
         return self._metadata
 
     def pathChanged(self):
-        s = open(self.path() + '/clock.ini').read()
+        s = open(U(self.path()) + '/clock.ini').read()
         s = s.replace('\r', '\n').replace('\n\n', '\n')
         # SafeConfigParser / KConfig does not like mixed windows/unix line endings
         # SafeConfigParser does not seem to parse string with StringIO
@@ -85,8 +94,8 @@ class ClockPackage(Plasma.PackageStructure):
             dict['name'] = self._metadata.pluginName()
 
         self._metadata.setName(dict['name'])
-        self.width = dict['width']
-        self.width = dict['height']
+        self.width = I(dict['width'])
+        self.height = I(dict['height'])
         self._metadata.setAuthor(dict['author'])
         self._metadata.setEmail(dict['email'])
         self._metadata.setDescription(dict['description'])

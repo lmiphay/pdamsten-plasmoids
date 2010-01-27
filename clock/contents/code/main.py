@@ -58,10 +58,10 @@ class Clock(Wallpaper):
         self.cache = WallpaperCache(self)
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
         # DEBUG
+        #package = ClockPackage(self)
+        #packageRoot = KStandardDirs.locateLocal("data", package.defaultPackageRoot())
+        #package.installPackage(os.path.expanduser('~/download/metal1920x1200.wcz'), packageRoot)
         """
-        self.package = ClockPackage(self)
-        packageRoot = KStandardDirs.locateLocal("data", self.package.defaultPackageRoot())
-        #self.package.installPackage(os.path.expanduser('~/download/metal1920x1200.wcz'),packageRoot)
         #self.package.uninstallPackage('metal1920x1200', packageRoot)
         self.package.setPath(packageRoot + 'metal1920x1200')
         print self.package.metadata().pluginName()
@@ -241,11 +241,7 @@ class Clock(Wallpaper):
         self.connect(self.ui.longitudeEdit, SIGNAL('editingFinished()'), \
                 self.longitudeLatitudeEditingFinished)
 
-        self.wallpaperModel = WallpaperClockModel(self.cache.ratio(), self.wallpaper, self)
-        self.wallpaperModel.setResizeMethod( \
-                self.cache.operationParam(self.Day, WallpaperCache.Method))
-        self.wallpaperModel.setWallpaperSize(self.cache.size())
-        self.wallpaperModel.addBackgrounds(self.usersWallpapers)
+        self.wallpaperModel = WallpaperClockModel(self)
         delegate = BackgroundDelegate(self.cache.ratio(), self)
 
         self.ui.dayColorButton.setColor(
