@@ -42,7 +42,7 @@ from clockpackage import ClockPackage
 
 class Clock(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Day, Twilight, Night = range(3)
+    Current, Twilight, Night = range(3)
     DayAngle, NightAngle = (50.0 / 60.0, -6.0)
 
     def __init__(self, parent, args = None):
@@ -81,7 +81,7 @@ class Clock(Wallpaper):
         dayPath = self.checkIfEmpty(config.readEntry('daywallpaper', '').toString())
         nightPath = self.checkIfEmpty(config.readEntry('nightwallpaper', '').toString())
 
-        self.cache.initId(self.Day, [WallpaperCache.FromDisk, dayPath, dayColor, method])
+        self.cache.initId(self.Current, [WallpaperCache.FromDisk, dayPath, dayColor, method])
         self.cache.initId(self.Night, [WallpaperCache.FromDisk, nightPath, nightColor, method])
 
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
@@ -90,19 +90,17 @@ class Clock(Wallpaper):
         if self.latitude > 90.0 or self.longitude > 90.0:
             engine = self.dataEngine('geolocation')
             engine.connectSource('location', self)
-        else:
-            self.longitudeLatitudeEditingFinished()
 
     def save(self, config):
         # For some reason QStrings must be converted to python strings before writing?
         config.writeEntry('resizemethod',
-                int(self.cache.operationParam(self.Day, WallpaperCache.Method)))
+                int(self.cache.operationParam(self.Current, WallpaperCache.Method)))
         config.writeEntry('wallpapercolor', \
-                self.cache.operationParam(self.Day, WallpaperCache.Color))
+                self.cache.operationParam(self.Current, WallpaperCache.Color))
         config.writeEntry('nightwallpapercolor', \
                 self.cache.operationParam(self.Night, WallpaperCache.Color))
         config.writeEntry('daywallpaper',
-                unicode(self.cache.operationParam(self.Day, WallpaperCache.Path)))
+                unicode(self.cache.operationParam(self.Current, WallpaperCache.Path)))
         config.writeEntry('nightwallpaper',
                 unicode(self.cache.operationParam(self.Night, WallpaperCache.Path)))
         config.writeEntry('userswallpapers', [unicode(x) for x in self.usersWallpapers])
@@ -119,9 +117,9 @@ class Clock(Wallpaper):
                 self.lastTimeOfDay = timeOfDay
                 if timeOfDay == self.Twilight:
                     nightAngle = abs(self.NightAngle)
-                    n = 1.0 - (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
+                    n = 1.0 - (self.elevation + nightAngle) / (nightAngle + self.CurrentAngle)
                     self.cache.setOperation(self.Twilight, \
-                            [WallpaperCache.Transition, (self.Day, self.Night), n])
+                            [WallpaperCache.Transition, (self.Current, self.Night), n])
                 else:
                     self.update(self.boundingRect())
         else:
@@ -154,8 +152,8 @@ class Clock(Wallpaper):
 
     def timeOfDay(self):
         if self.elevation:
-            if self.elevation > self.DayAngle:
-                return self.Day
+            if self.elevation > self.CurrentAngle:
+                return self.Current
             elif self.elevation > self.NightAngle:
                 return self.Twilight
             else:
@@ -170,8 +168,8 @@ class Clock(Wallpaper):
         timeOfDay = self.timeOfDay()
         if timeOfDay == self.Twilight:
             pixmap = self.cache.pixmap(self.Twilight)
-        if timeOfDay == self.Day or (timeOfDay == self.Twilight and pixmap == None):
-            pixmap = self.cache.pixmap(self.Day)
+        if timeOfDay == self.Current or (timeOfDay == self.Twilight and pixmap == None):
+            pixmap = self.cache.pixmap(self.Current)
         if timeOfDay == self.Night or (timeOfDay == self.Twilight and pixmap == None):
             pixmap = self.cache.pixmap(self.Night)
 
@@ -189,11 +187,11 @@ class Clock(Wallpaper):
             painter.drawPixmap(exposedRect, pixmap,
                                exposedRect.translated(-self.boundingRect().topLeft()))
         else:
-            painter.fillRect(exposedRect, self.cache.operationParam(self.Day, WallpaperCache.Color))
+            painter.fillRect(exposedRect, self.cache.operationParam(self.Current, WallpaperCache.Color))
 
     # Url dropped
     #----------------------------------------------------------------------------------------------
-
+    # TODO
     def urlDropped(self, url):
         if url.isLocalFile():
             self.setWallpaperPath(url.toLocalFile())
@@ -207,8 +205,8 @@ class Clock(Wallpaper):
         self.setWallpaperPath(job.destUrl().toLocalFile())
 
     def setWallpaperPath(self, path):
-        if self.elevation > (self.NightAngle + self.DayAngle) / 2.0:
-            self.cache.setPath(self.Day, path)
+        if self.elevation > (self.NightAngle + self.CurrentAngle) / 2.0:
+            self.cache.setPath(self.Current, path)
         else:
             self.cache.setPath(self.Night, path)
 
@@ -222,61 +220,38 @@ class Clock(Wallpaper):
         self.widget = QWidget(parent)
         self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
         self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
-        self.dayCombo = self.ui.dayCombo
 
         self.ui.positioningCombo.setCurrentIndex(
-                self.cache.operationParam(self.Day, WallpaperCache.Method))
+                self.cache.operationParam(self.Current, WallpaperCache.Method))
         self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), \
                      self.resizeChanged)
-
-        self.ui.latitudeEdit.setText(str(self.latitude))
-        self.connect(self.ui.latitudeEdit, SIGNAL('textChanged(const QString&)'), \
-                     self.latitudeChanged)
-        self.connect(self.ui.latitudeEdit, SIGNAL('editingFinished()'), \
-                self.longitudeLatitudeEditingFinished)
-
-        self.ui.longitudeEdit.setText(str(self.longitude))
-        self.connect(self.ui.longitudeEdit, SIGNAL('textChanged(const QString&)'), \
-                     self.longitudeChanged)
-        self.connect(self.ui.longitudeEdit, SIGNAL('editingFinished()'), \
-                self.longitudeLatitudeEditingFinished)
 
         self.wallpaperModel = WallpaperClockModel(self)
         delegate = BackgroundDelegate(self.cache.ratio(), self)
 
-        self.ui.dayColorButton.setColor(
-                self.cache.operationParam(self.Day, WallpaperCache.Color))
-        self.connect(self.ui.dayColorButton, SIGNAL('changed(const QColor&)'), \
-                     self.dayColorChanged)
+        self.ui.colorButton.setColor(
+                self.cache.operationParam(self.Current, WallpaperCache.Color))
+        self.connect(self.ui.colorButton, SIGNAL('changed(const QColor&)'), \
+                     self.colorChanged)
 
-        self.ui.dayCombo.setModel(self.wallpaperModel)
-        self.ui.dayCombo.setItemDelegate(delegate)
-        self.connect(self.ui.dayCombo, SIGNAL('currentIndexChanged(int)'), \
-                     self.dayWallpaperChanged)
+        self.ui.clockWallpaperView.setModel(self.wallpaperModel)
+        self.ui.clockWallpaperView.setItemDelegate(delegate)
+        self.connect(self.ui.clockWallpaperView.selectionModel(),
+                     SIGNAL('currentChanged(const QModelIndex&, const QModelIndex&)'),
+                     self.wallpaperChanged)
         index = self.wallpaperModel.indexOf( \
-                self.cache.operationParam(self.Day, WallpaperCache.Path))
+                self.cache.operationParam(self.Current, WallpaperCache.Path))
         if index.isValid():
-            self.ui.dayCombo.setCurrentIndex(index.row())
-
-        self.ui.nightColorButton.setColor(
-                self.cache.operationParam(self.Night, WallpaperCache.Color))
-        self.connect(self.ui.nightColorButton, SIGNAL('changed(const QColor&)'), \
-                     self.nightColorChanged)
-
-        self.ui.nightCombo.setModel(self.wallpaperModel)
-        self.ui.nightCombo.setItemDelegate(delegate)
-        self.connect(self.ui.nightCombo, SIGNAL('currentIndexChanged(int)'), \
-                     self.nightWallpaperChanged)
-        index = self.wallpaperModel.indexOf(\
-                self.cache.operationParam(self.Night, WallpaperCache.Path))
-        if index.isValid():
-            self.ui.nightCombo.setCurrentIndex(index.row())
+            self.ui.clockWallpaperView.setCurrentIndex(index)
 
         self.ui.openButton.setIcon(KIcon('document-open'));
         self.connect(self.ui.openButton, SIGNAL('clicked()'), self.showFileDialog)
 
         self.ui.getNewButton.setIcon(KIcon('get-hot-new-stuff'));
         self.connect(self.ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
+
+        self.ui.uninstallButton.setIcon(KIcon('edit-delete'));
+        self.connect(self.ui.uninstallButton, SIGNAL('clicked()'), self.uninstall)
         return self.widget
 
     def configWidgetDestroyed(self):
@@ -286,54 +261,33 @@ class Clock(Wallpaper):
 
     def resizeChanged(self, index):
         self.settingsChanged(True)
-        self.cache.setOperationParam(self.Day, WallpaperCache.Method, index)
+        self.cache.setOperationParam(self.Current, WallpaperCache.Method, index)
         self.cache.setOperationParam(self.Night, WallpaperCache.Method, index)
 
-    def dayColorChanged(self, color):
+    def colorChanged(self, color):
         self.settingsChanged(True)
-        self.cache.setOperationParam(self.Day, WallpaperCache.Color, color)
+        self.cache.setOperationParam(self.Current, WallpaperCache.Color, color)
 
-    def nightColorChanged(self, color):
+    def wallpaperChanged(self, index):
         self.settingsChanged(True)
-        self.cache.setOperationParam(self.Night, WallpaperCache.Color, color)
+        path = self.wallpaperModel.data(index, BackgroundDelegate.PathRole).toString()
+        self.cache.setOperationParam(self.Current, WallpaperCache.Path, path)
 
-    def latitudeChanged(self, txt):
-        self.latitude = float(txt)
+    # Uninstall
+    def uninstall(self):
+        # TODO
+        pass
 
-    def longitudeChanged(self, txt):
-        self.longitude = float(txt)
-
-    def longitudeLatitudeEditingFinished(self):
-        engine = self.dataEngine('time')
-        if self.source != '':
-            engine.disconnectSource(self.source, self)
-        self.source = 'Local|Solar|Latitude=%f|Longitude=%f' % (self.latitude, self.longitude)
-        engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
-
-    def dayWallpaperChanged(self, row):
-        self.settingsChanged(True)
-        path = self.wallpaperModel.data(self.wallpaperModel.index(row, 0), \
-                                        BackgroundDelegate.PathRole).toString()
-        self.cache.setOperationParam(self.Day, WallpaperCache.Path, path)
-
-    def nightWallpaperChanged(self, row):
-        self.settingsChanged(True)
-        path = self.wallpaperModel.data(self.wallpaperModel.index(row, 0),
-                                        BackgroundDelegate.PathRole).toString()
-        self.cache.setOperationParam(self.Night, WallpaperCache.Path, path)
-
-    # GHNS
+    # New wallpaper from website
 
     def getNewWallpaper(self):
-        if not self.newStuffDialog:
-            self.newStuffDialog = KNS3.DownloadDialog('wallpaper.knsrc', self.widget)
-            self.connect(self.newStuffDialog, SIGNAL('accepted()'), self.newStuffFinished)
-        self.newStuffDialog.show()
+        # TODO
+        pass
 
     def newStuffFinished(self):
-        for entry in self.newStuffDialog.changedEntries():
-            for wallpaper in entry.installedFiles():
-                self.wallpaperModel.addBackground(wallpaper)
+        # TODO
+        self.wallpaperModel.addBackground(wallpaper)
+        pass
 
     # Open file
 
