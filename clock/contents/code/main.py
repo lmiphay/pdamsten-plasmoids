@@ -38,19 +38,17 @@ from wallpaperclockmodel import WallpaperClockModel
 from backgrounddelegate import BackgroundDelegate
 from wallpapercache import WallpaperCache
 from clockpackage import ClockPackage
+from helpers import *
 
 
 class Clock(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Current, Twilight, Night = range(3)
-    DayAngle, NightAngle = (50.0 / 60.0, -6.0)
+    Current, Next = range(2)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
         self.usersWallpapers = None
         self.wallpaperModel = None
-        self.elevation = None
-        self.lastTimeOfDay = None
         self.newStuffDialog = None
         self.fileDialog = None
         self.widget = None
@@ -72,106 +70,55 @@ class Clock(Wallpaper):
         """
 
     def init(self, config):
+        print '### init'
         self.cache.init()
 
         method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
-        dayColor = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
-        nightColor = QColor(config.readEntry('nightwallpapercolor', QColor(0, 0, 0)))
-        dayPath = self.checkIfEmpty(config.readEntry('daywallpaper', '').toString())
-        nightPath = self.checkIfEmpty(config.readEntry('nightwallpaper', '').toString())
+        color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
+        path = self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString())
 
-        self.cache.initId(self.Current, [WallpaperCache.FromDisk, dayPath, dayColor, method])
-        self.cache.initId(self.Night, [WallpaperCache.FromDisk, nightPath, nightColor, method])
-
-        self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
-        self.longitude = config.readEntry('longitude', 100.0).toDouble()[0]
-        self.latitude = config.readEntry('latitude', 100.0).toDouble()[0]
-        if self.latitude > 90.0 or self.longitude > 90.0:
-            engine = self.dataEngine('geolocation')
-            engine.connectSource('location', self)
+        self.cache.initId(self.Current, [WallpaperCache.FromDisk, path, color, method])
 
     def save(self, config):
+        print '### save'
         # For some reason QStrings must be converted to python strings before writing?
         config.writeEntry('resizemethod',
-                int(self.cache.operationParam(self.Current, WallpaperCache.Method)))
+                I(self.cache.operationParam(self.Current, WallpaperCache.Method)))
         config.writeEntry('wallpapercolor', \
                 self.cache.operationParam(self.Current, WallpaperCache.Color))
-        config.writeEntry('nightwallpapercolor', \
-                self.cache.operationParam(self.Night, WallpaperCache.Color))
-        config.writeEntry('daywallpaper',
-                unicode(self.cache.operationParam(self.Current, WallpaperCache.Path)))
-        config.writeEntry('nightwallpaper',
-                unicode(self.cache.operationParam(self.Night, WallpaperCache.Path)))
-        config.writeEntry('userswallpapers', [unicode(x) for x in self.usersWallpapers])
-        config.writeEntry('longitude', float(self.longitude))
-        config.writeEntry('latitude', float(self.latitude))
+        config.writeEntry('clockwallpaper',
+                U(self.cache.operationParam(self.Current, WallpaperCache.Path)))
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
-        if QString(u'Corrected Elevation') in data:
-            self.elevation = data[QString(u'Corrected Elevation')]
-            # DEBUG self.elevation = -3.0
-            timeOfDay = self.timeOfDay()
-            if timeOfDay == self.Twilight or timeOfDay != self.lastTimeOfDay:
-                self.lastTimeOfDay = timeOfDay
-                if timeOfDay == self.Twilight:
-                    nightAngle = abs(self.NightAngle)
-                    n = 1.0 - (self.elevation + nightAngle) / (nightAngle + self.CurrentAngle)
-                    self.cache.setOperation(self.Twilight, \
-                            [WallpaperCache.Transition, (self.Current, self.Night), n])
-                else:
-                    self.update(self.boundingRect())
-        else:
-            try:
-                self.latitude = float(data[QString(u'latitude')])
-                self.longitude = float(data[QString(u'longitude')])
-            except:
-                self.latitude = 0.0
-                self.longitude = 0.0
-                if self.ui:
-                    self.ui.latitudeEdit.setText(str(self.latitude))
-                    self.ui.longitudeEdit.setText(str(self.longitude))
-
-                self.longitudeLatitudeEditingFinished()
+        print '### dataUpdated'
+        self.update(self.boundingRect())
 
     def checkIfEmpty(self, wallpaper):
+        print '### checkIfEmpty'
         if wallpaper.isEmpty():
-            wallpaper = Plasma.Theme.defaultTheme().wallpaperPath()
-            index = wallpaper.indexOf('/contents/images/')
-            if index > -1: # We have file from package -> get path to package
-                wallpaper = wallpaper.left(index)
+            paths = KGlobal.dirs().findDirs('data', 'plasma/clockwallpapers')
+            if not paths.isEmpty():
+                wallpaper = paths.first()
         return wallpaper
 
     def checkGeometry(self):
+        print '### checkGeometry'
         if self.cache.checkGeometry() and self.wallpaperModel:
             self.wallpaperModel.setWallpaperSize(self.cache.size())
 
     def renderingsCompleted(self):
+        print '### renderingsCompleted'
         self.update(self.boundingRect())
 
-    def timeOfDay(self):
-        if self.elevation:
-            if self.elevation > self.CurrentAngle:
-                return self.Current
-            elif self.elevation > self.NightAngle:
-                return self.Twilight
-            else:
-                return self.Night
-        return None
-
     def paint(self, painter, exposedRect):
+        print '### paint'
         self.checkGeometry()
-        pixmap = None
 
         # get pixmap
-        timeOfDay = self.timeOfDay()
-        if timeOfDay == self.Twilight:
-            pixmap = self.cache.pixmap(self.Twilight)
-        if timeOfDay == self.Current or (timeOfDay == self.Twilight and pixmap == None):
-            pixmap = self.cache.pixmap(self.Current)
-        if timeOfDay == self.Night or (timeOfDay == self.Twilight and pixmap == None):
-            pixmap = self.cache.pixmap(self.Night)
+        pixmap = None
+        #pixmap = self.cache.pixmap(self.Current)
 
         # paint
         if pixmap:
@@ -196,22 +143,18 @@ class Clock(Wallpaper):
         if url.isLocalFile():
             self.setWallpaperPath(url.toLocalFile())
         else:
-            wallpaperPath = KGlobal.dirs().locateLocal('wallpaper', url.fileName())
-            if not wallpaperPath.isEmpty():
-                job = KIO.file_copy(url, KUrl(wallpaperPath))
+            self.tmpFile = KTemporaryFile()
+            if self.tmpFile.open():
+                job = KIO.file_copy(url, KUrl(self.tmpFile.fileName()))
                 self.connect(job, SIGNAL('result(KJob*)'), self.wallpaperRetrieved)
 
     def wallpaperRetrieved(self, job):
         self.setWallpaperPath(job.destUrl().toLocalFile())
+        self.tmpFile = None
 
     def setWallpaperPath(self, path):
-        if self.elevation > (self.NightAngle + self.CurrentAngle) / 2.0:
-            self.cache.setPath(self.Current, path)
-        else:
-            self.cache.setPath(self.Night, path)
-
-        if not self.usersWallpapers.contains(path):
-            self.usersWallpapers.append(path)
+        # TODO install
+        pass
 
     # Configuration dialog
     #----------------------------------------------------------------------------------------------
@@ -293,11 +236,10 @@ class Clock(Wallpaper):
 
     def showFileDialog(self):
         if not self.fileDialog:
-            self.fileDialog = KFileDialog(KUrl(), '*.png *.jpeg *.jpg *.xcf *.svg *.svgz', \
-                    self.widget)
+            self.fileDialog = KFileDialog(KUrl(), '*.wcz *.zip', self.widget)
             self.fileDialog.setOperationMode(KFileDialog.Opening)
             self.fileDialog.setInlinePreviewShown(True)
-            self.fileDialog.setCaption(i18n('Select Wallpaper Image File'))
+            self.fileDialog.setCaption(i18n('Select Clock Wallpaper File'))
             self.fileDialog.setModal(False)
             self.connect(self.fileDialog, SIGNAL('okClicked()'), self.wallpaperBrowseCompleted)
             self.connect(self.fileDialog, SIGNAL('destroyed(QObject*)'), self.fileDialogFinished)
@@ -310,15 +252,8 @@ class Clock(Wallpaper):
         self.fileDialog = None
 
     def wallpaperBrowseCompleted(self):
-        info = QFileInfo(self.fileDialog.selectedFile())
-        # the full file path, so it isn't broken when dealing with symlinks
-        wallpaper = info.canonicalFilePath()
-        if wallpaper.isEmpty():
-            return
-        if not self.wallpaperModel.contains(wallpaper):
-            self.wallpaperModel.addBackground(wallpaper)
-        if not self.usersWallpapers.contains(wallpaper):
-            self.usersWallpapers.append(wallpaper)
+        name = self.fileDialog.selectedFile()
+        # TODO install
 
 
 def CreateWallpaper(parent):
