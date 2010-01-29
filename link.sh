@@ -17,6 +17,9 @@ for desktop in ./*/*.desktop; do
     rm -f "$KDEHOME/share/kde4/services/plasma-$TYPE-$NAME.desktop"
     ln -s "$(pwd)/$desktop" "$KDEHOME/share/kde4/services/plasma-$TYPE-$NAME.desktop"
     rm -fR "$KDEHOME/share/apps/plasma/$EXT""s/$NAME"
+    if [ ! -d "$KDEHOME/share/apps/plasma/$EXT""s/" ]; then
+        mkdir -p "$KDEHOME/share/apps/plasma/$EXT""s/"
+    fi
     ln -s "$(pwd)/$DIR/" "$KDEHOME/share/apps/plasma/$EXT""s/$NAME"
 done
 
