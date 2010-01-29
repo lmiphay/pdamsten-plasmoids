@@ -76,7 +76,7 @@ class Clock(Wallpaper):
         method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
         color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
-        path = self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString())
+        path = U(self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString()))
 
         self.cache.initId(self.Current, [WallpaperCache.FromDisk, path, color, method])
 
@@ -87,10 +87,8 @@ class Clock(Wallpaper):
                 I(self.cache.operationParam(self.Current, WallpaperCache.Method)))
         config.writeEntry('wallpapercolor', \
                 self.cache.operationParam(self.Current, WallpaperCache.Color))
-        print '*', type (self.cache.operationParam(self.Current, WallpaperCache.Path))
         config.writeEntry('clockwallpaper',
                 U(self.cache.operationParam(self.Current, WallpaperCache.Path)))
-        print '*'
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
