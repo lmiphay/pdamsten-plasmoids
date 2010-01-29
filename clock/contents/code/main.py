@@ -87,8 +87,10 @@ class Clock(Wallpaper):
                 I(self.cache.operationParam(self.Current, WallpaperCache.Method)))
         config.writeEntry('wallpapercolor', \
                 self.cache.operationParam(self.Current, WallpaperCache.Color))
+        print '*', type (self.cache.operationParam(self.Current, WallpaperCache.Path))
         config.writeEntry('clockwallpaper',
                 U(self.cache.operationParam(self.Current, WallpaperCache.Path)))
+        print '*'
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):

@@ -49,6 +49,8 @@ def U(s):
         return unicode(s.text())
     elif isinstance(s, KColorCombo):
         return unicode(s.color().name())
+    elif s == None:
+        return u''
     else:
         return unicode(s)
 
