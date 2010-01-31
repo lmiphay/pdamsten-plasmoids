@@ -50,7 +50,7 @@ class WallpaperClockFinder(QObject): # (QThread): TODO
                 if (cwp.fileName() == '.') or (cwp.fileName() == '..'):
                     continue
                 print '   ### directory', cwp.fileName()
-                package = ClockPackage(None, path + cwp.fileName())
+                package = ClockPackage(None, cwp.canonicalFilePath())
                 self.emit(SIGNAL('newClockWallpaper(ClockPackage*)'), package)
         self.emit(SIGNAL('finished()'))
 
