@@ -54,6 +54,7 @@ class DayAndNight(Wallpaper):
         self.fileDialog = None
         self.widget = None
         self.source = ''
+        self.ui = None
         self.cache = WallpaperCache(self)
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
 
