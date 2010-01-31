@@ -30,6 +30,7 @@ from PyKDE4.kio import *
 from PyKDE4.plasma import Plasma
 from backgrounddelegate import BackgroundDelegate
 from clockpackage import ClockPackage
+from helpers import *
 
 class WallpaperClockFinder(QObject): # (QThread): TODO
     def __init__(self, parent = None):
@@ -65,12 +66,13 @@ class WallpaperClockModel(QAbstractListModel):
         self.findAllBackgrounds()
 
     def removeClockWallpaper(self, path):
+        #print '### removeClockWallpaper', path
         index = self.indexOf(path)
 
         if index.isValid():
-            beginRemoveRows(QModelIndex(), index.row(), index.row())
-            self.packages.removeAt(index.row())
-            endRemoveRows()
+            self.beginRemoveRows(QModelIndex(), index.row(), index.row())
+            del self.packages[index.row()]
+            self.endRemoveRows()
 
     def addClockWallpaper(self, package):
         if self.progress:
@@ -93,8 +95,8 @@ class WallpaperClockModel(QAbstractListModel):
             self.finder = None
 
     def indexOf(self, path):
-        info = QFileInfo(path)
-        if info.isDir() and not path.endsWith('/'):
+        path = U(path)
+        if not path.endswith('/'):
             path += '/'
         for i, p in enumerate(self.packages):
             if path == p.path():

@@ -149,7 +149,11 @@ class Clock(Wallpaper):
         print '### installPackage', localPath
         package = ClockPackage(self)
         packageRoot = KStandardDirs.locateLocal("data", package.defaultPackageRoot())
-        package.installPackage(localPath, packageRoot)
+        ClockPackage.installPackage(localPath, packageRoot)
+        if self.wallpaperModel:
+            name = os.path.splitext(os.path.basename(U(localPath)))[0]
+            package.setPath(os.path.join(U(packageRoot), U(name)))
+            self.wallpaperModel.addClockWallpaper(package)
 
     # Url dropped
     #----------------------------------------------------------------------------------------------
@@ -229,8 +233,14 @@ class Clock(Wallpaper):
 
     # Uninstall
     def uninstall(self):
-        # TODO
-        pass
+        index = self.ui.clockWallpaperView.currentIndex()
+        if index.isValid():
+            package = self.wallpaperModel.package(index.row())
+            if KMessageBox.warningYesNo(self.widget, \
+                    i18n('Are you sure you want to uninstall "%1"- clock wallpaper', \
+                         package.metadata().name())) == KMessageBox.Yes:
+                packageRoot = KStandardDirs.locateLocal("data", package.defaultPackageRoot())
+                ClockPackage.uninstallPackage(package.metadata().pluginName(), packageRoot)
 
     # New wallpaper from website
 

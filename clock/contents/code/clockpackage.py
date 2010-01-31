@@ -27,22 +27,26 @@ import re
 # Use Plasma.PackageStructure here although it does not get installed like other package structures
 
 class ClockPackage(Plasma.PackageStructure):
+    job = None
     def __init__(self, parent = None, path = None):
         Plasma.PackageStructure.__init__(self, parent, 'ClockWallpaper')
         self.setContentsPrefix(QString())
         self.setDefaultPackageRoot('plasma/clockwallpapers/')
         self.setServicePrefix('plasma-clockwallpaper')
         self._metadata = Plasma.PackageMetadata()
+        self.width = 0
+        self.height = 0
         if path:
             self.setPath(path)
 
-    def installPackage(self, archivePath, packageRoot):
-        name = os.path.splitext(os.path.basename(archivePath))[0]
+    @staticmethod
+    def installPackage(archivePath, packageRoot):
+        name = os.path.splitext(os.path.basename(U(archivePath)))[0]
         packageDir = os.path.join(U(packageRoot), U(name))
 
         if not os.path.exists(packageDir):
             KStandardDirs.makeDir(packageDir)
-            if not os.path.exists(packageDir)():
+            if not os.path.exists(packageDir):
                 return False
 
         zip = KZip(archivePath)
@@ -52,12 +56,14 @@ class ClockPackage(Plasma.PackageStructure):
         else:
             return False
 
-    def uninstallPackage(self, packageName, packageRoot):
+    @staticmethod
+    def uninstallPackage(packageName, packageRoot):
         packageDir = os.path.join(U(packageRoot), U(packageName))
-        self.job = KIO.del_(KUrl(packageDir))
-        return self.job.exec_()
+        ClockPackage.job = KIO.del_(KUrl(packageDir))
+        return ClockPackage.job.exec_()
 
     """
+    @staticmethod
     def createNewWidgetBrowser(self, parent = None):
         pass
     """
