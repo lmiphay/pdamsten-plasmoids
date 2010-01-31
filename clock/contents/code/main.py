@@ -76,8 +76,7 @@ class Clock(Wallpaper):
         method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
         color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
-        path = U(self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString()))
-
+        path = self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString())
         self.cache.initId(self.Current, [WallpaperCache.FromDisk, path, color, method])
 
     def save(self, config):
@@ -99,9 +98,18 @@ class Clock(Wallpaper):
         print '### checkIfEmpty'
         if wallpaper.isEmpty():
             paths = KGlobal.dirs().findDirs('data', 'plasma/clockwallpapers')
-            if not paths.isEmpty():
-                wallpaper = paths.first()
-        return wallpaper
+            dir = QDir()
+            dir.setFilter(QDir.AllDirs | QDir.Hidden | QDir.Readable)
+            for path in paths:
+                dir.setPath(path)
+                dirs = dir.entryInfoList()
+                for cwp in dirs:
+                    print cwp.fileName()
+                    if (cwp.fileName() == '.') or (cwp.fileName() == '..'):
+                        continue
+                    wallpaper = cwp.canonicalFilePath()
+                    break
+        return U(wallpaper)
 
     def checkGeometry(self):
         print '### checkGeometry'
