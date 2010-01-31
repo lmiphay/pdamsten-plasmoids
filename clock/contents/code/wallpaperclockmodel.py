@@ -127,7 +127,8 @@ class WallpaperClockModel(QAbstractListModel):
             return QVariant(unicode(title))
 
         elif role == Qt.DecorationRole or role == BackgroundDelegate.ScreenshotRole:
-            return QPixmap(b.preview())
+            return QPixmap(b.preview().scaled(BackgroundDelegate.SCREENSHOT_SIZE, \
+                    BackgroundDelegate.SCREENSHOT_SIZE, Qt.KeepAspectRatio))
 
         elif role == BackgroundDelegate.AuthorRole:
             return QVariant(unicode(b.metadata().author()))

@@ -36,6 +36,7 @@ class ClockPackage(Plasma.PackageStructure):
         self._metadata = Plasma.PackageMetadata()
         self.width = 0
         self.height = 0
+        self._preview = None
         if path:
             self.setPath(path)
 
@@ -69,8 +70,7 @@ class ClockPackage(Plasma.PackageStructure):
     """
 
     def preview(self):
-        # TODO
-        return QPixmap()
+        return self._preview
 
     def size(self):
         return QSize(self.width, self.height)
@@ -95,9 +95,19 @@ class ClockPackage(Plasma.PackageStructure):
         for i in a:
             dict[i[0]] = i[1]
 
-        self._metadata.setPluginName(os.path.basename(U(self.path()).rstrip('/')))
+        path = U(self.path())
+        self._metadata.setPluginName(os.path.basename(path.rstrip('/')))
         if dict['name'] == '':
             dict['name'] = self._metadata.pluginName()
+
+        self._preview = QImage()
+        preview = os.path.join(path, 'preview100x75.jpg')
+        if os.path.exists(preview):
+            self._preview.load(preview)
+        else:
+            preview = os.path.join(path, 'preview200x150.jpg')
+            if os.path.exists(preview):
+                self._preview.load(preview)
 
         self._metadata.setName(dict['name'])
         self.width = I(dict['width'])
