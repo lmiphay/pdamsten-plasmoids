@@ -136,12 +136,19 @@ class Clock(Wallpaper):
         else:
             painter.fillRect(exposedRect, self.cache.operationParam(self.Current, WallpaperCache.Color))
 
+
+    def installPackage(self, localPath):
+        print '### installPackage', localPath
+        package = ClockPackage(self)
+        packageRoot = KStandardDirs.locateLocal("data", package.defaultPackageRoot())
+        package.installPackage(localPath, packageRoot)
+
     # Url dropped
     #----------------------------------------------------------------------------------------------
-    # TODO
     def urlDropped(self, url):
+        print '### urlDropped', url
         if url.isLocalFile():
-            self.setWallpaperPath(url.toLocalFile())
+            self.installPackage(url.toLocalFile())
         else:
             self.tmpFile = KTemporaryFile()
             if self.tmpFile.open():
@@ -149,12 +156,8 @@ class Clock(Wallpaper):
                 self.connect(job, SIGNAL('result(KJob*)'), self.wallpaperRetrieved)
 
     def wallpaperRetrieved(self, job):
-        self.setWallpaperPath(job.destUrl().toLocalFile())
+        self.installPackage(job.destUrl().toLocalFile())
         self.tmpFile = None
-
-    def setWallpaperPath(self, path):
-        # TODO install
-        pass
 
     # Configuration dialog
     #----------------------------------------------------------------------------------------------
@@ -253,7 +256,7 @@ class Clock(Wallpaper):
 
     def wallpaperBrowseCompleted(self):
         name = self.fileDialog.selectedFile()
-        # TODO install
+        self.installPackage(name)
 
 
 def CreateWallpaper(parent):
