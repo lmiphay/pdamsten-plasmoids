@@ -98,25 +98,25 @@ class Clock(Wallpaper):
                 path + 'bg.jpg', self.color, self.method])
         """
         self.cache.setOperation(self.Zodiac, [WallpaperCache.FromDisk, \
-                path + 'bg.jpg', self.color, self.method])
+                path + 'zodiac%s.png', self.color, self.method])
         self.cache.setOperation(self.Moon, [WallpaperCache.FromDisk, \
-                path + 'bg.jpg', self.color, self.method])
+                path + 'moonphase%d.png', self.color, self.method])
         """
         self.cache.setOperation(self.Month, [WallpaperCache.FromDisk, \
-                path + 'month%d.jpg' % next.date().month(), self.color, self.method])
+                path + 'month%d.png' % next.date().month(), self.color, self.method])
         self.cache.setOperation(self.WeekDay, [WallpaperCache.FromDisk, \
-                path + 'weekday%d.jpg' % next.date().dayOfWeek(), self.color, self.method])
+                path + 'weekday%d.png' % next.date().dayOfWeek(), self.color, self.method])
         self.cache.setOperation(self.Day, [WallpaperCache.FromDisk, \
-                path + 'day%d.jpg' % next.date().day(), self.color, self.method])
+                path + 'day%d.png' % next.date().day(), self.color, self.method])
         # TODO 12 min update
         self.cache.setOperation(self.Hour, [WallpaperCache.FromDisk, \
-                path + 'hour%d.jpg' % next.time().hour(), self.color, self.method])
+                path + 'hour%d.png' % next.time().hour(), self.color, self.method])
         """
         self.cache.setOperation(self.AmPm, [WallpaperCache.FromDisk, \
-                path + 'bg.jpg', self.color, self.method])
+                path + '%s.png', self.color, self.method])
         """
         self.cache.setOperation(self.Minute, [WallpaperCache.FromDisk,
-                path + 'minute%d.jpg' % next.time().minute(), self.color, self.method])
+                path + 'minute%d.png' % next.time().minute(), self.color, self.method])
 
     def checkIfEmpty(self, wallpaper):
         print '### checkIfEmpty'
