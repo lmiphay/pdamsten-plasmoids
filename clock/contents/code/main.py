@@ -98,25 +98,25 @@ class Clock(Wallpaper):
                 path + 'bg.jpg', self.color, self.method])
         """
         self.cache.setOperation(self.Zodiac, [WallpaperCache.FromDisk, \
-                path + 'zodiac%s.png', self.color, self.method])
+                path + 'zodiac%s.png', Qt.transparent, self.method])
         self.cache.setOperation(self.Moon, [WallpaperCache.FromDisk, \
-                path + 'moonphase%d.png', self.color, self.method])
+                path + 'moonphase%d.png', Qt.transparent, self.method])
         """
         self.cache.setOperation(self.Month, [WallpaperCache.FromDisk, \
-                path + 'month%d.png' % next.date().month(), self.color, self.method])
+                path + 'month%d.png' % next.date().month(), Qt.transparent, self.method])
         self.cache.setOperation(self.WeekDay, [WallpaperCache.FromDisk, \
-                path + 'weekday%d.png' % next.date().dayOfWeek(), self.color, self.method])
+                path + 'weekday%d.png' % next.date().dayOfWeek(), Qt.transparent, self.method])
         self.cache.setOperation(self.Day, [WallpaperCache.FromDisk, \
-                path + 'day%d.png' % next.date().day(), self.color, self.method])
+                path + 'day%d.png' % next.date().day(), Qt.transparent, self.method])
         # TODO 12 min update
         self.cache.setOperation(self.Hour, [WallpaperCache.FromDisk, \
-                path + 'hour%d.png' % next.time().hour(), self.color, self.method])
+                path + 'hour%d.png' % next.time().hour(), Qt.transparent, self.method])
         """
         self.cache.setOperation(self.AmPm, [WallpaperCache.FromDisk, \
-                path + '%s.png', self.color, self.method])
+                path + '%s.png', Qt.transparent, self.method])
         """
         self.cache.setOperation(self.Minute, [WallpaperCache.FromDisk,
-                path + 'minute%d.png' % next.time().minute(), self.color, self.method])
+                path + 'minute%d.png' % next.time().minute(), Qt.transparent, self.method])
 
     def checkIfEmpty(self, wallpaper):
         print '### checkIfEmpty'
@@ -137,6 +137,7 @@ class Clock(Wallpaper):
 
     def checkGeometry(self):
         print '### checkGeometry'
+        # TODO update
         if self.cache.checkGeometry() and self.wallpaperModel:
             self.wallpaperModel.setWallpaperSize(self.cache.size())
 
@@ -169,7 +170,6 @@ class Clock(Wallpaper):
                                exposedRect.translated(-self.boundingRect().topLeft()))
         else:
             painter.fillRect(exposedRect, self.color)
-
 
     def installPackage(self, localPath):
         print '### installPackage', localPath
