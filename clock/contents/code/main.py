@@ -64,7 +64,8 @@ class Clock(Wallpaper):
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
         self.color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
         self.path = self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString())
-        self.cache.initId(self.Current, [WallpaperCache.FromDisk, self.path, self.color, self.method])
+        self.cache.initId(self.Current, [WallpaperCache.Manual])
+        self.cache.initId(self.Next, [WallpaperCache.Combine, [self.Background]])
         engine = self.dataEngine('time')
         engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
 
@@ -78,8 +79,14 @@ class Clock(Wallpaper):
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
         print '### dataUpdated'
+        if self.cache.pixmap(self.Next) != None:
+            self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
+            self.update(self.boundingRect())
 
-        self.update(self.boundingRect())
+        # TODO just testing
+        self.cache.setOperation(self.Background, \
+                [WallpaperCache.FromDisk, self.path + 'bg.jpg', self.color, self.method])
+
 
     def checkIfEmpty(self, wallpaper):
         print '### checkIfEmpty'
@@ -105,7 +112,10 @@ class Clock(Wallpaper):
 
     def renderingsCompleted(self):
         print '### renderingsCompleted'
-        self.update(self.boundingRect())
+        if self.cache.pixmap(self.Current) == None:
+            # On start
+            self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
+            self.update(self.boundingRect())
 
     def paint(self, painter, exposedRect):
         print '### paint'
@@ -128,8 +138,7 @@ class Clock(Wallpaper):
             painter.drawPixmap(exposedRect, pixmap,
                                exposedRect.translated(-self.boundingRect().topLeft()))
         else:
-            painter.fillRect(exposedRect, self.cache.operationParam(self.Current, \
-                                                                    WallpaperCache.Color))
+            painter.fillRect(exposedRect, self.color)
 
 
     def installPackage(self, localPath):
