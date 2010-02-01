@@ -2,7 +2,7 @@
 Name=Wallpaper Clock
 Comment=Clock wallpaper plugin
 Type=Service
-Icon=clock
+Icon=wallclocks_256x256.png
 
 X-KDE-ServiceTypes=Plasma/Wallpaper
 X-KDE-PluginInfo-Author=Petri Damstén
