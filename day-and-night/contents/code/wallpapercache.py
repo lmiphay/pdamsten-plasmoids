@@ -18,7 +18,7 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import sys
+import sys, os
 from PyQt4.QtCore import *
 from PyKDE4.plasma import Plasma
 from PyQt4.QtGui import *
@@ -46,7 +46,7 @@ class WallpaperCache(QObject):
 
     def checkId(self, id):
         if id not in self.cache.keys():
-            self.cache[id] = [[self.Manual], False, None, None]
+            self.cache[id] = [[self.Manual], True, None, None]
 
     def initId(self, id, operation, data = None):
         self.checkId(id)
@@ -148,39 +148,60 @@ class WallpaperCache(QObject):
     def checkPixmaps(self, ids):
         for id in ids:
             if self.pixmap(id) == None or self.dirty(id):
+                print '   ### dirty', id
                 return False
         return True
 
     def doOperation(self, operation):
-        #print '### doOperation', self.rendering, operation[self.OperationId]
-        if operation == None or operation[self.OperationId] == self.Manual:
-            self.cache[self.rendering][self.Dirty] = False
+        print '### doOperation', self.rendering, operation[self.OperationId],
+        if operation[self.OperationId] == self.Manual:
+            print '*'
+            self.setDirty(self.rendering, False)
+            if self.pixmap(self.rendering) == None:
+                self.setPixmap(self.rendering, QPixmap())
             return True
 
         elif operation[self.OperationId] == self.FromDisk:
-            package = Plasma.Package(operation[self.Path], \
+            print operation[self.Path]
+            path = None
+            if os.path.isdir(operation[self.Path]):
+                package = Plasma.Package(operation[self.Path], \
                                      self.wallpaper.packageStructure(self.wallpaper.wallpaper))
-            path = package.filePath('preferred')
-            if path.isEmpty():
+                path = package.filePath('preferred')
+            elif os.path.isfile(operation[self.Path]):
                 path = operation[self.Path]
-            self.wallpaper.render(path, self._size, operation[self.Method], operation[self.Color])
-            return False
+            if path:
+                print '   ### Rendering'
+                self.wallpaper.render(path, self._size, operation[self.Method], \
+                                      operation[self.Color])
+                return False
+            else:
+                print '   ### Does not exist'
+                self.setPixmap(self.rendering, QPixmap())
+                return True
 
         elif operation[self.OperationId] == self.Transition:
+            print operation[self.Pixmaps]
             if self.checkPixmaps(operation[self.Pixmaps]):
+                print '   ### transition'
                 self.setPixmap(self.rendering,
                         Plasma.PaintUtils.transition(self.pixmap(operation[self.Pixmaps][0]), \
                         self.pixmap(operation[self.Pixmaps][1]), operation[self.Amount]))
             return True
 
         elif operation[self.OperationId] == self.Combine:
+            print operation[self.Pixmaps]
             if self.checkPixmaps(operation[self.Pixmaps]):
+                print '   ### combine'
                 pixmap = QPixmap(self._size)
                 p = QPainter(pixmap)
                 p.resetTransform()
                 p.setCompositionMode(QPainter.CompositionMode_SourceOver)
                 for id in operation[self.Pixmaps]:
-                    p.drawPixmap(0, 0, self.pixmap(id))
+                    pix = self.pixmap(id)
+                    if not pix.isNull():
+                        print '      ### combine draw', id
+                        p.drawPixmap(0, 0, pix)
                 p.end()
                 self.setPixmap(self.rendering, pixmap)
             return True
