@@ -72,7 +72,7 @@ class WallpaperCache(QObject):
                 ids = self.cache.keys()
         r = False
         for id in ids:
-            r |= self.setValue(id, value)
+            r |= self.setValue(id, type, value)
         return r
 
     def dirty(self, id):
