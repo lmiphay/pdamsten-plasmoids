@@ -43,7 +43,7 @@ from helpers import *
 
 class Clock(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Current, Next = range(2)
+    Current, Next, Background, Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm  = range(11)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
@@ -55,43 +55,30 @@ class Clock(Wallpaper):
         self.source = ''
         self.cache = WallpaperCache(self)
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
-        # DEBUG
-        #package = ClockPackage(self)
-        #packageRoot = KStandardDirs.locateLocal("data", package.defaultPackageRoot())
-        #package.installPackage(os.path.expanduser('~/download/metal1920x1200.wcz'), packageRoot)
-        """
-        #self.package.uninstallPackage('metal1920x1200', packageRoot)
-        self.package.setPath(packageRoot + 'metal1920x1200')
-        print self.package.metadata().pluginName()
-        print self.package.metadata().name()
-        print self.package.metadata().author()
-        print self.package.metadata().email()
-        print self.package.metadata().description()
-        """
 
     def init(self, config):
         print '### init'
         self.cache.init()
 
-        method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
+        self.method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
-        color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
-        path = self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString())
-        self.cache.initId(self.Current, [WallpaperCache.FromDisk, path, color, method])
+        self.color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
+        self.path = self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString())
+        self.cache.initId(self.Current, [WallpaperCache.FromDisk, self.path, self.color, self.method])
+        engine = self.dataEngine('time')
+        engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
 
     def save(self, config):
         print '### save'
         # For some reason QStrings must be converted to python strings before writing?
-        config.writeEntry('resizemethod',
-                I(self.cache.operationParam(self.Current, WallpaperCache.Method)))
-        config.writeEntry('wallpapercolor', \
-                self.cache.operationParam(self.Current, WallpaperCache.Color))
-        config.writeEntry('clockwallpaper',
-                U(self.cache.operationParam(self.Current, WallpaperCache.Path)))
+        config.writeEntry('resizemethod', self.method)
+        config.writeEntry('wallpapercolor',self.color)
+        config.writeEntry('clockwallpaper',self.path)
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
         print '### dataUpdated'
+
         self.update(self.boundingRect())
 
     def checkIfEmpty(self, wallpaper):
@@ -125,8 +112,7 @@ class Clock(Wallpaper):
         self.checkGeometry()
 
         # get pixmap
-        pixmap = None
-        #pixmap = self.cache.pixmap(self.Current)
+        pixmap = self.cache.pixmap(self.Current)
 
         # paint
         if pixmap:
@@ -142,7 +128,8 @@ class Clock(Wallpaper):
             painter.drawPixmap(exposedRect, pixmap,
                                exposedRect.translated(-self.boundingRect().topLeft()))
         else:
-            painter.fillRect(exposedRect, self.cache.operationParam(self.Current, WallpaperCache.Color))
+            painter.fillRect(exposedRect, self.cache.operationParam(self.Current, \
+                                                                    WallpaperCache.Color))
 
 
     def installPackage(self, localPath):
@@ -219,17 +206,15 @@ class Clock(Wallpaper):
 
     def resizeChanged(self, index):
         self.settingsChanged(True)
-        self.cache.setOperationParam(self.Current, WallpaperCache.Method, index)
-        self.cache.setOperationParam(self.Night, WallpaperCache.Method, index)
+        self.method = index
 
     def colorChanged(self, color):
         self.settingsChanged(True)
-        self.cache.setOperationParam(self.Current, WallpaperCache.Color, color)
+        self.color = color
 
     def wallpaperChanged(self, index):
         self.settingsChanged(True)
-        path = self.wallpaperModel.data(index, BackgroundDelegate.PathRole).toString()
-        self.cache.setOperationParam(self.Current, WallpaperCache.Path, path)
+        self.path = U(self.wallpaperModel.data(index, BackgroundDelegate.PathRole).toString())
 
     # Uninstall
     def uninstall(self):

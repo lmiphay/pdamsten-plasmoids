@@ -72,6 +72,12 @@ class ClockPackage(Plasma.PackageStructure):
     def preview(self):
         return self._preview
 
+    def hourImages(self):
+        return self.hourImages
+
+    def ampmEnabled(self):
+        return self.ampm
+
     def size(self):
         return QSize(self.width, self.height)
 
@@ -91,7 +97,7 @@ class ClockPackage(Plasma.PackageStructure):
         a = re.findall('(.*?)=(.*)', s)
         dict = {'name': '', 'width': 1920, 'height': 1200, 'author': '', 'email': '', \
                 'description': '', 'homepageURL': '', 'downloadURL': '', \
-                'refreshhourinterval': 60, 'hourimages': 24}
+                'refreshhourinterval': 60, 'hourimages': 24, 'ampm': 0}
         for i in a:
             dict[i[0]] = i[1]
 
@@ -116,6 +122,6 @@ class ClockPackage(Plasma.PackageStructure):
         self._metadata.setEmail(dict['email'])
         self._metadata.setDescription(dict['description'])
         self._metadata.setWebsite(dict['homepageURL'])
-        self._metadata.setRemoteLocation(KUrl(dict['downloadURL']))
         self.refreshHourInterval = dict['refreshhourinterval']
         self.hourImages = dict['hourimages']
+        self.ampm = dict['ampmenabled']
