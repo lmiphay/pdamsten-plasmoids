@@ -24,12 +24,13 @@ from PyKDE4.plasma import Plasma
 from PyQt4.QtGui import *
 
 class WallpaperCache(QObject):
-    All = -sys.maxint - 1                           # id
-    Operation, Dirty, Pixmap, Data = range(4)       # id properties
-    FromDisk, Transition = range(2)                 # operations
+    All = -sys.maxint - 1                             # id
+    Operation, Dirty, Pixmap, Data = range(4)         # id properties
+    FromDisk, Transition, Combine, Manual = range(4)  # operations
     OperationId = 0
-    Path, Color, Method = range(1, 4)               # FromDisk operation
-    Pixmaps, Amount = range(1, 3)                   # Transition operation
+    Path, Color, Method = range(1, 4)                 # FromDisk operation
+    Pixmaps, Amount = range(1, 3)                     # Transition operation
+    Pixmaps = 1                                       # Combine operation
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
@@ -44,7 +45,7 @@ class WallpaperCache(QObject):
 
     def checkId(self, id):
         if id not in self.cache.keys():
-            self.cache[id] = [None, True, None, None]
+            self.cache[id] = [[self.Manual], False, None, None]
 
     def initId(self, id, operation, data = None):
         self.checkId(id)
@@ -85,7 +86,7 @@ class WallpaperCache(QObject):
 
     def pixmap(self, id):
         pixmap = self.value(id, self.Pixmap)
-        if pixmap == None:
+        if pixmap == None and self.operationParam(id, self.OperationId) != self.Manual:
             self.cache[id][self.Dirty] = True
             self.dirtyTimer.start()
         return pixmap
@@ -102,6 +103,7 @@ class WallpaperCache(QObject):
         self.setDirty(id)
 
     def operationParam(self, id, param):
+        self.checkId(id)
         return self.value(id, self.Operation)[param]
 
     def setOperationParam(self, id, param, value):
@@ -132,9 +134,15 @@ class WallpaperCache(QObject):
                      self.renderCompleted)
         self.checkGeometry()
 
+    def checkPixmaps(self, ids):
+        for id in ids:
+            if self.pixmap(id) == None or self.isDirty(id):
+                return False
+        return True
+
     def doOperation(self, operation):
         #print '### doOperation', self.rendering, operation[self.OperationId]
-        if operation == None:
+        if operation == None or operation[self.OperationId] == self.Manual:
             self.cache[self.rendering][self.Dirty] = False
             return True
 
@@ -148,12 +156,22 @@ class WallpaperCache(QObject):
             return False
 
         elif operation[self.OperationId] == self.Transition:
-            pix1 = self.pixmap(operation[self.Pixmaps][0])
-            pix2 = self.pixmap(operation[self.Pixmaps][1])
-            if pix1 and not self.isDirty(operation[self.Pixmaps][0]) and \
-               pix2 and not self.isDirty(operation[self.Pixmaps][1]):
+            if self.checkPixmaps(operation[self.Pixmaps]):
                 self.setPixmap(self.rendering,
-                               Plasma.PaintUtils.transition(pix1, pix2, operation[self.Amount]))
+                        Plasma.PaintUtils.transition(self.pixmap(operation[self.Pixmaps][0]), \
+                        self.pixmap(operation[self.Pixmaps][1]), operation[self.Amount]))
+            return True
+
+        elif operation[self.OperationId] == self.Combine:
+            if self.checkPixmaps(operation[self.Pixmaps]):
+                pixmap = QPixmap(self._size)
+                p = QPainter(pixmap)
+                p.resetTransform()
+                p.setCompositionMode(QPainter.CompositionMode_SourceOver)
+                for id in operation[self.Pixmaps]:
+                    p.drawPixmap(0, 0, self.pixmap(id))
+                p.end()
+                self.setPixmap(self.rendering, pixmap)
             return True
 
         return True
