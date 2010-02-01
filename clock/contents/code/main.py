@@ -43,7 +43,8 @@ from helpers import *
 
 class Clock(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Current, Next, Background, Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm  = range(11)
+    Current, Next, Background, BackgroundHour, \
+            Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm  = range(12)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
@@ -63,9 +64,13 @@ class Clock(Wallpaper):
         self.method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
         self.color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
-        self.path = self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString())
+        self.package = ClockPackage(self,
+                self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString()))
         self.cache.initId(self.Current, [WallpaperCache.Manual])
-        self.cache.initId(self.Next, [WallpaperCache.Combine, [self.Background]])
+        self.cache.initId(self.Next, [WallpaperCache.Combine, [self.BackgroundHour, self.Minute]])
+        self.cache.initId(self.BackgroundHour, [WallpaperCache.Combine, \
+                [self.Background, self.Zodiac, self.Moon, self.Month, self.WeekDay, \
+                 self.Day, self.Hour, self.AmPm]])
         engine = self.dataEngine('time')
         engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
 
@@ -73,8 +78,8 @@ class Clock(Wallpaper):
         print '### save'
         # For some reason QStrings must be converted to python strings before writing?
         config.writeEntry('resizemethod', self.method)
-        config.writeEntry('wallpapercolor',self.color)
-        config.writeEntry('clockwallpaper',self.path)
+        config.writeEntry('wallpapercolor', self.color)
+        config.writeEntry('clockwallpaper', self.package.path())
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
@@ -83,10 +88,35 @@ class Clock(Wallpaper):
             self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
             self.update(self.boundingRect())
 
-        # TODO just testing
-        self.cache.setOperation(self.Background, \
-                [WallpaperCache.FromDisk, self.path + 'bg.jpg', self.color, self.method])
+        now = QDateTime(data[QString('Date')], data[QString('Time')])
+        next = now.addSecs(60)
+        self.updateImages(now, next)
 
+    def updateImages(self, now, next):
+        path = self.package.path()
+        self.cache.setOperation(self.Background, [WallpaperCache.FromDisk, \
+                path + 'bg.jpg', self.color, self.method])
+        """
+        self.cache.setOperation(self.Zodiac, [WallpaperCache.FromDisk, \
+                path + 'bg.jpg', self.color, self.method])
+        self.cache.setOperation(self.Moon, [WallpaperCache.FromDisk, \
+                path + 'bg.jpg', self.color, self.method])
+        """
+        self.cache.setOperation(self.Month, [WallpaperCache.FromDisk, \
+                path + 'month%d.jpg' % next.date().month(), self.color, self.method])
+        self.cache.setOperation(self.WeekDay, [WallpaperCache.FromDisk, \
+                path + 'weekday%d.jpg' % next.date().dayOfWeek(), self.color, self.method])
+        self.cache.setOperation(self.Day, [WallpaperCache.FromDisk, \
+                path + 'day%d.jpg' % next.date().day(), self.color, self.method])
+        # TODO 12 min update
+        self.cache.setOperation(self.Hour, [WallpaperCache.FromDisk, \
+                path + 'hour%d.jpg' % next.time().hour(), self.color, self.method])
+        """
+        self.cache.setOperation(self.AmPm, [WallpaperCache.FromDisk, \
+                path + 'bg.jpg', self.color, self.method])
+        """
+        self.cache.setOperation(self.Minute, [WallpaperCache.FromDisk,
+                path + 'minute%d.jpg' % next.time().minute(), self.color, self.method])
 
     def checkIfEmpty(self, wallpaper):
         print '### checkIfEmpty'
@@ -216,14 +246,19 @@ class Clock(Wallpaper):
     def resizeChanged(self, index):
         self.settingsChanged(True)
         self.method = index
+        self.cache.setAllDirty()
 
     def colorChanged(self, color):
         self.settingsChanged(True)
         self.color = color
+        self.cache.setAllDirty()
 
     def wallpaperChanged(self, index):
         self.settingsChanged(True)
-        self.path = U(self.wallpaperModel.data(index, BackgroundDelegate.PathRole).toString())
+        self.package.setPath(
+                self.wallpaperModel.data(index, BackgroundDelegate.PathRole).toString())
+        # TODO free all images
+        self.updateImages(QDateTime(), QDateTime.currentDateTime())
 
     # Uninstall
     def uninstall(self):
