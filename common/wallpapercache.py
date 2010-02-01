@@ -31,6 +31,7 @@ class WallpaperCache(QObject):
     Path, Color, Method = range(1, 4)                 # FromDisk operation
     Pixmaps, Amount = range(1, 3)                     # Transition operation
     Pixmaps = 1                                       # Combine operation
+    pixmapOperations = [Transition, Combine]
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
@@ -53,54 +54,63 @@ class WallpaperCache(QObject):
         self.cache[id][self.Dirty] = False
         self.cache[id][self.Data] = data
 
-    def setValue(self, id, type, value):
-        if id != self.All:
-            self.checkId(id)
-            self.cache[id][type] = value
-        else:
-            for id in self.cache.keys():
-                self.cache[id][type] = value
-
     def value(self, id, type):
         self.checkId(id)
         return self.cache[id][type]
 
-    def isDirty(self, id):
+    def setValue(self, ids, type, value):
+        if isinstance(ids, int):
+            if ids != self.All:
+                self.checkId(ids)
+                if self.cache[ids][type] != value:
+                    self.cache[ids][type] = value
+                    if type == self.Operation:
+                        self.setDirty(ids)
+                    return True
+                return False
+            else:
+                ids = self.cache.keys()
+        r = False
+        for id in ids:
+            r |= self.setValue(id, value)
+        return r
+
+    def dirty(self, id):
         return self.value(id, self.Dirty)
 
-    def setDirty(self, id):
+    def setDirty(self, id, dirty = True):
         #print '### setDirty', id
-        self.setValue(id, self.Dirty, True)
-        for key in self.cache.keys():
-            if self.cache[key][self.Operation][self.OperationId] == self.Transition and \
-               id in self.cache[key][self.Operation][self.Pixmaps]:
-                #print '   ### And setDirty', key
-                self.cache[key][self.Dirty] = True
+        r = self.setValue(id, self.Dirty, dirty)
+        if dirty:
+            for key in self.cache.keys():
+                if self.operationParam(key, self.OperationId) in self.pixmapOperations and \
+                    id in self.operationParam(key, self.Pixmaps):
+                    #print '   ### And setDirty', key
+                    self.setDirty(key)
         self.dirtyTimer.start()
+        return r
 
     def data(self, id):
         return self.value(id, self.Data)
 
     def setData(self, id, data):
-        self.setValue(id, self.Data, data)
+        return self.setValue(id, self.Data, data)
 
     def pixmap(self, id):
         pixmap = self.value(id, self.Pixmap)
         if pixmap == None and self.operationParam(id, self.OperationId) != self.Manual:
-            self.cache[id][self.Dirty] = True
-            self.dirtyTimer.start()
+            self.setDirty(id)
         return pixmap
 
     def setPixmap(self, id, pixmap):
-        self.setValue(id, self.Pixmap, pixmap)
-        self.cache[id][self.Dirty] = False
+        self.setDirty(id, False)
+        return self.setValue(id, self.Pixmap, pixmap)
 
     def operation(self, id):
         return self.value(id, self.Operation)
 
     def setOperation(self, id, operation):
-        self.setValue(id, self.Operation, operation)
-        self.setDirty(id)
+        return self.setValue(id, self.Operation, operation)
 
     def operationParam(self, id, param):
         self.checkId(id)
@@ -108,8 +118,9 @@ class WallpaperCache(QObject):
 
     def setOperationParam(self, id, param, value):
         #print '### setOperationParam', id
-        self.value(id, self.Operation)[param] = value
-        self.setDirty(id)
+        v = self.value(id, self.Operation)
+        v[param] = value
+        return self.selValue(id, self.Operation, v)
 
     def size(self):
         return self._size
@@ -136,7 +147,7 @@ class WallpaperCache(QObject):
 
     def checkPixmaps(self, ids):
         for id in ids:
-            if self.pixmap(id) == None or self.isDirty(id):
+            if self.pixmap(id) == None or self.dirty(id):
                 return False
         return True
 
