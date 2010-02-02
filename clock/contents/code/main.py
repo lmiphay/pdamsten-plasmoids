@@ -65,11 +65,30 @@ class Zodiac:
         for sign in self.Signs:
             if now.month() <= sign[1] and now.day() <= sign[2]:
                 self.sign = sign[0]
-                Zodiac.last = (now, sign[0])
+                Zodiac.last = (now, self.sign)
                 return
 
     def __str__(self):
         return self.sign
+
+
+class Moon:
+    timeEngine = None
+    last = (None, None)
+
+    def __init__(self, now):
+        self.phase = ''
+        if Moon.last[0] == now:
+            self.phase = Moon.last[1]
+            return
+        if Moon.timeEngine:
+            data = Moon.timeEngine.query('Local|Moon')
+            self.phase = U(data[QString('MoonPhaseAngle')].toInt()[0] / 12)
+            Moon.last = (now, self.phase)
+            return
+
+    def __str__(self):
+        return self.phase
 
 
 class Clock(Wallpaper):
@@ -84,7 +103,6 @@ class Clock(Wallpaper):
         self.newStuffDialog = None
         self.fileDialog = None
         self.widget = None
-        self.source = ''
         self.cache = WallpaperCache(self)
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
 
@@ -104,7 +122,8 @@ class Clock(Wallpaper):
                 [self.Background, self.Zodiac, self.Moon, self.Month, self.WeekDay, \
                  self.Day, self.Hour, self.AmPm]])
         engine = self.dataEngine('time')
-        engine.connectSource(self.source, self, int(self.UpdateInterval * 60 * 1000))
+        engine.connectSource('Local', self, int(self.UpdateInterval * 60 * 1000))
+        Moon.timeEngine = engine
 
     def save(self, config):
         print '### save'
@@ -131,10 +150,8 @@ class Clock(Wallpaper):
                 path + 'bg.jpg', self.color, self.method])
         self.cache.setOperation(self.Zodiac, [WallpaperCache.FromDisk, \
                 path + 'zodiac%s.png' % Zodiac(next.date()), Qt.transparent, self.method])
-        """
         self.cache.setOperation(self.Moon, [WallpaperCache.FromDisk, \
-                path + 'moonphase%d.png', Qt.transparent, self.method])
-        """
+                path + 'moonphase%s.png' % Moon(next.date()), Qt.transparent, self.method])
         self.cache.setOperation(self.Month, [WallpaperCache.FromDisk, \
                 path + 'month%d.png' % next.date().month(), Qt.transparent, self.method])
         self.cache.setOperation(self.WeekDay, [WallpaperCache.FromDisk, \
