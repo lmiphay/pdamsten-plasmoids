@@ -95,6 +95,7 @@ class Clock(Wallpaper):
     UpdateInterval = 1.0 # minutes
     Current, Next, Background, BackgroundHour, \
             Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm  = range(12)
+    HourItems = (Background, Zodiac, Moon, Month, WeekDay, Day, Hour, AmPm)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
@@ -104,6 +105,7 @@ class Clock(Wallpaper):
         self.fileDialog = None
         self.widget = None
         self.cache = WallpaperCache(self)
+        self.repaint = False
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
 
     def init(self, config):
@@ -118,12 +120,11 @@ class Clock(Wallpaper):
                 self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString()))
         self.cache.initId(self.Current, [WallpaperCache.Manual])
         self.cache.initId(self.Next, [WallpaperCache.Combine, [self.BackgroundHour, self.Minute]])
-        self.cache.initId(self.BackgroundHour, [WallpaperCache.Combine, \
-                [self.Background, self.Zodiac, self.Moon, self.Month, self.WeekDay, \
-                 self.Day, self.Hour, self.AmPm]])
+        self.cache.initId(self.BackgroundHour, [WallpaperCache.Combine, self.HourItems])
         engine = self.dataEngine('time')
         engine.connectSource('Local', self, int(self.UpdateInterval * 60 * 1000))
         Moon.timeEngine = engine
+        self.repaint = True
 
     def save(self, config):
         print '### save'
@@ -195,14 +196,17 @@ class Clock(Wallpaper):
 
     def checkGeometry(self):
         print '### checkGeometry'
-        # TODO update
-        if self.cache.checkGeometry() and self.wallpaperModel:
-            self.wallpaperModel.setWallpaperSize(self.cache.size())
+        if self.cache.checkGeometry():
+            self.repaint = True
+            if self.wallpaperModel:
+                self.wallpaperModel.setWallpaperSize(self.cache.size())
 
     def renderingsCompleted(self):
-        print '### renderingsCompleted'
-        if self.cache.pixmap(self.Current) == None:
-            # On start
+        print '### renderingsCompleted', self.repaint
+        # Free images
+        self.cache.setPixmap(self.HourItems, None)
+        if self.repaint:
+            self.repaint = False
             self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
             self.update(self.boundingRect())
 
@@ -241,6 +245,7 @@ class Clock(Wallpaper):
 
     # Url dropped
     #----------------------------------------------------------------------------------------------
+
     def urlDropped(self, url):
         print '### urlDropped', url
         if url.isLocalFile():
@@ -325,6 +330,7 @@ class Clock(Wallpaper):
         self.updateImages(QDateTime(), QDateTime.currentDateTime())
 
     # Uninstall
+
     def uninstall(self):
         index = self.ui.clockWallpaperView.currentIndex()
         if index.isValid():
