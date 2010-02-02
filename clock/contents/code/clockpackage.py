@@ -37,6 +37,8 @@ class ClockPackage(Plasma.PackageStructure):
         self.width = 0
         self.height = 0
         self._preview = None
+        self._hourImages = 24
+        self.ampm = False
         if path:
             self.setPath(path)
 
@@ -73,7 +75,7 @@ class ClockPackage(Plasma.PackageStructure):
         return self._preview
 
     def hourImages(self):
-        return self.hourImages
+        return self._hourImages
 
     def ampmEnabled(self):
         return self.ampm
@@ -123,5 +125,5 @@ class ClockPackage(Plasma.PackageStructure):
         self._metadata.setDescription(dict['description'])
         self._metadata.setWebsite(dict['homepageURL'])
         self.refreshHourInterval = dict['refreshhourinterval']
-        self.hourImages = dict['hourimages']
-        self.ampm = dict['ampmenabled']
+        self._hourImages = dict['hourimages']
+        self.ampm = (dict['ampmenabled'] == '1')

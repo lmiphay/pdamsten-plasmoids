@@ -64,7 +64,8 @@ class Clock(Wallpaper):
         self.method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
                 Plasma.Wallpaper.ScaledResize).toInt()[0])
         self.color = QColor(config.readEntry('wallpapercolor', QColor(56, 111, 150)))
-        self.package = ClockPackage(self,
+        self.ampm = config.readEntry('ampm', False).toBool()
+        self.clockPackage = ClockPackage(self,
                 self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString()))
         self.cache.initId(self.Current, [WallpaperCache.Manual])
         self.cache.initId(self.Next, [WallpaperCache.Combine, [self.BackgroundHour, self.Minute]])
@@ -79,7 +80,8 @@ class Clock(Wallpaper):
         # For some reason QStrings must be converted to python strings before writing?
         config.writeEntry('resizemethod', self.method)
         config.writeEntry('wallpapercolor', self.color)
-        config.writeEntry('clockwallpaper', self.package.path())
+        config.writeEntry('ampm', self.ampm)
+        config.writeEntry('clockwallpaper', self.clockPackage.path())
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
@@ -93,7 +95,7 @@ class Clock(Wallpaper):
         self.updateImages(now, next)
 
     def updateImages(self, now, next):
-        path = self.package.path()
+        path = self.clockPackage.path()
         self.cache.setOperation(self.Background, [WallpaperCache.FromDisk, \
                 path + 'bg.jpg', self.color, self.method])
         """
@@ -108,15 +110,23 @@ class Clock(Wallpaper):
                 path + 'weekday%d.png' % next.date().dayOfWeek(), Qt.transparent, self.method])
         self.cache.setOperation(self.Day, [WallpaperCache.FromDisk, \
                 path + 'day%d.png' % next.date().day(), Qt.transparent, self.method])
-        # TODO 12 min update
-        self.cache.setOperation(self.Hour, [WallpaperCache.FromDisk, \
-                path + 'hour%d.png' % next.time().hour(), Qt.transparent, self.method])
-        """
-        self.cache.setOperation(self.AmPm, [WallpaperCache.FromDisk, \
-                path + '%s.png', Qt.transparent, self.method])
-        """
         self.cache.setOperation(self.Minute, [WallpaperCache.FromDisk,
                 path + 'minute%d.png' % next.time().minute(), Qt.transparent, self.method])
+
+        if self.clockPackage.ampmEnabled() and self.ampm:
+            h = ((next.time().hour() - 1) % 12) + 1
+        elif self.clockPackage.hourImages() == 60:
+            h = next.time().hour() * next.time().minutes() / 12
+        else:
+            h = next.time().hour()
+        self.cache.setOperation(self.Hour, [WallpaperCache.FromDisk, \
+                path + 'hour%d.png' % next.time().hour(), Qt.transparent, self.method])
+
+        if self.clockPackage.ampmEnabled() and self.ampm:
+            self.cache.setOperation(self.AmPm, [WallpaperCache.FromDisk, \
+                    path + '%s.png' % next.time().toString('ap'), Qt.transparent, self.method])
+        else:
+            self.cache.setPixmap(self.AmPm, QPixmap())
 
     def checkIfEmpty(self, wallpaper):
         print '### checkIfEmpty'
@@ -205,26 +215,26 @@ class Clock(Wallpaper):
         self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
         self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
 
-        self.ui.positioningCombo.setCurrentIndex(
-                self.cache.operationParam(self.Current, WallpaperCache.Method))
+        self.ui.positioningCombo.setCurrentIndex(self.method)
         self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), \
                      self.resizeChanged)
 
         self.wallpaperModel = WallpaperClockModel(self)
         delegate = BackgroundDelegate(self.cache.ratio(), self)
 
-        self.ui.colorButton.setColor(
-                self.cache.operationParam(self.Current, WallpaperCache.Color))
+        self.ui.colorButton.setColor(self.color)
         self.connect(self.ui.colorButton, SIGNAL('changed(const QColor&)'), \
                      self.colorChanged)
+
+        self.ui.ampmCheck.setChecked(Qt.Checked if self.ampm else Qt.Unchecked)
+        self.connect(self.ui.ampmCheck, SIGNAL('stateChanged(int)'), self.ampmChanged)
 
         self.ui.clockWallpaperView.setModel(self.wallpaperModel)
         self.ui.clockWallpaperView.setItemDelegate(delegate)
         self.connect(self.ui.clockWallpaperView.selectionModel(),
                      SIGNAL('currentChanged(const QModelIndex&, const QModelIndex&)'),
                      self.wallpaperChanged)
-        index = self.wallpaperModel.indexOf( \
-                self.cache.operationParam(self.Current, WallpaperCache.Path))
+        index = self.wallpaperModel.indexOf(self.clockPackage.path())
         if index.isValid():
             self.ui.clockWallpaperView.setCurrentIndex(index)
 
@@ -253,10 +263,16 @@ class Clock(Wallpaper):
         self.color = color
         self.cache.setAllDirty()
 
+    def ampmChanged(self, state):
+        self.settingsChanged(True)
+        self.ampm = (state == Qt.Checked)
+        self.updateImages(QDateTime(), QDateTime.currentDateTime())
+
     def wallpaperChanged(self, index):
         self.settingsChanged(True)
-        self.package.setPath(
-                self.wallpaperModel.data(index, BackgroundDelegate.PathRole).toString())
+        package = self.wallpaperModel.package(index.row())
+        self.ui.ampmCheck.setEnabled(package.ampmEnabled())
+        self.clockPackage.setPath(package.path())
         # TODO free all images
         self.updateImages(QDateTime(), QDateTime.currentDateTime())
 
