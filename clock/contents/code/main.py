@@ -123,8 +123,9 @@ class Clock(Wallpaper):
         self.cache.initId(self.Next, [WallpaperCache.Combine, [self.BackgroundHour, self.Minute]])
         self.cache.initId(self.BackgroundHour, [WallpaperCache.Combine, self.HourItems])
         engine = self.dataEngine('time')
-        engine.connectSource('Local', self, int(self.UpdateInterval * 60 * 1000))
         Moon.timeEngine = engine
+        engine.disconnectSource('Local', self)
+        engine.connectSource('Local', self, int(self.UpdateInterval * 60 * 1000))
         self.immediateRepaint = True
 
     def save(self, config):
