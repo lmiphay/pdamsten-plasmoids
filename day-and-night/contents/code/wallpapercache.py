@@ -118,9 +118,16 @@ class WallpaperCache(QObject):
 
     def setOperationParam(self, id, param, value):
         #print '### setOperationParam', id
-        v = self.value(id, self.Operation)
-        v[param] = value
-        return self.selValue(id, self.Operation, v)
+        if isinstance(id, int):
+            ids = [id]
+        else:
+            ids = id
+        r = False
+        for i in ids:
+            v = self.value(i, self.Operation)
+            v[param] = value
+            r |= self.setValue(id, self.Operation, v)
+        return r
 
     def size(self):
         return self._size
