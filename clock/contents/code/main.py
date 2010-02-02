@@ -106,7 +106,7 @@ class Clock(Wallpaper):
         self.fileDialog = None
         self.widget = None
         self.cache = WallpaperCache(self)
-        self.repaint = False
+        self.immediateRepaint = False
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
 
     def init(self, config):
@@ -125,7 +125,7 @@ class Clock(Wallpaper):
         engine = self.dataEngine('time')
         engine.connectSource('Local', self, int(self.UpdateInterval * 60 * 1000))
         Moon.timeEngine = engine
-        self.repaint = True
+        self.immediateRepaint = True
 
     def save(self, config):
         print '### save'
@@ -199,16 +199,16 @@ class Clock(Wallpaper):
     def checkGeometry(self):
         print '### checkGeometry'
         if self.cache.checkGeometry():
-            self.repaint = True
+            self.immediateRepaint = True
             if self.wallpaperModel:
                 self.wallpaperModel.setWallpaperSize(self.cache.size())
 
     def renderingsCompleted(self):
-        print '### renderingsCompleted', self.repaint
+        print '### renderingsCompleted', self.immediateRepaint
         # Free images
         self.cache.setPixmap(self.HourItems, None)
-        if self.repaint:
-            self.repaint = False
+        if self.immediateRepaint:
+            self.immediateRepaint = False
             self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
             self.update(self.boundingRect())
 
@@ -311,19 +311,19 @@ class Clock(Wallpaper):
     def resizeChanged(self, index):
         self.settingsChanged(True)
         self.method = index
-        self.repaint = True
+        self.immediateRepaint = True
         self.cache.setOperationParam(self.DiscItems, WallpaperCache.Method, self.method)
 
     def colorChanged(self, color):
         self.settingsChanged(True)
         self.color = color
-        self.repaint = True
+        self.immediateRepaint = True
         self.cache.setOperationParam(self.DiscItems, WallpaperCache.Color, self.color)
 
     def ampmChanged(self, state):
         self.settingsChanged(True)
         self.ampm = (state == Qt.Checked)
-        self.repaint = True
+        self.immediateRepaint = True
         self.updateImages(QDateTime.currentDateTime())
 
     def wallpaperChanged(self, index):
@@ -331,7 +331,7 @@ class Clock(Wallpaper):
         package = self.wallpaperModel.package(index.row())
         self.ui.ampmCheck.setEnabled(package.ampmEnabled())
         self.clockPackage.setPath(package.path())
-        self.repaint = True
+        self.immediateRepaint = True
         self.updateImages(QDateTime.currentDateTime())
 
     # Uninstall
