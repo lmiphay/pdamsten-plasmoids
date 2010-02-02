@@ -297,6 +297,7 @@ class Clock(Wallpaper):
         self.connect(self.ui.openButton, SIGNAL('clicked()'), self.showFileDialog)
 
         self.ui.getNewButton.setIcon(KIcon('get-hot-new-stuff'));
+        self.ui.getNewButton.hide()
         self.connect(self.ui.getNewButton, SIGNAL('clicked()'), self.getNewWallpaper)
 
         self.ui.uninstallButton.setIcon(KIcon('edit-delete'));
