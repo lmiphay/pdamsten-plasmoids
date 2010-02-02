@@ -110,7 +110,7 @@ class Clock(Wallpaper):
         self.connect(self.cache, SIGNAL('renderingsCompleted()'), self.renderingsCompleted)
 
     def init(self, config):
-        print '### init'
+        #print '### init'
         self.cache.init()
 
         self.method = Plasma.Wallpaper.ResizeMethod(config.readEntry('resizemethod', \
@@ -129,7 +129,7 @@ class Clock(Wallpaper):
         self.immediateRepaint = True
 
     def save(self, config):
-        print '### save'
+        #print '### save'
         # For some reason QStrings must be converted to python strings before writing?
         config.writeEntry('resizemethod', self.method)
         config.writeEntry('wallpapercolor', self.color)
@@ -138,7 +138,7 @@ class Clock(Wallpaper):
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
-        print '### dataUpdated'
+        #print '### dataUpdated'
         if self.cache.pixmap(self.Next) != None:
             self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
             self.update(self.boundingRect())
@@ -181,7 +181,7 @@ class Clock(Wallpaper):
             self.cache.setPixmap(self.AmPm, QPixmap())
 
     def checkIfEmpty(self, wallpaper):
-        print '### checkIfEmpty'
+        #print '### checkIfEmpty'
         if wallpaper.isEmpty():
             paths = KGlobal.dirs().findDirs('data', 'plasma/clockwallpapers')
             dir = QDir()
@@ -190,7 +190,6 @@ class Clock(Wallpaper):
                 dir.setPath(path)
                 dirs = dir.entryInfoList()
                 for cwp in dirs:
-                    print cwp.fileName()
                     if (cwp.fileName() == '.') or (cwp.fileName() == '..'):
                         continue
                     wallpaper = cwp.canonicalFilePath()
@@ -198,14 +197,14 @@ class Clock(Wallpaper):
         return U(wallpaper)
 
     def checkGeometry(self):
-        print '### checkGeometry'
+        #print '### checkGeometry'
         if self.cache.checkGeometry():
             self.immediateRepaint = True
             if self.wallpaperModel:
                 self.wallpaperModel.setWallpaperSize(self.cache.size())
 
     def renderingsCompleted(self):
-        print '### renderingsCompleted', self.immediateRepaint
+        #print '### renderingsCompleted', self.immediateRepaint
         # Free images
         self.cache.setPixmap(self.HourItems, None)
         if self.immediateRepaint:
@@ -214,7 +213,7 @@ class Clock(Wallpaper):
             self.update(self.boundingRect())
 
     def paint(self, painter, exposedRect):
-        print '### paint'
+        #print '### paint'
         self.checkGeometry()
 
         # get pixmap
@@ -237,7 +236,7 @@ class Clock(Wallpaper):
             painter.fillRect(exposedRect, self.color)
 
     def installPackage(self, localPath):
-        print '### installPackage', localPath
+        #print '### installPackage', localPath
         package = ClockPackage(self)
         packageRoot = KStandardDirs.locateLocal("data", package.defaultPackageRoot())
         ClockPackage.installPackage(localPath, packageRoot)
@@ -250,7 +249,7 @@ class Clock(Wallpaper):
     #----------------------------------------------------------------------------------------------
 
     def urlDropped(self, url):
-        print '### urlDropped', url
+        #print '### urlDropped', url
         if url.isLocalFile():
             self.installPackage(url.toLocalFile())
         else:
