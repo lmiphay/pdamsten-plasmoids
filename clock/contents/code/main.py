@@ -96,6 +96,7 @@ class Clock(Wallpaper):
     Current, Next, Background, BackgroundHour, \
             Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm  = range(12)
     HourItems = (Background, Zodiac, Moon, Month, WeekDay, Day, Hour, AmPm)
+    DiscItems = (Background, Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
@@ -143,9 +144,9 @@ class Clock(Wallpaper):
 
         now = QDateTime(data[QString('Date')], data[QString('Time')])
         next = now.addSecs(60)
-        self.updateImages(now, next)
+        self.updateImages(next)
 
-    def updateImages(self, now, next):
+    def updateImages(self, next):
         path = self.clockPackage.path()
         self.cache.setOperation(self.Background, [WallpaperCache.FromDisk, \
                 path + 'bg.jpg', self.color, self.method])
@@ -169,12 +170,13 @@ class Clock(Wallpaper):
         else:
             h = next.time().hour()
         self.cache.setOperation(self.Hour, [WallpaperCache.FromDisk, \
-                path + 'hour%d.png' % next.time().hour(), Qt.transparent, self.method])
+                path + 'hour%d.png' % h, Qt.transparent, self.method])
 
         if self.clockPackage.ampmEnabled() and self.ampm:
             self.cache.setOperation(self.AmPm, [WallpaperCache.FromDisk, \
                     path + '%s.png' % next.time().toString('ap'), Qt.transparent, self.method])
         else:
+            self.cache.setOperation(self.AmPm, [WallpaperCache.Manual])
             self.cache.setPixmap(self.AmPm, QPixmap())
 
     def checkIfEmpty(self, wallpaper):
@@ -309,25 +311,28 @@ class Clock(Wallpaper):
     def resizeChanged(self, index):
         self.settingsChanged(True)
         self.method = index
-        self.cache.setAllDirty()
+        self.repaint = True
+        self.cache.setOperationParam(self.DiscItems, WallpaperCache.Method, self.method)
 
     def colorChanged(self, color):
         self.settingsChanged(True)
         self.color = color
-        self.cache.setAllDirty()
+        self.repaint = True
+        self.cache.setOperationParam(self.DiscItems, WallpaperCache.Color, self.color)
 
     def ampmChanged(self, state):
         self.settingsChanged(True)
         self.ampm = (state == Qt.Checked)
-        self.updateImages(QDateTime(), QDateTime.currentDateTime())
+        self.repaint = True
+        self.updateImages(QDateTime.currentDateTime())
 
     def wallpaperChanged(self, index):
         self.settingsChanged(True)
         package = self.wallpaperModel.package(index.row())
         self.ui.ampmCheck.setEnabled(package.ampmEnabled())
         self.clockPackage.setPath(package.path())
-        # TODO free all images
-        self.updateImages(QDateTime(), QDateTime.currentDateTime())
+        self.repaint = True
+        self.updateImages(QDateTime.currentDateTime())
 
     # Uninstall
 
