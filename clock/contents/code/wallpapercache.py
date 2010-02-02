@@ -172,6 +172,7 @@ class WallpaperCache(QObject):
                 path = operation[self.Path]
             if path:
                 #print '   ### Rendering'
+                self.setDirty(self.rendering, False)
                 self.wallpaper.render(path, self._size, operation[self.Method], \
                                       operation[self.Color])
                 return False
@@ -209,8 +210,9 @@ class WallpaperCache(QObject):
         return True
 
     def renderCompleted(self, image):
-        #print '### renderCompleted', self.rendering
-        self.setPixmap(self.rendering, QPixmap(image))
+        #print '### renderCompleted', self.rendering, self.dirty(self.rendering)
+        if not self.dirty(self.rendering):
+            self.setPixmap(self.rendering, QPixmap(image))
         self.rendering = None
         self.dirtyTimer.start()
 
@@ -229,6 +231,7 @@ class WallpaperCache(QObject):
                     dirty = True
                     self.rendering = id
                     if not self.doOperation(self.cache[id][self.Operation]):
+                        #print '   ### Waiting...'
                         return
             if dirty == False: # Handling dirty might set other pixmaps dirty
                 self.rendering = None
