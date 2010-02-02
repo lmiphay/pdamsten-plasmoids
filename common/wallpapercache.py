@@ -87,7 +87,7 @@ class WallpaperCache(QObject):
                     id in self.operationParam(key, self.Pixmaps):
                     #print '   ### And setDirty', key
                     self.setDirty(key)
-        self.dirtyTimer.start()
+            self.dirtyTimer.start()
         return r
 
     def data(self, id):
@@ -233,4 +233,5 @@ class WallpaperCache(QObject):
             if dirty == False: # Handling dirty might set other pixmaps dirty
                 self.rendering = None
                 break
+        self.dirtyTimer.stop()
         self.emit(SIGNAL('renderingsCompleted()'))
