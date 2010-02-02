@@ -148,21 +148,21 @@ class WallpaperCache(QObject):
     def checkPixmaps(self, ids):
         for id in ids:
             if self.pixmap(id) == None or self.dirty(id):
-                print '   ### dirty', id
+                #print '   ### dirty', id
                 return False
         return True
 
     def doOperation(self, operation):
-        print '### doOperation', self.rendering, operation[self.OperationId],
+        #print '### doOperation', self.rendering, operation[self.OperationId],
         if operation[self.OperationId] == self.Manual:
-            print '*'
+            #print '*'
             self.setDirty(self.rendering, False)
             if self.pixmap(self.rendering) == None:
                 self.setPixmap(self.rendering, QPixmap())
             return True
 
         elif operation[self.OperationId] == self.FromDisk:
-            print operation[self.Path]
+            #print operation[self.Path]
             path = None
             if os.path.isdir(operation[self.Path]):
                 package = Plasma.Package(operation[self.Path], \
@@ -171,28 +171,28 @@ class WallpaperCache(QObject):
             elif os.path.isfile(operation[self.Path]):
                 path = operation[self.Path]
             if path:
-                print '   ### Rendering'
+                #print '   ### Rendering'
                 self.wallpaper.render(path, self._size, operation[self.Method], \
                                       operation[self.Color])
                 return False
             else:
-                print '   ### Does not exist'
+                #print '   ### Does not exist'
                 self.setPixmap(self.rendering, QPixmap())
                 return True
 
         elif operation[self.OperationId] == self.Transition:
-            print operation[self.Pixmaps]
+            #print operation[self.Pixmaps]
             if self.checkPixmaps(operation[self.Pixmaps]):
-                print '   ### transition'
+                #print '   ### transition'
                 self.setPixmap(self.rendering,
                         Plasma.PaintUtils.transition(self.pixmap(operation[self.Pixmaps][0]), \
                         self.pixmap(operation[self.Pixmaps][1]), operation[self.Amount]))
             return True
 
         elif operation[self.OperationId] == self.Combine:
-            print operation[self.Pixmaps]
+            #print operation[self.Pixmaps]
             if self.checkPixmaps(operation[self.Pixmaps]):
-                print '   ### combine'
+                #print '   ### combine'
                 pixmap = QPixmap(self._size)
                 p = QPainter(pixmap)
                 p.resetTransform()
@@ -200,7 +200,7 @@ class WallpaperCache(QObject):
                 for id in operation[self.Pixmaps]:
                     pix = self.pixmap(id)
                     if not pix.isNull():
-                        print '      ### combine draw', id
+                        #print '      ### combine draw', id
                         p.drawPixmap(0, 0, pix)
                 p.end()
                 self.setPixmap(self.rendering, pixmap)
