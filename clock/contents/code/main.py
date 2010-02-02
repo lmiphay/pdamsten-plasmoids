@@ -40,6 +40,37 @@ from wallpapercache import WallpaperCache
 from clockpackage import ClockPackage
 from helpers import *
 
+class Zodiac:
+    Signs = [
+        ('Capricorn', 1, 19),
+        ('Aquarius', 2, 19),
+        ('Pisces', 3, 20),
+        ('Aries', 4, 20),
+        ('Taurus', 5, 20),
+        ('Gemini', 6, 20),
+        ('Cancer', 7, 22),
+        ('Leo', 8, 22),
+        ('Virgo', 9, 22),
+        ('Libra', 10, 22),
+        ('Scorpio', 11, 21),
+        ('Sagittarius', 12, 21),
+        ('Capricorn', 12, 31)
+    ]
+    last = (None, None)
+
+    def __init__(self, now):
+        if Zodiac.last[0] == now:
+            self.sign = Zodiac.last[1]
+            return
+        for sign in self.Signs:
+            if now.month() <= sign[1] and now.day() <= sign[2]:
+                self.sign = sign[0]
+                Zodiac.last = (now, sign[0])
+                return
+
+    def __str__(self):
+        return self.sign
+
 
 class Clock(Wallpaper):
     UpdateInterval = 1.0 # minutes
@@ -98,9 +129,9 @@ class Clock(Wallpaper):
         path = self.clockPackage.path()
         self.cache.setOperation(self.Background, [WallpaperCache.FromDisk, \
                 path + 'bg.jpg', self.color, self.method])
-        """
         self.cache.setOperation(self.Zodiac, [WallpaperCache.FromDisk, \
-                path + 'zodiac%s.png', Qt.transparent, self.method])
+                path + 'zodiac%s.png' % Zodiac(next.date()), Qt.transparent, self.method])
+        """
         self.cache.setOperation(self.Moon, [WallpaperCache.FromDisk, \
                 path + 'moonphase%d.png', Qt.transparent, self.method])
         """
