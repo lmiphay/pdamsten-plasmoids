@@ -98,7 +98,7 @@ plasmoid.configChanged = function()
     }
 }
 
-plasmoid.dataUpdate = function(source, data)
+plasmoid.dataUpdated = function(source, data)
 {
     //print('dataUpdate');
     if (g_useScript) {
