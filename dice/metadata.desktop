@@ -1,0 +1,26 @@
+[Desktop Entry]
+Name=Dice
+Comment=Roll dices and toss coins.
+Type=Service
+Icon=internet-web-browser
+
+X-KDE-ServiceTypes=Plasma/Applet
+X-KDE-Library=plasma_applet_dixe
+X-KDE-PluginInfo-Author=Petri Damstén
+X-KDE-PluginInfo-Email=damu@iki.fi
+X-KDE-PluginInfo-Name=dice
+X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-Website=http://www.kde-look.org/content/show.php/Scripted+HTML?content=xxxxxx
+X-KDE-PluginInfo-Category=Fun and Games
+X-KDE-PluginInfo-Depends=
+X-KDE-PluginInfo-License=GPL
+X-KDE-PluginInfo-EnabledByDefault=true
+X-Plasma-API=javascript
+X-Plasma-MainScript=code/main.js
+X-Plasma-DefaultSize=100,100
+
+X-PublishInfo-LongDescription=Applet than can roll dice, toss coin, etc. Basically any simple random thing you can make a svg for.
+X-PublishInfo-Depends=plasma-scriptengine-javascript
+X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master/dice
+X-PublishInfo-Contact=http://bit.ly/damu-email
+X-PublishInfo-Installing=http://userbase.kde.org/Plasma/Installing_Plasmoids
