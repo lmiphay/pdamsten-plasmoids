@@ -24,8 +24,6 @@ plasmoid.init = function()
     plasmoid.setAspectRatioMode(KeepAspectRatio);
     m_layout = new LinearLayout(plasmoid);
     m_layout.setContentsMargins(0, 0, 0, 0);
-    m_layout.setItemSpacing(SPACING);
-    plasmoid.configChanged();
 
     // TODO No way to set my own property? Using QPropertyAnimation as QVariantAnimation.
     m_anim = animation("Property");
@@ -40,6 +38,8 @@ plasmoid.init = function()
     w = new IconWidget();
     m_layout.addItem(w);
     w.clicked.connect(plasmoid.onClick);
+
+    plasmoid.configChanged();
 }
 
 plasmoid.onValueChange = function(value)
@@ -48,7 +48,7 @@ plasmoid.onValueChange = function(value)
     if (m_anim.currentValue == 1.0) {
         m_values = []
         for (i = 0; i < m_count; ++i) {
-            m_values.push(Math.floor(Math.random() * 6) + 1);
+            m_values.push(Math.ceil(Math.random() * 6));
         }
         m_anim.direction = 1;
         m_anim.start();
@@ -62,16 +62,30 @@ plasmoid.onClick = function(button)
     m_anim.start();
 }
 
-plasmoid.paintElement = function(painter, element, opacity)
+plasmoid.paintElementWithOpacity = function(painter, x, y, element, opacity)
 {
     if (opacity > 0.0) {
-        if (m_svg.hasElement(element)) {
-            rect = plasmoid.rect();
+         if (m_svg.hasElement(element)) {
             r = m_svg.elementRect(element);
-            if (opacity != 1.0) {
-                painter.opacity = opacity;
+            painter.opacity = opacity;
+            m_svg.paint(painter, x + r.x, y + r.y, element);
+         }
+     }
+ }
+
+plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
+{
+    if (flip > 0.0) {
+        if (m_svg.hasElement(element)) {
+            r = m_svg.elementRect(element);
+            if (flip == 1.0) {
+                m_svg.paint(painter, x + r.x, y + r.y, element);
+            } else {
+                h = r.height * flip;
+                print (element + h);
+                m_svg.paint(painter, x + r.x, y + r.y + ((r.height - h) / 2.0),
+                            r.width, h, element);
             }
-            m_svg.paint(painter, r.x + rect.x, r.y + rect.y, element);
         }
     }
 }
@@ -80,12 +94,39 @@ plasmoid.paintInterface = function(painter)
 {
     // TODO Can't make custom widgets? Plasma::SvqWidget is too simple for this so paint it here.
     rect = plasmoid.rect();
-    if (m_svg.size != rect.size) {
-        m_svg.resize(rect.width, rect.height);
+    if (plasmoid.formFactor == Vertical) {
+        short = rect.width;
+        long = rect.height;
+    } else {
+        short = rect.height;
+        long = rect.width;
     }
-    plasmoid.paintElement(painter, 'background', 1.0);
-    plasmoid.paintElement(painter, 'value' + m_values[0], 1.0 - m_anim.currentValue);
-    plasmoid.paintElement(painter, 'whirl', m_anim.currentValue);
+    size = QSizeF(short, short);
+    spacing = (long - (m_count * short)) / (m_count - 1);
+    if (m_svg.size != size) {
+        m_svg.resize(short, short);
+    }
+    for (i = 0; i < m_count; ++i) {
+        if (plasmoid.formFactor == Vertical) {
+            x = rect.x;
+            y = rect.y + (i * (short + spacing));
+        } else {
+            x = rect.x + (i * (short + spacing));
+            y = rect.y;
+        }
+        if (m_svg.hasElement('whirl')) {
+            // Fade animation
+            plasmoid.paintElementWithOpacity(painter, x, y, 'background', 1.0);
+            plasmoid.paintElementWithOpacity(painter, x, y, 'value' + m_values[i],
+                                             1.0 - m_anim.currentValue);
+            plasmoid.paintElementWithOpacity(painter, x, y, 'whirl', m_anim.currentValue);
+        } else {
+            // Flip animation
+            plasmoid.paintElementFlipped(painter, x, y, 'background', 1.0 - m_anim.currentValue);
+            plasmoid.paintElementFlipped(painter, x, y, 'value' + m_values[i],
+                                         1.0 - m_anim.currentValue);
+        }
+    }
 }
 
 plasmoid.configChanged = function()
@@ -95,16 +136,27 @@ plasmoid.configChanged = function()
     //svg = plasmoid.readConfig("itemSvg");
     svg = "Vegas Plasma Dice";
     m_svg = new Svg(svg);
+    m_svg.multipleImages = true;
 
-    // TODO vertical (panel)
-    h = plasmoid.rect().height;
+    if (plasmoid.formFactor == Vertical) {
+        short = plasmoid.rect().width;
+    } else {
+        short = plasmoid.rect().height;
+    }
+
     // TODO Only way to get margins?
     plasmoid.resize(200, 200);
-    hm = 200 - plasmoid.rect().width;
-    vm = 200 - plasmoid.rect().height;
-    // resize to item count
-    plasmoid.resize(hm + m_count * h + (m_count - 1) * SPACING, h + vm);
-    plasmoid.setMinimumSize(hm + m_count * MINSIZE + (m_count - 1) * SPACING, MINSIZE + vm);
+    rect = plasmoid.rect();
+    hm = 200 - rect.width;
+    vm = 200 - rect.height;
+
+    if (plasmoid.formFactor == Vertical) {
+        plasmoid.resize(hm + short, vm + m_count * short + (m_count - 1) * SPACING);
+        plasmoid.setMinimumSize(hm + MINSIZE, vm + m_count * MINSIZE + (m_count - 1) * SPACING);
+    } else {
+        plasmoid.resize(hm + m_count * short + (m_count - 1) * SPACING, vm + short);
+        plasmoid.setMinimumSize(hm + m_count * MINSIZE + (m_count - 1) * SPACING, vm + MINSIZE);
+    }
 
     m_values = []
     for (i = 0; i < m_count; ++i) {
