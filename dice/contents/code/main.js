@@ -23,7 +23,6 @@ SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice"]
 
 plasmoid.init = function()
 {
-    print("init")
     plasmoid.setAspectRatioMode(KeepAspectRatio);
     m_layout = new LinearLayout(plasmoid);
     m_layout.setContentsMargins(0, 0, 0, 0);
@@ -60,7 +59,6 @@ plasmoid.onValueChange = function(value)
 
 plasmoid.onClick = function(button)
 {
-    print('onClick');
     m_anim.direction = 0;
     m_anim.start();
 }
@@ -79,14 +77,12 @@ plasmoid.paintElementWithOpacity = function(painter, x, y, element, opacity)
 plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
 {
     if (flip > 0.0) {
-        print (element);
         if (m_svg.hasElement(element)) {
             r = m_svg.elementRect(element);
             if (flip == 1.0) {
                 m_svg.paint(painter, x + r.x, y + r.y, element);
             } else {
                 h = r.height * flip;
-                print (element + h);
                 m_svg.paint(painter, x + r.x, y + r.y + ((r.height - h) / 2.0),
                             r.width, h, element);
             }
@@ -139,7 +135,6 @@ plasmoid.paintInterface = function(painter)
 
 plasmoid.configChanged = function()
 {
-    print('configChanged');
     m_count = plasmoid.readConfig("itemCount");
     svg = plasmoid.readConfig("itemSvg");
     m_svg = new Svg(SVGS[svg]);
