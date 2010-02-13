@@ -165,6 +165,7 @@ plasmoid.configChanged = function()
     for (i = 0; i < m_count; ++i) {
         m_values.push(1);
     }
+    plasmoid.update();
 }
 
 plasmoid.init();
