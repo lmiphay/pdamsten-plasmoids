@@ -27,7 +27,7 @@ plasmoid.init = function()
     m_layout = new LinearLayout(plasmoid);
     m_layout.setContentsMargins(0, 0, 0, 0);
 
-    // TODO No way to set my own property? Using QPropertyAnimation as QVariantAnimation.
+    // TODO No way to add my own property? Using QPropertyAnimation as QVariantAnimation.
     m_anim = animation("Property");
     m_anim.targetObject = plasmoid;
     m_anim.valueChanged.connect(plasmoid.onValueChange);
