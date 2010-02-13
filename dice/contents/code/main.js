@@ -48,7 +48,7 @@ plasmoid.onValueChange = function(value)
     if (m_anim.currentValue == 1.0) {
         m_values = []
         for (i = 0; i < m_count; ++i) {
-            m_values.push(Math.ceil(Math.random() * 6));
+            m_values.push(Math.ceil(Math.random() * m_svgMax));
         }
         m_anim.direction = 1;
         m_anim.start();
@@ -76,6 +76,7 @@ plasmoid.paintElementWithOpacity = function(painter, x, y, element, opacity)
 plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
 {
     if (flip > 0.0) {
+        print (element);
         if (m_svg.hasElement(element)) {
             r = m_svg.elementRect(element);
             if (flip == 1.0) {
@@ -102,7 +103,11 @@ plasmoid.paintInterface = function(painter)
         long = rect.width;
     }
     size = QSizeF(short, short);
-    spacing = (long - (m_count * short)) / (m_count - 1);
+    if (m_count > 1) {
+        spacing = (long - (m_count * short)) / (m_count - 1);
+    } else {
+        spacing = 0;
+    }
     if (m_svg.size != size) {
         m_svg.resize(short, short);
     }
@@ -134,9 +139,11 @@ plasmoid.configChanged = function()
     print('configChanged');
     m_count = plasmoid.readConfig("itemCount");
     //svg = plasmoid.readConfig("itemSvg");
-    svg = "Vegas Plasma Dice";
+    svg = "Coin";
     m_svg = new Svg(svg);
     m_svg.multipleImages = true;
+    m_svgMax = m_svg.elementRect('values-hint').width
+    print (m_svgMax);
 
     if (plasmoid.formFactor == Vertical) {
         short = plasmoid.rect().width;
