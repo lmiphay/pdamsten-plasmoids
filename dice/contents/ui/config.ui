@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>221</width>
+    <width>286</width>
     <height>82</height>
    </rect>
   </property>
@@ -35,7 +35,29 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="KComboBox" name="kcfg_itemSvg"/>
+      <widget class="KComboBox" name="kcfg_itemSvg">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>Vegas Plasma Dice</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Coin</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Normal Dice</string>
+        </property>
+       </item>
+      </widget>
      </item>
     </layout>
    </item>

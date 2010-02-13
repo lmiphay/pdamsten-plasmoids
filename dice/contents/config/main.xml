@@ -8,9 +8,9 @@
           <label>Item Count</label>
           <default>1</default>
       </entry>
-      <entry name="itemSvg" type="String">
+      <entry name="itemSvg" type="Int">
           <label>Item style</label>
-          <default>Vegas Plasma Dice</default>
+          <default>0</default>
       </entry>
   </group>
 </kcfg>

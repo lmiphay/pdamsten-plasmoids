@@ -18,6 +18,9 @@
 SPACING = 10
 MINSIZE = 20
 
+// TODO No way to read these from dir and put them to the config dialog?
+SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice"]
+
 plasmoid.init = function()
 {
     print("init")
@@ -138,12 +141,10 @@ plasmoid.configChanged = function()
 {
     print('configChanged');
     m_count = plasmoid.readConfig("itemCount");
-    //svg = plasmoid.readConfig("itemSvg");
-    svg = "Coin";
-    m_svg = new Svg(svg);
+    svg = plasmoid.readConfig("itemSvg");
+    m_svg = new Svg(SVGS[svg]);
     m_svg.multipleImages = true;
-    m_svgMax = m_svg.elementRect('values-hint').width
-    print (m_svgMax);
+    m_svgMax = m_svg.elementRect('values-hint').width;
 
     if (plasmoid.formFactor == Vertical) {
         short = plasmoid.rect().width;
