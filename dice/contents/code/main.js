@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SPACING = 10
-MINSIZE = 20
+SPACING = 10;
+MINSIZE = 20;
 
 // TODO No way to read these from dir and put them to the config dialog?
-SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice"]
+SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice"];
 
 plasmoid.init = function()
 {
@@ -48,7 +48,7 @@ plasmoid.onValueChange = function(value)
 {
     plasmoid.update();
     if (m_anim.currentValue == 1.0) {
-        m_values = []
+        m_values = [];
         for (i = 0; i < m_count; ++i) {
             m_values.push(Math.ceil(Math.random() * m_svgMax));
         }
@@ -161,7 +161,7 @@ plasmoid.configChanged = function()
         plasmoid.setMinimumSize(hm + m_count * MINSIZE + (m_count - 1) * SPACING, vm + MINSIZE);
     }
 
-    m_values = []
+    m_values = [];
     for (i = 0; i < m_count; ++i) {
         m_values.push(1);
     }
