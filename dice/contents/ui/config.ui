@@ -57,6 +57,11 @@
          <string>Normal Dice</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Deck of Cards</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
