@@ -41,6 +41,11 @@ plasmoid.init = function()
     m_anim.direction = AnimationForward;
     m_anim.type = plasmoid.OutCirc;
 
+    m_timer = QTimer(plasmoid);
+    m_timer.singleShot = true;
+    m_timer.interval = 400;
+    m_timer.timeout.connect(plasmoid.toggleLocked);
+
     plasmoid.configChanged();
 }
 
@@ -69,20 +74,27 @@ plasmoid.animate = function()
     m_anim.start();
 }
 
+plasmoid.toggleLocked = function()
+{
+    m_locked[m_id] = !m_locked[m_id];
+    plasmoid.update();
+}
+
 plasmoid.onClick = function(id)
 {
-    print('single ' + id);
     if (!m_lockEnabled) {
         plasmoid.animate();
     } else {
-        m_locked[id] = !m_locked[id];
-        plasmoid.update();
+        // TODO We get single click even if we double click
+        m_id = id;
+        m_timer.start();
     }
 }
 
 plasmoid.onDoubleClick = function()
 {
     print('double');
+    m_timer.stop();
     plasmoid.animate();
 }
 
