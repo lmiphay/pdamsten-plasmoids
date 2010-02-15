@@ -62,6 +62,11 @@
          <string>Deck of Cards</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Pills</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
