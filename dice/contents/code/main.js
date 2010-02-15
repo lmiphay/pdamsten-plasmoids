@@ -23,6 +23,8 @@ SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice", "Deck of Cards", "Pills"];
 
 plasmoid.init = function()
 {
+    m_lockedColor = new QColor(255, 255, 255);
+    m_lockedColor.alpha = 128;
     plasmoid.setAspectRatioMode(KeepAspectRatio);
     m_layout = new LinearLayout(plasmoid);
     m_layout.setContentsMargins(0, 0, 0, 0);
@@ -51,6 +53,7 @@ plasmoid.onValueChange = function(value)
         m_values = [];
         for (i = 0; i < m_count; ++i) {
             m_values.push(Math.ceil(Math.random() * m_svgMax));
+            m_locked[i] = false;
         }
         m_anim.direction = 1;
         m_anim.start();
@@ -124,11 +127,19 @@ plasmoid.paintInterface = function(painter)
             plasmoid.paintElementWithOpacity(painter, x, y, 'value' + m_values[i],
                                              1.0 - m_anim.currentValue);
             plasmoid.paintElementWithOpacity(painter, x, y, 'whirl', m_anim.currentValue);
+            if (m_locked[i]) {
+                painter.opacity = 1.0 - m_anim.currentValue;
+                painter.fillRect(x, y, short, short, m_lockedColor);
+            }
         } else {
             // Flip animation
             plasmoid.paintElementFlipped(painter, x, y, 'background', 1.0 - m_anim.currentValue);
             plasmoid.paintElementFlipped(painter, x, y, 'value' + m_values[i],
                                          1.0 - m_anim.currentValue);
+            if (m_locked[i]) {
+                h = short * m_anim.currentValue;
+                painter.fillRect(x, y + (h / 2.0), short, short - h, m_lockedColor);
+            }
         }
     }
 }
@@ -162,8 +173,10 @@ plasmoid.configChanged = function()
     }
 
     m_values = [];
+    m_locked = [];
     for (i = 0; i < m_count; ++i) {
         m_values.push(1);
+        m_locked.push(true);
     }
     plasmoid.update();
 }

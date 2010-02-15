@@ -12,5 +12,9 @@
           <label>Item style</label>
           <default>0</default>
       </entry>
+      <entry name="mode" type="Int">
+          <label>Applet mode</label>
+          <default>0</default>
+      </entry>
   </group>
 </kcfg>
