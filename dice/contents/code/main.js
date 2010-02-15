@@ -93,7 +93,6 @@ plasmoid.onClick = function(id)
 
 plasmoid.onDoubleClick = function()
 {
-    print('double');
     m_timer.stop();
     plasmoid.animate();
 }
@@ -114,6 +113,7 @@ plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
     if (flip > 0.0) {
         if (m_svg.hasElement(element)) {
             r = m_svg.elementRect(element);
+            painter.opacity = 1.0;
             if (flip == 1.0) {
                 m_svg.paint(painter, x + r.x, y + r.y, element);
             } else {
