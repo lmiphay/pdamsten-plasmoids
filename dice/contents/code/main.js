@@ -23,11 +23,13 @@ SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice", "Deck of Cards", "Pills"];
 
 plasmoid.init = function()
 {
+    m_count = 0;
     m_lockedColor = new QColor(255, 255, 255);
     m_lockedColor.alpha = 128;
     plasmoid.setAspectRatioMode(KeepAspectRatio);
     m_layout = new LinearLayout(plasmoid);
     m_layout.setContentsMargins(0, 0, 0, 0);
+    m_layout.spacing = 0;
 
     // TODO No way to add my own property? Using QPropertyAnimation as QVariantAnimation.
     m_anim = animation("Property");
@@ -36,34 +38,52 @@ plasmoid.init = function()
     m_anim.startValue = 0;
     m_anim.endValue = 1;
     m_anim.duration = 500;
+    m_anim.direction = AnimationForward;
     m_anim.type = plasmoid.OutCirc;
-
-    // TODO Applet cannot handle mouse presses? Make transparent widget for getting clicks.
-    w = new IconWidget();
-    m_layout.addItem(w);
-    w.clicked.connect(plasmoid.onClick);
 
     plasmoid.configChanged();
 }
 
 plasmoid.onValueChange = function(value)
 {
-    plasmoid.update();
     if (m_anim.currentValue == 1.0) {
-        m_values = [];
         for (i = 0; i < m_count; ++i) {
-            m_values.push(Math.ceil(Math.random() * m_svgMax));
+            if (!m_locked[i]) {
+                m_values[i] = (Math.ceil(Math.random() * m_svgMax));
+            }
+        }
+        m_anim.direction = AnimationBackward;
+        m_anim.start();
+    }
+    if (m_anim.currentValue == 0.0) {
+        for (i = 0; i < m_count; ++i) {
             m_locked[i] = false;
         }
-        m_anim.direction = 1;
-        m_anim.start();
+    }
+    plasmoid.update();
+}
+
+plasmoid.animate = function()
+{
+    m_anim.direction = AnimationForward;
+    m_anim.start();
+}
+
+plasmoid.onClick = function(id)
+{
+    print('single ' + id);
+    if (!m_lockEnabled) {
+        plasmoid.animate();
+    } else {
+        m_locked[id] = !m_locked[id];
+        plasmoid.update();
     }
 }
 
-plasmoid.onClick = function(button)
+plasmoid.onDoubleClick = function()
 {
-    m_anim.direction = 0;
-    m_anim.start();
+    print('double');
+    plasmoid.animate();
 }
 
 plasmoid.paintElementWithOpacity = function(painter, x, y, element, opacity)
@@ -121,33 +141,41 @@ plasmoid.paintInterface = function(painter)
             x = rect.x + (i * (short + spacing));
             y = rect.y;
         }
+        if (m_locked[i]) {
+            anim = 0.0;
+        } else {
+            anim = m_anim.currentValue;
+        }
         if (m_svg.hasElement('whirl')) {
             // Fade animation
             plasmoid.paintElementWithOpacity(painter, x, y, 'background', 1.0);
-            plasmoid.paintElementWithOpacity(painter, x, y, 'value' + m_values[i],
-                                             1.0 - m_anim.currentValue);
-            plasmoid.paintElementWithOpacity(painter, x, y, 'whirl', m_anim.currentValue);
-            if (m_locked[i]) {
-                painter.opacity = 1.0 - m_anim.currentValue;
-                painter.fillRect(x, y, short, short, m_lockedColor);
-            }
+            plasmoid.paintElementWithOpacity(painter, x, y, 'value' + m_values[i], 1.0 - anim);
+            plasmoid.paintElementWithOpacity(painter, x, y, 'whirl', anim);
         } else {
             // Flip animation
-            plasmoid.paintElementFlipped(painter, x, y, 'background', 1.0 - m_anim.currentValue);
-            plasmoid.paintElementFlipped(painter, x, y, 'value' + m_values[i],
-                                         1.0 - m_anim.currentValue);
-            if (m_locked[i]) {
-                h = short * m_anim.currentValue;
-                painter.fillRect(x, y + (h / 2.0), short, short - h, m_lockedColor);
+            plasmoid.paintElementFlipped(painter, x, y, 'background', 1.0 - anim);
+            plasmoid.paintElementFlipped(painter, x, y, 'value' + m_values[i], 1.0 - anim);
+        }
+        if (m_locked[i]) {
+            if (m_anim.state == 2 && m_anim.direction == AnimationBackward) {
+                painter.opacity = m_anim.currentValue;
+            } else {
+                painter.opacity = 1.0;
             }
+            painter.fillRect(x, y, short, short, m_lockedColor);
         }
     }
 }
 
 plasmoid.configChanged = function()
 {
+    while (m_layout.count > 0) {
+        m_layout.removeAt(0);
+    }
+
     m_count = plasmoid.readConfig("itemCount");
     svg = plasmoid.readConfig("itemSvg");
+    m_lockEnabled = (plasmoid.readConfig("mode") == 1);
     m_svg = new Svg(SVGS[svg]);
     m_svg.multipleImages = true;
     m_svgMax = m_svg.elementRect('values-hint').width;
@@ -176,7 +204,15 @@ plasmoid.configChanged = function()
     m_locked = [];
     for (i = 0; i < m_count; ++i) {
         m_values.push(1);
-        m_locked.push(true);
+        m_locked.push(false);
+
+        // TODO Applet cannot handle mouse presses? Make transparent widgets for getting clicks.
+        w = new IconWidget();
+        m_layout.addItem(w);
+        // TODO plasmoid.sender does not seem to work?
+        eval('f = function() { plasmoid.onClick(' + i + '); }');
+        w.clicked.connect(f);
+        w.doubleClicked.connect(plasmoid.onDoubleClick);
     }
     plasmoid.update();
 }
