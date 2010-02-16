@@ -49,7 +49,7 @@ plasmoid.init = function()
     m_anim.endValue = 1;
     m_anim.duration = 500;
     m_anim.direction = AnimationForward;
-    m_anim.type = plasmoid.OutCirc;
+    m_anim.easingCurve = new QEasingCurve(QEasingCurve.OutSine);
 
     m_timer = QTimer(plasmoid);
     m_timer.singleShot = true;
