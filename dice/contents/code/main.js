@@ -54,7 +54,24 @@ plasmoid.onValueChange = function(value)
     if (m_anim.currentValue == 1.0) {
         for (i = 0; i < m_count; ++i) {
             if (!m_locked[i]) {
-                m_values[i] = (Math.ceil(Math.random() * m_svgMax));
+                v = (Math.ceil(Math.random() * m_svgMax));
+                if (m_avoidDuplicates) {
+                    for (j = v; j < v + m_svgMax; ++j) {
+                        found = false;
+                        for (k = 0; k < i; ++k) {
+                            if (m_values[k] == v) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            break;
+                        }
+                        v = (j % m_svgMax) + 1;
+                    }
+                }
+                print(v);
+                m_values[i] = v;
             }
         }
         m_anim.direction = AnimationBackward;
@@ -85,7 +102,7 @@ plasmoid.onClick = function(id)
     if (!m_lockEnabled) {
         plasmoid.animate();
     } else {
-        // TODO We get single click even if we double click
+        // We get single click also when we double click
         m_id = id;
         m_timer.start();
     }
@@ -191,6 +208,7 @@ plasmoid.configChanged = function()
     m_svg = new Svg(SVGS[svg]);
     m_svg.multipleImages = true;
     m_svgMax = m_svg.elementRect('values-hint').width;
+    m_avoidDuplicates = m_svg.hasElement('avoid-same-values');
 
     if (plasmoid.formFactor == Vertical) {
         short = plasmoid.rect().width;
