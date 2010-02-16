@@ -19,7 +19,7 @@ SPACING = 10;
 MINSIZE = 20;
 
 // TODO No way to read these from dir and put them to the config dialog?
-SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice", "Deck of Cards", "Pills"];
+SVGS = ["Vegas Plasma Dice", "Euro Coin", "Normal Dice", "Deck of Cards", "Pills"];
 
 plasmoid.init = function()
 {
