@@ -297,4 +297,4 @@ if inputWithDefault('Continue with upload?', 'yes') == 'yes':
         X(uploadFile())
         X(gitCommit('Update version and changelog'))
         if plasmoidData['origVersion'] != plasmoidData['version']:
-            X(gitTag(name + ' ' + plasmoidData['version']))
+            X(gitTag(plasmoidData['name'] + ' ' + plasmoidData['version']))
