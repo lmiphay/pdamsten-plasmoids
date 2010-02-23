@@ -18,6 +18,8 @@ FILES=(
 "stealth-cashew/contents/Messages.sh"
 "day-and-night/contents/code/wallpapercache.py"
 "clock/contents/code/wallpapercache.py"
+"day-and-night/contents/code/wallpaperrenderer.py"
+"clock/contents/code/wallpaperrenderer.py"
 "day-and-night/contents/code/backgrounddelegate.py"
 "clock/contents/code/backgrounddelegate.py"
 "clock/contents/code/helpers.py"

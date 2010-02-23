@@ -22,6 +22,7 @@ import sys, os
 from PyQt4.QtCore import *
 from PyKDE4.plasma import Plasma
 from PyQt4.QtGui import *
+#from wallpaperrenderer import WallpaperRenderer
 
 class WallpaperCache(QObject):
     All = -sys.maxint - 1                             # id
