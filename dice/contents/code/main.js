@@ -19,14 +19,24 @@ SPACING = 10;
 MINSIZE = 20;
 
 // TODO No way to read these from dir and put them to the config dialog?
-SVGS = ["Vegas Plasma Dice", "Coin", "Normal Dice", "Deck of Cards", "Pills"];
+SVGS = ["Vegas Plasma Dice", "Euro Coin", "Normal Dice", "Deck of Cards", "Pills"];
 
 plasmoid.init = function()
 {
+    plasmoid.setAspectRatioMode(KeepAspectRatio);
+
     m_count = 0;
+    m_maxValue = 0;
+    m_id = 0;
+    m_locked = [];
+    m_values = [];
+    m_avoidDuplicates = false;
+    m_lockEnabled = false;
+    m_svg = null;
+
     m_lockedColor = new QColor(255, 255, 255);
     m_lockedColor.alpha = 128;
-    plasmoid.setAspectRatioMode(KeepAspectRatio);
+
     m_layout = new LinearLayout(plasmoid);
     m_layout.setContentsMargins(0, 0, 0, 0);
     m_layout.spacing = 0;
@@ -39,7 +49,7 @@ plasmoid.init = function()
     m_anim.endValue = 1;
     m_anim.duration = 500;
     m_anim.direction = AnimationForward;
-    m_anim.type = plasmoid.OutCirc;
+    m_anim.easingCurve = new QEasingCurve(QEasingCurve.OutSine);
 
     m_timer = QTimer(plasmoid);
     m_timer.singleShot = true;
@@ -54,7 +64,23 @@ plasmoid.onValueChange = function(value)
     if (m_anim.currentValue == 1.0) {
         for (i = 0; i < m_count; ++i) {
             if (!m_locked[i]) {
-                m_values[i] = (Math.ceil(Math.random() * m_svgMax));
+                v = (Math.ceil(Math.random() * m_maxValue));
+                if (m_avoidDuplicates) {
+                    for (j = v; j < v + m_maxValue; ++j) {
+                        found = false;
+                        for (k = 0; k < i; ++k) {
+                            if (m_values[k] == v) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            break;
+                        }
+                        v = (j % m_maxValue) + 1;
+                    }
+                }
+                m_values[i] = v;
             }
         }
         m_anim.direction = AnimationBackward;
@@ -85,7 +111,7 @@ plasmoid.onClick = function(id)
     if (!m_lockEnabled) {
         plasmoid.animate();
     } else {
-        // TODO We get single click even if we double click
+        // We get single click also when we double click
         m_id = id;
         m_timer.start();
     }
@@ -100,13 +126,13 @@ plasmoid.onDoubleClick = function()
 plasmoid.paintElementWithOpacity = function(painter, x, y, element, opacity)
 {
     if (opacity > 0.0) {
-         if (m_svg.hasElement(element)) {
+        if (m_svg.hasElement(element)) {
             r = m_svg.elementRect(element);
             painter.opacity = opacity;
             m_svg.paint(painter, x + r.x, y + r.y, element);
-         }
-     }
- }
+        }
+    }
+}
 
 plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
 {
@@ -190,7 +216,8 @@ plasmoid.configChanged = function()
     m_lockEnabled = (plasmoid.readConfig("mode") == 1);
     m_svg = new Svg(SVGS[svg]);
     m_svg.multipleImages = true;
-    m_svgMax = m_svg.elementRect('values-hint').width;
+    m_maxValue = m_svg.elementRect('values-hint').width;
+    m_avoidDuplicates = m_svg.hasElement('avoid-same-values');
 
     if (plasmoid.formFactor == Vertical) {
         short = plasmoid.rect().width;

@@ -212,6 +212,7 @@ def newVersion(version):
 
 def updateVersion():
     global plasmoidData
+    global plasmoid
 
     print 'Updating version and changelog.'
     plasmoidData['version'] = newVersion(plasmoidData['origVersion'])
@@ -221,7 +222,7 @@ def updateVersion():
         replaceInFile('./%s/metadata.desktop' % plasmoid, \
                       'X-KDE-PluginInfo-Version=%s' % plasmoidData['origVersion'], \
                       'X-KDE-PluginInfo-Version=%s' % plasmoidData['version'])
-        log = gitLog(name + ' ' + plasmoidData['origVersion'])
+        log = gitLog(plasmoidData['name'] + ' ' + plasmoidData['origVersion'])
         appendToFrontOfFile('./%s/Changelog' % plasmoid, \
                 '%s  Version %s\n%s\n\n' % \
                 (datetime.today().strftime('%Y-%m-%d'), plasmoidData['version'], log))
@@ -296,4 +297,4 @@ if inputWithDefault('Continue with upload?', 'yes') == 'yes':
         X(uploadFile())
         X(gitCommit('Update version and changelog'))
         if plasmoidData['origVersion'] != plasmoidData['version']:
-            X(gitTag(name + ' ' + plasmoidData['version']))
+            X(gitTag(plasmoidData['name'] + ' ' + plasmoidData['version']))
