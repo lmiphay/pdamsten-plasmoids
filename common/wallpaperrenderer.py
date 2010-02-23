@@ -24,12 +24,17 @@
 # Converted from C++ WallpaperRenderThread to python by Petri Damstén
 
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyKDE4.plasma import Plasma
 
 class WallpaperRenderer(QThread):
     def __init__(self, parent = None):
         QThread.__init__(self, parent)
         self.abort = False
         self.restart = False
+        self.currentToken = 0
+        self.mutex = QMutex()
+        self.condition = QWaitCondition()
 
     def __del__(self):
         # abort computation
@@ -37,7 +42,8 @@ class WallpaperRenderer(QThread):
         self.abort = True
         self.condition.wakeOne()
         lock.unlock()
-        self.wait()
+        self.wait() # TODO deleted error
+        QThread.__del__(self)
 
     def setSize(self, size):
         lock = QMutexLocker(self.mutex)
@@ -53,19 +59,14 @@ class WallpaperRenderer(QThread):
         self.currentToken += 1
         token = self.currentToken
 
-        if not isRunning():
+        if not self.isRunning():
             self.start()
         else:
             self.condition.wakeOne()
         return token
 
     def run(self):
-        file = QString()
-        color = QColor()
-        size = QSize()
-        method = Wallpaper.ResizeMethod()
-
-        while True: 
+        while True:
             lock = QMutexLocker(self.mutex)
             if not self.restart and not self.abort:
                 self.condition.wait(self.mutex)
@@ -78,7 +79,7 @@ class WallpaperRenderer(QThread):
             file = self.file
             color = self.color
             size = self.size
-            ratio = self.size.width() / qreal(self.size.height())
+            ratio = float(self.size.width()) / self.size.height()
             method = self.method
             lock.unlock()
 
@@ -86,7 +87,7 @@ class WallpaperRenderer(QThread):
             result.fill(color.rgba())
 
             if file.isEmpty() or not QFile.exists(file):
-                self.emit(SIGNAL('done()'), token, result, file, size, method, color)
+                self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
                 break
 
             pos = QPoint(0, 0)
@@ -118,9 +119,10 @@ class WallpaperRenderer(QThread):
                 ratio = 1
 
             # set self.render parameters according to resize mode
-            if method == Wallpaper.ScaledResize:
+            if method == Plasma.Wallpaper.ScaledResize:
                 scaledSize = size
-            elif method == Wallpaper.CenteredResize:
+
+            elif method == Plasma.Wallpaper.CenteredResize:
                 scaledSize = imgSize
                 pos = QPoint((size.width() - scaledSize.width()) / 2,
                     (size.height() - scaledSize.height()) / 2)
@@ -138,49 +140,50 @@ class WallpaperRenderer(QThread):
                     scaledSize = QSize(width, height)
                     pos = QPoint((size.width() - scaledSize.width()) / 2,
                                  (size.height() - scaledSize.height()) / 2)
-                elif method == Wallpaper.MaxpectResize:
-                    xratio = float(size.width()) / imgSize.width()
-                    yratio = float(size.height()) / imgSize.height()
 
-                    if xratio > yratio:
-                        height = size.height()
-                        width = height * imgSize.width() / imgSize.height()
-                        scaledSize = QSize(width, height)
-                    else:
-                        width = size.width()
-                        height = width * imgSize.height() / imgSize.width()
-                        scaledSize = QSize(width, height)
+            elif method == Plasma.Wallpaper.MaxpectResize:
+                xratio = float(size.width()) / imgSize.width()
+                yratio = float(size.height()) / imgSize.height()
 
-                    pos = QPoint((size.width() - scaledSize.width()) / 2,
-                                 (size.height() - scaledSize.height()) / 2)
+                if xratio > yratio:
+                    height = size.height()
+                    width = height * imgSize.width() / imgSize.height()
+                    scaledSize = QSize(width, height)
+                else:
+                    width = size.width()
+                    height = width * imgSize.height() / imgSize.width()
+                    scaledSize = QSize(width, height)
 
-                elif method == Wallpaper.ScaledAndCroppedResize:
-                    xratio = float(size.width()) / imgSize.width()
-                    yratio = float(size.height()) / imgSize.height()
-    
-                    if xratio > yratio:
-                        width = size.width()
-                        height = width * imgSize.height() / imgSize.width()
-                        scaledSize = QSize(width, height)
-                    else:
-                        height = size.height()
-                        width = height * imgSize.width() / imgSize.height()
-                        scaledSize = QSize(width, height)
+                pos = QPoint((size.width() - scaledSize.width()) / 2,
+                             (size.height() - scaledSize.height()) / 2)
 
-                    pos = QPoint((size.width() - scaledSize.width()) / 2,
-                            (size.height() - scaledSize.height()) / 2)
+            elif method == Plasma.Wallpaper.ScaledAndCroppedResize:
+                xratio = float(size.width()) / imgSize.width()
+                yratio = float(size.height()) / imgSize.height()
 
-                elif method == Wallpaper.TiledResize:
-                    scaledSize = imgSize
-                    tiled = True
+                if xratio > yratio:
+                    width = size.width()
+                    height = width * imgSize.height() / imgSize.width()
+                    scaledSize = QSize(width, height)
+                else:
+                    height = size.height()
+                    width = height * imgSize.width() / imgSize.height()
+                    scaledSize = QSize(width, height)
 
-                elif method == Wallpaper.CenterTiledResize:
-                    scaledSize = imgSize
-                    pos = QPoint(-scaledSize.width() +
-                                 ((size.width() - scaledSize.width()) / 2) % scaledSize.width(),
-                                 -scaledSize.height() +
-                                 ((size.height() - scaledSize.height()) / 2) % scaledSize.height())
-                    tiled = True
+                pos = QPoint((size.width() - scaledSize.width()) / 2,
+                        (size.height() - scaledSize.height()) / 2)
+
+            elif method == Plasma.Wallpaper.TiledResize:
+                scaledSize = imgSize
+                tiled = True
+
+            elif method == Plasma.Wallpaper.CenterTiledResize:
+                scaledSize = imgSize
+                pos = QPoint(-scaledSize.width() +
+                                ((size.width() - scaledSize.width()) / 2) % scaledSize.width(),
+                                -scaledSize.height() +
+                                ((size.height() - scaledSize.height()) / 2) % scaledSize.height())
+                tiled = True
 
             p = QPainter(result)
 
@@ -206,7 +209,8 @@ class WallpaperRenderer(QThread):
                                 continue
                 else:
                     p.drawImage(pos, img)
+            p.end()
 
             # signal we're done
-            self.emit(SIGNAL('done()'), token, result, file, size, method, color)
+            self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
             break

@@ -20,9 +20,9 @@
 
 import sys, os
 from PyQt4.QtCore import *
-from PyKDE4.plasma import Plasma
 from PyQt4.QtGui import *
-#from wallpaperrenderer import WallpaperRenderer
+from PyKDE4.plasma import Plasma
+from wallpaperrenderer import WallpaperRenderer
 
 class WallpaperCache(QObject):
     All = -sys.maxint - 1                             # id
@@ -44,6 +44,9 @@ class WallpaperCache(QObject):
         self.dirtyTimer.setInterval(0)
         self.dirtyTimer.setSingleShot(True)
         self.connect(self.dirtyTimer, SIGNAL('timeout()'), self.checkDirtyPixmaps)
+        self.renderer = WallpaperRenderer(self)
+        self.connect(self.renderer, SIGNAL('renderCompleted(const QImage&)'), \
+                     self.renderCompleted)
 
     def checkId(self, id):
         if id not in self.cache.keys():
@@ -147,10 +150,6 @@ class WallpaperCache(QObject):
         return False
 
     def init(self):
-        self.disconnect(self.wallpaper.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
-                        self.renderCompleted)
-        self.connect(self.wallpaper.wallpaper, SIGNAL('renderCompleted(const QImage&)'), \
-                     self.renderCompleted)
         self.checkGeometry()
 
     def checkPixmaps(self, ids):
@@ -181,8 +180,8 @@ class WallpaperCache(QObject):
             if path:
                 #print '   ### Rendering'
                 self.setDirty(self.rendering, False)
-                self.wallpaper.render(path, self._size, operation[self.Method], \
-                                      operation[self.Color])
+                self.renderer.render(path, self._size, operation[self.Method], \
+                                     operation[self.Color])
                 return False
             else:
                 #print '   ### Does not exist'
