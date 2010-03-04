@@ -46,7 +46,7 @@ class WallpaperCache(QObject):
         self.connect(self.dirtyTimer, SIGNAL('timeout()'), self.checkDirtyPixmaps)
         self.renderer = WallpaperRenderer(self)
         self.connect(self.renderer, SIGNAL('renderCompleted(const QImage&)'), \
-                     self.renderCompleted)
+                     self.renderCompleted, Qt.QueuedConnection)
 
     def checkId(self, id):
         if id not in self.cache.keys():

@@ -28,86 +28,98 @@ from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
 
 class WallpaperRenderer(QThread):
-    def __init__(self, parent = None):
+    def __init__(self, parent):
         QThread.__init__(self, parent)
-        self.abort = False
-        self.restart = False
-        self.currentToken = 0
         self.mutex = QMutex()
         self.condition = QWaitCondition()
+        self.abort = False
+        self.currentToken = 0
 
-    def __del__(self):
-        # abort computation
-        lock = QMutexLocker(self.mutex)
-        self.abort = True
-        self.condition.wakeOne()
-        lock.unlock()
-        self.wait() # TODO deleted error
-        QThread.__del__(self)
+    def __dtor__(self):
+        print 'WallpaperRenderer.__dtor__'
+        try:
+            self.mutex.lock()
+            self.abort = True
+            self.condition.wakeOne()
+        finally:
+            self.mutex.unlock()
+        self.wait()
 
-    def setSize(self, size):
-        lock = QMutexLocker(self.mutex)
-        self.size = size
-
-    def render(self, file, size, method, color):
-        lock = QMutexLocker(self.mutex)
-        self.file = file
-        self.color = color
-        self.method = method
-        self.size = size
-        self.restart = True
-        self.currentToken += 1
-        token = self.currentToken
+    def render(self, fileName, size, method, color):
+        try:
+            self.mutex.lock()
+            self.fileName = fileName
+            self.color = color
+            self.method = method
+            self.size = size
+            self.restart = True
+            self.currentToken += 1
+            token = self.currentToken
+        finally:
+            self.mutex.unlock()
 
         if not self.isRunning():
+            print 'WallpaperRenderer starting...'
             self.start()
         else:
+            print 'WallpaperRenderer waking up...'
             self.condition.wakeOne()
         return token
 
     def run(self):
+        print 'WallpaperRenderer.run'
         while True:
-            lock = QMutexLocker(self.mutex)
-            if not self.restart and not self.abort:
-                self.condition.wait(self.mutex)
-            if self.abort:
-                return
-            self.restart = False
+            try:
+                self.mutex.lock()
+                if not self.restart and not self.abort:
+                    print 'WAIT'
+                    self.condition.wait(self.mutex)
+                if self.abort:
+                    print 'ABORT'
+                    return
+                self.restart = False
+                print 'cont'
 
-            # load all parameters in nonshared variables
-            token = self.currentToken
-            file = self.file
-            color = self.color
-            size = self.size
-            ratio = float(self.size.width()) / self.size.height()
-            method = self.method
-            lock.unlock()
+                # load all parameters in nonshared variables
+                token = self.currentToken
+                fileName = self.fileName
+                color = QColor(self.color)
+                size = self.size
+                ratio = float(self.size.width()) / self.size.height()
+                method = self.method
+            finally:
+                self.mutex.unlock()
 
+            print 'xx0'
             result = QImage(size, QImage.Format_ARGB32_Premultiplied)
             result.fill(color.rgba())
 
-            if file.isEmpty() or not QFile.exists(file):
+            if fileName.isEmpty() or not QFile.exists(fileName):
+                print 'xxxxxxxxxx'
                 self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
-                break
+                continue
 
+            print 'xx1'
             pos = QPoint(0, 0)
             tiled = False
-            scalable = file.endsWith(QLatin1String('svg')) or file.endsWith(QLatin1String('svgz'))
+            scalable = fileName.endsWith(QLatin1String('svg')) or fileName.endsWith(QLatin1String('svgz'))
             scaledSize = QSize()
             img = QImage()
 
             # set image size
             imgSize = QSize()
 
+            print 'xx'
             if scalable:
                 # scalable: image can be of any size
                 imgSize = size
             else:
                 # otherwise, use the natural size of the loaded image
-                img = QImage(file)
+                img = QImage(fileName)
                 imgSize = img.size()
                 # print 'loaded with', imgSize, ratio
 
+            print 'xx2'
             # if any of them is zero we may self.run into a div-by-zero below.
             if imgSize.width() < 1:
                 imgSize.setWidth(1)
@@ -115,9 +127,11 @@ class WallpaperRenderer(QThread):
             if imgSize.height() < 1:
                 imgSize.setHeight(1)
 
+            print 'xx3'
             if ratio < 1:
                 ratio = 1
 
+            print 'xx4'
             # set self.render parameters according to resize mode
             if method == Plasma.Wallpaper.ScaledResize:
                 scaledSize = size
@@ -190,7 +204,7 @@ class WallpaperRenderer(QThread):
             # print token, scalable, scaledSize, imgSize
             if scalable:
                 # tiling is ignored for scalable wallpapers
-                svg = QSvgRenderer(file)
+                svg = QSvgRenderer(fileName)
                 if self.restart:
                     continue
                 svg.self.render(p)
@@ -212,5 +226,5 @@ class WallpaperRenderer(QThread):
             p.end()
 
             # signal we're done
+            print 'DONE'
             self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
-            break
