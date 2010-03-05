@@ -205,28 +205,37 @@ plasmoid.paintInterface = function(painter)
     }
 }
 
-plasmoid.checkMinimumSize = function()
+plasmoid.checkSize = function()
 {
     if (plasmoid.formFactor == Vertical) {
         short = plasmoid.rect.width;
-        plasmoid.setMinimumSize(hm + short, vm + m_count * short + (m_count - 1) * SPACING);
     } else if (plasmoid.formFactor == Horizontal) {
         short = plasmoid.rect.height;
-        plasmoid.setMinimumSize(hm + m_count * short + (m_count - 1) * SPACING, vm + short);
+    }
+    print(short);
+    print(m_margins);
+    if (plasmoid.formFactor == Vertical) {
+        plasmoid.setMinimumSize(short, m_count * short + (m_count - 1) * SPACING);
+    } else if (plasmoid.formFactor == Horizontal) {
+        plasmoid.setMinimumSize(m_count * short + (m_count - 1) * SPACING, short);
     } else {
         plasmoid.setMinimumSize(m_margins[0] + m_count * MINSIZE + (m_count - 1) * SPACING,
                                 m_margins[1] + MINSIZE);
+        plasmoid.resize(m_margins[0] + m_count * short + (m_count - 1) * SPACING,
+                        m_margins[1] + short);
     }
 }
 
 plasmoid.formFactorChanged = function()
 {
-    plasmoid.checkMinimumSize();
+    print("formFactorChanged: " + plasmoid.formFactor);
+    plasmoid.checkSize();
 }
 
-plasmoid.sizeChanged() = function()
+plasmoid.sizeChanged = function()
 {
-    plasmoid.checkMinimumSize();
+    print("sizeChanged: " + plasmoid.rect.width + ", " + plasmoid.rect.height);
+    plasmoid.checkSize();
 }
 
 plasmoid.configChanged = function()
@@ -251,16 +260,9 @@ plasmoid.configChanged = function()
 
     // TODO Only way to get margins?
     plasmoid.resize(200, 200);
-    hm = 200 - plasmoid.rect.width;
-    vm = 200 - plasmoid.rect.height;
+    m_margins = [200 - plasmoid.rect.width, 200 - plasmoid.rect.height];
 
-    if (plasmoid.formFactor == Vertical) {
-        plasmoid.resize(hm + short, vm + m_count * short + (m_count - 1) * SPACING);
-    } else {
-        plasmoid.resize(hm + m_count * short + (m_count - 1) * SPACING, vm + short);
-    }
-    m_margins = [hm, vm];
-    plasmoid.checkMinimumSize();
+    plasmoid.checkSize();
 
     m_values = [];
     m_locked = [];
