@@ -33,6 +33,7 @@ plasmoid.init = function()
     m_avoidDuplicates = false;
     m_lockEnabled = false;
     m_svg = null;
+    m_margins = [0, 0]
 
     m_lockedColor = new QColor(255, 255, 255);
     m_lockedColor.alpha = 128;
@@ -154,13 +155,12 @@ plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
 plasmoid.paintInterface = function(painter)
 {
     // TODO Can't make custom widgets? Plasma::SvqWidget is too simple for this so paint it here.
-    rect = plasmoid.rect();
     if (plasmoid.formFactor == Vertical) {
-        short = rect.width;
-        long = rect.height;
+        short = plasmoid.rect.width;
+        long = plasmoid.rect.height;
     } else {
-        short = rect.height;
-        long = rect.width;
+        short = plasmoid.rect.height;
+        long = plasmoid.rect.width;
     }
     size = QSizeF(short, short);
     if (m_count > 1) {
@@ -173,11 +173,11 @@ plasmoid.paintInterface = function(painter)
     }
     for (i = 0; i < m_count; ++i) {
         if (plasmoid.formFactor == Vertical) {
-            x = rect.x;
-            y = rect.y + (i * (short + spacing));
+            x = plasmoid.rect.x;
+            y = plasmoid.rect.y + (i * (short + spacing));
         } else {
-            x = rect.x + (i * (short + spacing));
-            y = rect.y;
+            x = plasmoid.rect.x + (i * (short + spacing));
+            y = plasmoid.rect.y;
         }
         if (m_locked[i]) {
             anim = 0.0;
@@ -205,6 +205,25 @@ plasmoid.paintInterface = function(painter)
     }
 }
 
+plasmoid.checkMinimumSize = function()
+{
+    if (plasmoid.formFactor == Vertical) {
+        short = plasmoid.rect.width;
+        plasmoid.setMinimumSize(hm + short, vm + m_count * short + (m_count - 1) * SPACING);
+    } else if (plasmoid.formFactor == Horizontal) {
+        short = plasmoid.rect.height;
+        plasmoid.setMinimumSize(hm + m_count * short + (m_count - 1) * SPACING, vm + short);
+    } else {
+        plasmoid.setMinimumSize(m_margins[0] + m_count * MINSIZE + (m_count - 1) * SPACING,
+                                m_margins[1] + MINSIZE);
+    }
+}
+
+plasmoid.formFactorChanged = function()
+{
+    plasmoid.checkMinimumSize();
+}
+
 plasmoid.configChanged = function()
 {
     while (m_layout.count > 0) {
@@ -220,24 +239,23 @@ plasmoid.configChanged = function()
     m_avoidDuplicates = m_svg.hasElement('avoid-same-values');
 
     if (plasmoid.formFactor == Vertical) {
-        short = plasmoid.rect().width;
+        short = plasmoid.rect.width;
     } else {
-        short = plasmoid.rect().height;
+        short = plasmoid.rect.height;
     }
 
     // TODO Only way to get margins?
     plasmoid.resize(200, 200);
-    rect = plasmoid.rect();
-    hm = 200 - rect.width;
-    vm = 200 - rect.height;
+    hm = 200 - plasmoid.rect.width;
+    vm = 200 - plasmoid.rect.height;
 
     if (plasmoid.formFactor == Vertical) {
         plasmoid.resize(hm + short, vm + m_count * short + (m_count - 1) * SPACING);
-        plasmoid.setMinimumSize(hm + MINSIZE, vm + m_count * MINSIZE + (m_count - 1) * SPACING);
     } else {
         plasmoid.resize(hm + m_count * short + (m_count - 1) * SPACING, vm + short);
-        plasmoid.setMinimumSize(hm + m_count * MINSIZE + (m_count - 1) * SPACING, vm + MINSIZE);
     }
+    m_margins = [hm, vm];
+    plasmoid.checkMinimumSize();
 
     m_values = [];
     m_locked = [];
