@@ -224,6 +224,11 @@ plasmoid.formFactorChanged = function()
     plasmoid.checkMinimumSize();
 }
 
+plasmoid.sizeChanged() = function()
+{
+    plasmoid.checkMinimumSize();
+}
+
 plasmoid.configChanged = function()
 {
     while (m_layout.count > 0) {
