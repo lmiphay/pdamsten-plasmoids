@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SPACING = 10;
+SPACING = 2;
 MINSIZE = 20;
 
 // TODO No way to read these from dir and put them to the config dialog?
@@ -34,13 +34,14 @@ plasmoid.init = function()
     m_lockEnabled = false;
     m_svg = null;
     m_margins = [0, 0]
+    m_widgets = []
 
     m_lockedColor = new QColor(255, 255, 255);
     m_lockedColor.alpha = 128;
 
     m_layout = new LinearLayout(plasmoid);
     m_layout.setContentsMargins(0, 0, 0, 0);
-    m_layout.spacing = 0;
+    m_layout.spacing = SPACING;
 
     // TODO No way to add my own property? Using QPropertyAnimation as QVariantAnimation.
     m_anim = animation("Property");
@@ -207,12 +208,16 @@ plasmoid.paintInterface = function(painter)
 
 plasmoid.checkMinimumSize = function()
 {
+    if (m_layout.count == 0) {
+        return;
+    }
+
     if (plasmoid.formFactor == Vertical) {
-        short = plasmoid.rect.width;
-        plasmoid.setMinimumSize(hm + short, vm + m_count * short + (m_count - 1) * SPACING);
+        short = m_widgets[0].geometry.width;
+        plasmoid.setMinimumSize(1, vm + m_count * short + (m_count - 1) * SPACING);
     } else if (plasmoid.formFactor == Horizontal) {
-        short = plasmoid.rect.height;
-        plasmoid.setMinimumSize(hm + m_count * short + (m_count - 1) * SPACING, vm + short);
+        short = m_widgets[0].geometry.height;
+        plasmoid.setMinimumSize(hm + m_count * short + (m_count - 1) * SPACING, 1);
     } else {
         plasmoid.setMinimumSize(m_margins[0] + m_count * MINSIZE + (m_count - 1) * SPACING,
                                 m_margins[1] + MINSIZE);
@@ -221,10 +226,15 @@ plasmoid.checkMinimumSize = function()
 
 plasmoid.formFactorChanged = function()
 {
+    if (plasmoid.formFactor == Vertical) {
+        m_layout.orientation = QtVertical;
+    } else {
+        m_layout.orientation = QtHorizontal;
+    }
     plasmoid.checkMinimumSize();
 }
 
-plasmoid.sizeChanged() = function()
+plasmoid.sizeChanged = function()
 {
     plasmoid.checkMinimumSize();
 }
@@ -264,6 +274,7 @@ plasmoid.configChanged = function()
 
     m_values = [];
     m_locked = [];
+    m_widgets = []
     for (i = 0; i < m_count; ++i) {
         m_values.push(1);
         m_locked.push(false);
@@ -275,6 +286,7 @@ plasmoid.configChanged = function()
         eval('f = function() { plasmoid.onClick(' + i + '); }');
         w.clicked.connect(f);
         w.doubleClicked.connect(plasmoid.onDoubleClick);
+        m_widgets.push(w);
     }
     plasmoid.update();
 }
