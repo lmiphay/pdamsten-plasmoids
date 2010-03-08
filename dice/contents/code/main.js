@@ -25,7 +25,6 @@ plasmoid.init = function()
 {
     plasmoid.setAspectRatioMode(KeepAspectRatio);
 
-    m_count = 0;
     m_maxValue = 0;
     m_id = 0;
     m_locked = [];
@@ -64,7 +63,7 @@ plasmoid.init = function()
 plasmoid.onValueChange = function(value)
 {
     if (m_anim.currentValue == 1.0) {
-        for (i = 0; i < m_count; ++i) {
+        for (i = 0; i < m_widgets.length; ++i) {
             if (!m_locked[i]) {
                 v = (Math.ceil(Math.random() * m_maxValue));
                 if (m_avoidDuplicates) {
@@ -89,7 +88,7 @@ plasmoid.onValueChange = function(value)
         m_anim.start();
     }
     if (m_anim.currentValue == 0.0) {
-        for (i = 0; i < m_count; ++i) {
+        for (i = 0; i < m_widgets.length; ++i) {
             m_locked[i] = false;
         }
     }
@@ -156,35 +155,22 @@ plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
 plasmoid.paintInterface = function(painter)
 {
     // TODO Can't make custom widgets? Plasma::SvqWidget is too simple for this so paint it here.
-    if (plasmoid.formFactor == Vertical) {
-        short = plasmoid.rect.width;
-        long = plasmoid.rect.height;
-    } else {
-        short = plasmoid.rect.height;
-        long = plasmoid.rect.width;
+    if (m_widgets.length < 1) {
+        return;
     }
+    short = m_widgets[0].geometry.width;
     size = QSizeF(short, short);
-    if (m_count > 1) {
-        spacing = (long - (m_count * short)) / (m_count - 1);
-    } else {
-        spacing = 0;
-    }
     if (m_svg.size != size) {
         m_svg.resize(short, short);
     }
-    for (i = 0; i < m_count; ++i) {
-        if (plasmoid.formFactor == Vertical) {
-            x = plasmoid.rect.x;
-            y = plasmoid.rect.y + (i * (short + spacing));
-        } else {
-            x = plasmoid.rect.x + (i * (short + spacing));
-            y = plasmoid.rect.y;
-        }
+    for (i = 0; i < m_widgets.length; ++i) {
         if (m_locked[i]) {
             anim = 0.0;
         } else {
             anim = m_anim.currentValue;
         }
+        x = m_widgets[i].geometry.x;
+        y = m_widgets[i].geometry.y;
         if (m_svg.hasElement('whirl')) {
             // Fade animation
             plasmoid.paintElementWithOpacity(painter, x, y, 'background', 1.0);
@@ -208,20 +194,19 @@ plasmoid.paintInterface = function(painter)
 
 plasmoid.checkSize = function()
 {
-    if (m_layout.count == 0) {
+    if (m_widgets.length < 1) {
         return;
     }
 
+    short = m_widgets[0].geometry.width;
     if (plasmoid.formFactor == Vertical) {
-        short = m_widgets[0].geometry.width;
-        plasmoid.setMinimumSize(1, vm + m_count * short + (m_count - 1) * SPACING);
+        plasmoid.setMinimumSize(1, vm + m_widgets.length * short + (m_widgets.length - 1) * SPACING);
     } else if (plasmoid.formFactor == Horizontal) {
-        short = m_widgets[0].geometry.height;
-        plasmoid.setMinimumSize(hm + m_count * short + (m_count - 1) * SPACING, 1);
+        plasmoid.setMinimumSize(hm + m_widgets.length * short + (m_widgets.length - 1) * SPACING, 1);
     } else {
-        plasmoid.setMinimumSize(m_margins[0] + m_count * MINSIZE + (m_count - 1) * SPACING,
+        plasmoid.setMinimumSize(m_margins[0] + m_widgets.length * MINSIZE + (m_widgets.length - 1) * SPACING,
                                 m_margins[1] + MINSIZE);
-        plasmoid.resize(m_margins[0] + m_count * short + (m_count - 1) * SPACING,
+        plasmoid.resize(m_margins[0] + m_widgets.length * short + (m_widgets.length - 1) * SPACING,
                         m_margins[1] + short);
     }
 }
@@ -249,7 +234,7 @@ plasmoid.configChanged = function()
         m_layout.removeAt(0);
     }
 
-    m_count = plasmoid.readConfig("itemCount");
+    count = plasmoid.readConfig("itemCount");
     svg = plasmoid.readConfig("itemSvg");
     m_lockEnabled = (plasmoid.readConfig("mode") == 1);
     m_svg = new Svg(SVGS[svg]);
@@ -257,22 +242,18 @@ plasmoid.configChanged = function()
     m_maxValue = m_svg.elementRect('values-hint').width;
     m_avoidDuplicates = m_svg.hasElement('avoid-same-values');
 
-    if (plasmoid.formFactor == Vertical) {
-        short = plasmoid.rect.width;
-    } else {
-        short = plasmoid.rect.height;
-    }
-
     // TODO Only way to get margins?
+    size = plasmoid.size
     plasmoid.resize(200, 200);
     m_margins = [200 - plasmoid.rect.width, 200 - plasmoid.rect.height];
+    plasmoid.resize(size.width, size.height);
 
     plasmoid.checkSize();
 
     m_values = [];
     m_locked = [];
     m_widgets = []
-    for (i = 0; i < m_count; ++i) {
+    for (i = 0; i < count; ++i) {
         m_values.push(1);
         m_locked.push(false);
 
