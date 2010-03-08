@@ -199,14 +199,15 @@ plasmoid.checkSize = function()
     }
 
     short = m_widgets[0].geometry.width;
+    count = m_widgets.length;
     if (plasmoid.formFactor == Vertical) {
-        plasmoid.setMinimumSize(1, vm + m_widgets.length * short + (m_widgets.length - 1) * SPACING);
+        plasmoid.setMinimumSize(1, vm + count * short + (count - 1) * SPACING);
     } else if (plasmoid.formFactor == Horizontal) {
-        plasmoid.setMinimumSize(hm + m_widgets.length * short + (m_widgets.length - 1) * SPACING, 1);
+        plasmoid.setMinimumSize(hm + count * short + (count - 1) * SPACING, 1);
     } else {
-        plasmoid.setMinimumSize(m_margins[0] + m_widgets.length * MINSIZE + (m_widgets.length - 1) * SPACING,
+        plasmoid.setMinimumSize(m_margins[0] + count * MINSIZE + (count - 1) * SPACING,
                                 m_margins[1] + MINSIZE);
-        plasmoid.resize(m_margins[0] + m_widgets.length * short + (m_widgets.length - 1) * SPACING,
+        plasmoid.resize(m_margins[0] + count * short + (count - 1) * SPACING,
                         m_margins[1] + short);
     }
 }
