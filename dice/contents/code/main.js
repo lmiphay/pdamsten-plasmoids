@@ -198,22 +198,19 @@ plasmoid.checkSize = function()
         return;
     }
 
-    short = m_widgets[0].geometry.width;
     count = m_widgets.length;
     if (plasmoid.formFactor == Vertical) {
-        h = m_margins[1] + count * short + (count - 1) * SPACING;
-        print('************* ' + h);
+        short = plasmoid.rect.width;
+        h = count * short + (count - 1) * SPACING;
         plasmoid.setMinimumSize(1, h);
     } else if (plasmoid.formFactor == Horizontal) {
-        w = m_margins[0] + count * short + (count - 1) * SPACING;
-        print('************* ' + w);
+        short = plasmoid.rect.height;
+        w = count * short + (count - 1) * SPACING;
         plasmoid.setMinimumSize(w, 1);
     } else {
+        short = plasmoid.rect.height;
         plasmoid.setMinimumSize(m_margins[0] + count * MINSIZE + (count - 1) * SPACING,
                                 m_margins[1] + MINSIZE);
-        print(count);
-        print(m_margins[0] + count * short + (count - 1) * SPACING);
-        print(m_margins[1] + short);
         plasmoid.resize(m_margins[0] + count * short + (count - 1) * SPACING,
                         m_margins[1] + short);
     }
