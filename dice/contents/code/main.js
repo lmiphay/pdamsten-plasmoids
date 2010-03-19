@@ -18,7 +18,8 @@
 SPACING = 4;
 MINSIZE = 20;
 
-// TODO No way to read these from dir and put them to the config dialog?
+// It would be nice to read these from dir and put them to the config dialog but config dialog
+// cannot be modified from code.
 SVGS = ["Vegas Plasma Dice", "Euro Coin", "Normal Dice", "Deck of Cards", "Pills"];
 
 plasmoid.init = function()
@@ -42,7 +43,7 @@ plasmoid.init = function()
     m_layout.setContentsMargins(0, 0, 0, 0);
     m_layout.spacing = SPACING;
 
-    // TODO No way to add my own property? Using QPropertyAnimation as QVariantAnimation.
+    // Using QPropertyAnimation as QVariantAnimation.
     m_anim = animation("Property");
     m_anim.targetObject = plasmoid;
     m_anim.valueChanged.connect(plasmoid.onValueChange);
@@ -154,7 +155,7 @@ plasmoid.paintElementFlipped = function(painter, x, y, element, flip)
 
 plasmoid.paintInterface = function(painter)
 {
-    // TODO Can't make custom widgets? Plasma::SvqWidget is too simple for this so paint it here.
+    // layout + widgets are for mouse clicks and geometry only. Actually painting is done here.
     if (m_widgets.length < 1) {
         return;
     }
@@ -257,10 +258,9 @@ plasmoid.configChanged = function()
         m_values.push(1);
         m_locked.push(false);
 
-        // TODO Applet cannot handle mouse presses? Make transparent widgets for getting clicks.
+        // Make transparent widgets for getting mouse clicks and geometry.
         w = new IconWidget();
         m_layout.addItem(w);
-        // TODO plasmoid.sender does not seem to work?
         eval('f = function() { plasmoid.onClick(' + i + '); }');
         w.clicked.connect(f);
         w.doubleClicked.connect(plasmoid.onDoubleClick);
