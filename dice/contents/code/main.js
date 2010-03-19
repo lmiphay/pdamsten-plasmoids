@@ -201,12 +201,19 @@ plasmoid.checkSize = function()
     short = m_widgets[0].geometry.width;
     count = m_widgets.length;
     if (plasmoid.formFactor == Vertical) {
-        plasmoid.setMinimumSize(1, vm + count * short + (count - 1) * SPACING);
+        h = m_margins[1] + count * short + (count - 1) * SPACING;
+        print('************* ' + h);
+        plasmoid.setMinimumSize(1, h);
     } else if (plasmoid.formFactor == Horizontal) {
-        plasmoid.setMinimumSize(hm + count * short + (count - 1) * SPACING, 1);
+        w = m_margins[0] + count * short + (count - 1) * SPACING;
+        print('************* ' + w);
+        plasmoid.setMinimumSize(w, 1);
     } else {
         plasmoid.setMinimumSize(m_margins[0] + count * MINSIZE + (count - 1) * SPACING,
                                 m_margins[1] + MINSIZE);
+        print(count);
+        print(m_margins[0] + count * short + (count - 1) * SPACING);
+        print(m_margins[1] + short);
         plasmoid.resize(m_margins[0] + count * short + (count - 1) * SPACING,
                         m_margins[1] + short);
     }
@@ -231,6 +238,7 @@ plasmoid.sizeChanged = function()
 
 plasmoid.configChanged = function()
 {
+    print("configChanged");
     while (m_layout.count > 0) {
         m_layout.removeAt(0);
     }
@@ -242,14 +250,8 @@ plasmoid.configChanged = function()
     m_svg.multipleImages = true;
     m_maxValue = m_svg.elementRect('values-hint').width;
     m_avoidDuplicates = m_svg.hasElement('avoid-same-values');
-
-    // TODO Only way to get margins?
-    size = plasmoid.size
-    plasmoid.resize(200, 200);
-    m_margins = [200 - plasmoid.rect.width, 200 - plasmoid.rect.height];
-    plasmoid.resize(size.width, size.height);
-
-    plasmoid.checkSize();
+    m_margins = [plasmoid.size.width - plasmoid.rect.width,
+                 plasmoid.size.height - plasmoid.rect.height];
 
     m_values = [];
     m_locked = [];
@@ -267,6 +269,7 @@ plasmoid.configChanged = function()
         w.doubleClicked.connect(plasmoid.onDoubleClick);
         m_widgets.push(w);
     }
+    plasmoid.checkSize();
     plasmoid.update();
 }
 
