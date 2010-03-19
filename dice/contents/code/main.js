@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SPACING = 2;
+SPACING = 4;
 MINSIZE = 20;
 
 // TODO No way to read these from dir and put them to the config dialog?
