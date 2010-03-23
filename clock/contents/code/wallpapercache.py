@@ -23,7 +23,7 @@ from copy import copy
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
-from wallpaperrenderer import WallpaperRenderer
+from wallpaperrenderer import WallpaperRenderer, SingleImageJob
 
 class WallpaperCache(QObject):
     All = -sys.maxint - 1                             # id
@@ -182,8 +182,9 @@ class WallpaperCache(QObject):
             if path:
                 #print '   ### Rendering'
                 self.setDirty(self.rendering, False)
-                self.renderer.render(path, self._size, operation[self.Method], \
-                                     operation[self.Color])
+                job = SingleImageJob(self._size, operation[self.Color],
+                                     operation[self.Method], path)
+                self.renderer.render(job)
                 return False
             else:
                 #print '   ### Does not exist'
