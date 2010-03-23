@@ -19,6 +19,7 @@
 #
 
 import sys, os
+from copy import copy
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
@@ -63,6 +64,7 @@ class WallpaperCache(QObject):
         return self.cache[id][type]
 
     def setValue(self, ids, type, value):
+        #print '### setValue', ids, type, value
         if isinstance(ids, int):
             if ids != self.All:
                 self.checkId(ids)
@@ -128,7 +130,7 @@ class WallpaperCache(QObject):
             ids = id
         r = False
         for i in ids:
-            v = self.value(i, self.Operation)
+            v = copy(self.value(i, self.Operation))
             v[param] = value
             r |= self.setValue(id, self.Operation, v)
         return r
