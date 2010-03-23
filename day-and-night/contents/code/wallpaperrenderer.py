@@ -36,7 +36,6 @@ class WallpaperRenderer(QThread):
         self.mutex = QMutex()
         self.condition = QWaitCondition()
         self.abort = False
-        self.currentToken = 0
 
     def __dtor__(self):
         #print 'WallpaperRenderer.__dtor__'
@@ -77,7 +76,6 @@ class WallpaperRenderer(QThread):
                     return
                 self.restart = False
 
-                # load all parameters in nonshared variables
                 job = copy(self.job)
             finally:
                 self.mutex.unlock()
