@@ -42,7 +42,6 @@ class BackgroundDelegate(QAbstractItemDelegate):
         self.ratio = ratio
 
     def paint(self, painter, option, index):
-        v = index.model().data(index, Qt.DisplayRole)
         title = index.model().data(index, Qt.DisplayRole).toString()
         author = index.model().data(index, self.AuthorRole).toString()
         resolution = index.model().data(index, self.ResolutionRole).toString()
