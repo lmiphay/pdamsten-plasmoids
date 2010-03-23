@@ -27,6 +27,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
 
+# TODO handle abort & restart better
+
 class WallpaperRenderer(QThread):
     def __init__(self, parent):
         QThread.__init__(self, parent)
@@ -85,139 +87,141 @@ class WallpaperRenderer(QThread):
                 fileName = self.fileName
                 color = QColor(self.color)
                 size = self.size
-                ratio = float(self.size.width()) / self.size.height()
                 method = self.method
             finally:
                 self.mutex.unlock()
 
-            result = QImage(size, QImage.Format_ARGB32_Premultiplied)
-            result.fill(color.rgba())
+            img = self.load(fileName, size, color)
 
-            if fileName.isEmpty() or not QFile.exists(fileName):
-                self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
+            if img.size() == size:
+                self.emit(SIGNAL('renderCompleted(const QImage&)'), img)
                 continue
 
-            pos = QPoint(0, 0)
-            tiled = False
-            scalable = fileName.endsWith(QLatin1String('svg')) or fileName.endsWith(QLatin1String('svgz'))
-            scaledSize = QSize()
-            img = QImage()
+            img = self.scale(img, size, color, method)
+            #print 'DONE'
+            self.emit(SIGNAL('renderCompleted(const QImage&)'), img)
 
-            # set image size
-            imgSize = QSize()
+    def load(self, img, size, color):
+        if isinstance(img, QImage):
+            return img
 
-            if scalable:
-                # scalable: image can be of any size
-                imgSize = size
-            else:
-                # otherwise, use the natural size of the loaded image
-                img = QImage(fileName)
-                imgSize = img.size()
-                # print 'loaded with', imgSize, ratio
-
-            # if any of them is zero we may self.run into a div-by-zero below.
-            if imgSize.width() < 1:
-                imgSize.setWidth(1)
-
-            if imgSize.height() < 1:
-                imgSize.setHeight(1)
-
-            if ratio < 1:
-                ratio = 1
-
-            # set self.render parameters according to resize mode
-            if method == Plasma.Wallpaper.ScaledResize:
-                scaledSize = size
-
-            elif method == Plasma.Wallpaper.CenteredResize:
-                scaledSize = imgSize
-                pos = QPoint((size.width() - scaledSize.width()) / 2,
-                    (size.height() - scaledSize.height()) / 2)
-
-                # If the picture is bigger than the screen, shrink it
-                if (size.width() < imgSize.width()) and (imgSize.width() > imgSize.height()):
-                    width = size.width()
-                    height = width * scaledSize.height() / imgSize.width()
-                    scaledSize = QSize(width, height)
-                    pos = QPoint((size.width() - scaledSize.width()) / 2,
-                                 (size.height() - scaledSize.height()) / 2)
-                elif size.height() < imgSize.height():
-                    height = size.height()
-                    width = height * imgSize.width() / imgSize.height()
-                    scaledSize = QSize(width, height)
-                    pos = QPoint((size.width() - scaledSize.width()) / 2,
-                                 (size.height() - scaledSize.height()) / 2)
-
-            elif method == Plasma.Wallpaper.MaxpectResize:
-                xratio = float(size.width()) / imgSize.width()
-                yratio = float(size.height()) / imgSize.height()
-
-                if xratio > yratio:
-                    height = size.height()
-                    width = height * imgSize.width() / imgSize.height()
-                    scaledSize = QSize(width, height)
-                else:
-                    width = size.width()
-                    height = width * imgSize.height() / imgSize.width()
-                    scaledSize = QSize(width, height)
-
-                pos = QPoint((size.width() - scaledSize.width()) / 2,
-                             (size.height() - scaledSize.height()) / 2)
-
-            elif method == Plasma.Wallpaper.ScaledAndCroppedResize:
-                xratio = float(size.width()) / imgSize.width()
-                yratio = float(size.height()) / imgSize.height()
-
-                if xratio > yratio:
-                    width = size.width()
-                    height = width * imgSize.height() / imgSize.width()
-                    scaledSize = QSize(width, height)
-                else:
-                    height = size.height()
-                    width = height * imgSize.width() / imgSize.height()
-                    scaledSize = QSize(width, height)
-
-                pos = QPoint((size.width() - scaledSize.width()) / 2,
-                        (size.height() - scaledSize.height()) / 2)
-
-            elif method == Plasma.Wallpaper.TiledResize:
-                scaledSize = imgSize
-                tiled = True
-
-            elif method == Plasma.Wallpaper.CenterTiledResize:
-                scaledSize = imgSize
-                pos = QPoint(-scaledSize.width() +
-                                ((size.width() - scaledSize.width()) / 2) % scaledSize.width(),
-                                -scaledSize.height() +
-                                ((size.height() - scaledSize.height()) / 2) % scaledSize.height())
-                tiled = True
-
-            p = QPainter(result)
-
-            # print token, scalable, scaledSize, imgSize
-            if scalable:
-                # tiling is ignored for scalable wallpapers
+        if img.isEmpty() or not QFile.exists(img):
+            image = QImage(size, QImage.Format_ARGB32_Premultiplied)
+            image.fill(color.rgba())
+        else:
+            if img.endsWith(QLatin1String('svg')) or img.endsWith(QLatin1String('svgz')):
+                image = QImage(size, QImage.Format_ARGB32_Premultiplied)
+                p = QPainter(image)
                 svg = QSvgRenderer(fileName)
-                if self.restart:
-                    continue
                 svg.self.render(p)
             else:
-                if scaledSize != imgSize:
-                    img = img.scaled(scaledSize, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+                image = QImage(img)
+        return image
 
-                if self.restart:
-                    continue
+    def scale(self, img, size, color, method):
+        result = QImage(size, QImage.Format_ARGB32_Premultiplied)
+        result.fill(color.rgba())
 
-                if tiled:
-                    for x in range(pos.x(), size.width(), scaledSize.width()):
-                        for y in range(pos.y(), size.height(), scaledSize.height()):
-                            p.drawImage(QPoint(x, y), img)
-                            if self.restart:
-                                continue
-                else:
-                    p.drawImage(pos, img)
-            p.end()
+        pos = QPoint(0, 0)
+        tiled = False
+        scaledSize = QSize()
+        ratio = float(size.width()) / size.height()
 
-            # signal we're done
-            #print 'DONE'
-            self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
+        # otherwise, use the natural size of the loaded image
+        imgSize = img.size()
+
+        # if any of them is zero we may self.run into a div-by-zero below.
+        if imgSize.width() < 1:
+            imgSize.setWidth(1)
+
+        if imgSize.height() < 1:
+            imgSize.setHeight(1)
+
+        if ratio < 1:
+            ratio = 1
+
+        # set self.render parameters according to resize mode
+        if method == Plasma.Wallpaper.ScaledResize:
+            scaledSize = size
+
+        elif method == Plasma.Wallpaper.CenteredResize:
+            scaledSize = imgSize
+            pos = QPoint((size.width() - scaledSize.width()) / 2,
+                (size.height() - scaledSize.height()) / 2)
+
+            # If the picture is bigger than the screen, shrink it
+            if (size.width() < imgSize.width()) and (imgSize.width() > imgSize.height()):
+                width = size.width()
+                height = width * scaledSize.height() / imgSize.width()
+                scaledSize = QSize(width, height)
+                pos = QPoint((size.width() - scaledSize.width()) / 2,
+                                (size.height() - scaledSize.height()) / 2)
+            elif size.height() < imgSize.height():
+                height = size.height()
+                width = height * imgSize.width() / imgSize.height()
+                scaledSize = QSize(width, height)
+                pos = QPoint((size.width() - scaledSize.width()) / 2,
+                                (size.height() - scaledSize.height()) / 2)
+
+        elif method == Plasma.Wallpaper.MaxpectResize:
+            xratio = float(size.width()) / imgSize.width()
+            yratio = float(size.height()) / imgSize.height()
+
+            if xratio > yratio:
+                height = size.height()
+                width = height * imgSize.width() / imgSize.height()
+                scaledSize = QSize(width, height)
+            else:
+                width = size.width()
+                height = width * imgSize.height() / imgSize.width()
+                scaledSize = QSize(width, height)
+
+            pos = QPoint((size.width() - scaledSize.width()) / 2,
+                            (size.height() - scaledSize.height()) / 2)
+
+        elif method == Plasma.Wallpaper.ScaledAndCroppedResize:
+            xratio = float(size.width()) / imgSize.width()
+            yratio = float(size.height()) / imgSize.height()
+
+            if xratio > yratio:
+                width = size.width()
+                height = width * imgSize.height() / imgSize.width()
+                scaledSize = QSize(width, height)
+            else:
+                height = size.height()
+                width = height * imgSize.width() / imgSize.height()
+                scaledSize = QSize(width, height)
+
+            pos = QPoint((size.width() - scaledSize.width()) / 2,
+                    (size.height() - scaledSize.height()) / 2)
+
+        elif method == Plasma.Wallpaper.TiledResize:
+            scaledSize = imgSize
+            tiled = True
+
+        elif method == Plasma.Wallpaper.CenterTiledResize:
+            scaledSize = imgSize
+            pos = QPoint(-scaledSize.width() +
+                            ((size.width() - scaledSize.width()) / 2) % scaledSize.width(),
+                            -scaledSize.height() +
+                            ((size.height() - scaledSize.height()) / 2) % scaledSize.height())
+            tiled = True
+
+        p = QPainter(result)
+
+        if scaledSize != imgSize:
+            img = img.scaled(scaledSize, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+
+        if self.restart:
+            return result
+
+        if tiled:
+            for x in range(pos.x(), size.width(), scaledSize.width()):
+                for y in range(pos.y(), size.height(), scaledSize.height()):
+                    p.drawImage(QPoint(x, y), img)
+                    if self.restart:
+                        return result
+        else:
+            p.drawImage(pos, img)
+        p.end()
+        return result
