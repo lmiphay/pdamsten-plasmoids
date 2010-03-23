@@ -7,17 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>526</width>
-    <height>326</height>
+    <height>315</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Color</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <item row="1" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="latitudeLabel">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::ExpandingFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="coordinatesLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -25,18 +28,135 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Lat:</string>
-       </property>
-       <property name="buddy">
-        <cstring>latitudeEdit</cstring>
+        <string>Coordinates:</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="KLineEdit" name="latitudeEdit"/>
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="latitudeLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Lat:</string>
+         </property>
+         <property name="buddy">
+          <cstring>latitudeEdit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="KLineEdit" name="latitudeEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="longitudeLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Long:</string>
+         </property>
+         <property name="buddy">
+          <cstring>longitudeEdit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="KLineEdit" name="longitudeEdit"/>
+       </item>
+      </layout>
      </item>
-     <item>
-      <widget class="QLabel" name="longitudeLabel">
+     <item row="1" column="0">
+      <widget class="QLabel" name="dayLabel">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Day</string>
+       </property>
+       <property name="indent">
+        <number>20</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="dayPositioningLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>125</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Positioning:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>dayPositioningCombo</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="KComboBox" name="dayPositioningCombo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>Scaled</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Centered</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Scaled and Cropped</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tiled</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Center Tiled</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Maxpect</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="dayColorLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -44,157 +164,165 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Long:</string>
+        <string>Color:</string>
        </property>
        <property name="buddy">
-        <cstring>longitudeEdit</cstring>
+        <cstring>dayColorButton</cstring>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="KLineEdit" name="longitudeEdit"/>
+     <item row="3" column="1">
+      <widget class="KColorButton" name="dayColorButton"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="dayWallpaperLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Wallpaper:</string>
+       </property>
+       <property name="buddy">
+        <cstring>dayCombo</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="KComboBox" name="dayCombo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="nightLabel">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Night</string>
+       </property>
+       <property name="indent">
+        <number>20</number>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="nightPositioningLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>125</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Positioning:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>dayPositioningCombo</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="KComboBox" name="nightPositioningCombo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>Scaled</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Centered</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Scaled and Cropped</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tiled</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Center Tiled</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Maxpect</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="nightColorLabel">
+       <property name="text">
+        <string>Color:</string>
+       </property>
+       <property name="buddy">
+        <cstring>nightColorButton</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="KColorButton" name="nightColorButton"/>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="nightWallpaperLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Wallpaper:</string>
+       </property>
+       <property name="buddy">
+        <cstring>nightCombo</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="KComboBox" name="nightCombo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
-   <item row="4" column="1">
-    <widget class="KComboBox" name="dayPositioningCombo">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <item>
-      <property name="text">
-       <string>Scaled</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Centered</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Scaled and Cropped</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Tiled</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Center Tiled</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Maxpect</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="KColorButton" name="dayColorButton"/>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="dayWallpaperLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Wallpaper:</string>
-     </property>
-     <property name="buddy">
-      <cstring>dayCombo</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="KComboBox" name="dayCombo">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="1">
-    <widget class="KComboBox" name="nightPositioningCombo">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <item>
-      <property name="text">
-       <string>Scaled</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Centered</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Scaled and Cropped</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Tiled</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Center Tiled</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Maxpect</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="12" column="1">
-    <widget class="KColorButton" name="nightColorButton"/>
-   </item>
-   <item row="13" column="0">
-    <widget class="QLabel" name="nightWallpaperLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Wallpaper:</string>
-     </property>
-     <property name="buddy">
-      <cstring>nightCombo</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="13" column="1">
-    <widget class="KComboBox" name="nightCombo">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="14" column="0" colspan="2">
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -237,7 +365,7 @@
      </item>
     </layout>
    </item>
-   <item row="15" column="0">
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -249,121 +377,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="dayPositioningLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>125</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Positioning:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-     <property name="buddy">
-      <cstring>dayPositioningCombo</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="coordinatesLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Coordinates:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="dayLabel">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Day</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="dayColorLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Color:</string>
-     </property>
-     <property name="buddy">
-      <cstring>dayColorButton</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="nightPositioningLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>125</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Positioning:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-     <property name="buddy">
-      <cstring>dayPositioningCombo</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="0">
-    <widget class="QLabel" name="nightColorLabel">
-     <property name="text">
-      <string>Color:</string>
-     </property>
-     <property name="buddy">
-      <cstring>nightColorButton</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="nightLabel">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Night</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
