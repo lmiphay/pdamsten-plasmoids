@@ -36,7 +36,7 @@ class WallpaperRenderer(QThread):
         self.currentToken = 0
 
     def __dtor__(self):
-        print 'WallpaperRenderer.__dtor__'
+        #print 'WallpaperRenderer.__dtor__'
         try:
             self.mutex.lock()
             self.abort = True
