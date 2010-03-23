@@ -59,26 +59,26 @@ class WallpaperRenderer(QThread):
             self.mutex.unlock()
 
         if not self.isRunning():
-            print 'WallpaperRenderer starting...'
+            #print 'WallpaperRenderer starting...'
             self.start()
         else:
-            print 'WallpaperRenderer waking up...'
+            #print 'WallpaperRenderer waking up...'
             self.condition.wakeOne()
         return token
 
     def run(self):
-        print 'WallpaperRenderer.run'
+        #print 'WallpaperRenderer.run'
+        self.setPriority(QThread.LowestPriority)
         while True:
             try:
                 self.mutex.lock()
                 if not self.restart and not self.abort:
-                    print 'WAIT'
+                    #print 'WAIT'
                     self.condition.wait(self.mutex)
                 if self.abort:
-                    print 'ABORT'
+                    #print 'ABORT'
                     return
                 self.restart = False
-                print 'cont'
 
                 # load all parameters in nonshared variables
                 token = self.currentToken
@@ -90,16 +90,13 @@ class WallpaperRenderer(QThread):
             finally:
                 self.mutex.unlock()
 
-            print 'xx0'
             result = QImage(size, QImage.Format_ARGB32_Premultiplied)
             result.fill(color.rgba())
 
             if fileName.isEmpty() or not QFile.exists(fileName):
-                print 'xxxxxxxxxx'
                 self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
                 continue
 
-            print 'xx1'
             pos = QPoint(0, 0)
             tiled = False
             scalable = fileName.endsWith(QLatin1String('svg')) or fileName.endsWith(QLatin1String('svgz'))
@@ -109,7 +106,6 @@ class WallpaperRenderer(QThread):
             # set image size
             imgSize = QSize()
 
-            print 'xx'
             if scalable:
                 # scalable: image can be of any size
                 imgSize = size
@@ -119,7 +115,6 @@ class WallpaperRenderer(QThread):
                 imgSize = img.size()
                 # print 'loaded with', imgSize, ratio
 
-            print 'xx2'
             # if any of them is zero we may self.run into a div-by-zero below.
             if imgSize.width() < 1:
                 imgSize.setWidth(1)
@@ -127,11 +122,9 @@ class WallpaperRenderer(QThread):
             if imgSize.height() < 1:
                 imgSize.setHeight(1)
 
-            print 'xx3'
             if ratio < 1:
                 ratio = 1
 
-            print 'xx4'
             # set self.render parameters according to resize mode
             if method == Plasma.Wallpaper.ScaledResize:
                 scaledSize = size
@@ -226,5 +219,5 @@ class WallpaperRenderer(QThread):
             p.end()
 
             # signal we're done
-            print 'DONE'
+            #print 'DONE'
             self.emit(SIGNAL('renderCompleted(const QImage&)'), result)
