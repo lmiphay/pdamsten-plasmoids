@@ -140,7 +140,7 @@ class Clock(Wallpaper):
     def dataUpdated(self, sourceName, data):
         #print '### dataUpdated'
         if self.cache.pixmap(self.Next) != None:
-            self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
+            self.cache.setImage(self.Current, self.cache.image(self.Next))
             self.update(self.boundingRect())
 
         now = QDateTime(data[QString('Date')], data[QString('Time')])
@@ -178,7 +178,6 @@ class Clock(Wallpaper):
                     path + '%s.png' % next.time().toString('ap'), Qt.transparent, self.method])
         else:
             self.cache.setOperation(self.AmPm, [WallpaperCache.Manual])
-            self.cache.setPixmap(self.AmPm, QPixmap())
 
     def checkIfEmpty(self, wallpaper):
         #print '### checkIfEmpty'
@@ -206,10 +205,9 @@ class Clock(Wallpaper):
     def renderingsCompleted(self):
         #print '### renderingsCompleted', self.immediateRepaint
         # Free images
-        self.cache.setPixmap(self.HourItems, None)
         if self.immediateRepaint:
             self.immediateRepaint = False
-            self.cache.setPixmap(self.Current, self.cache.pixmap(self.Next))
+            self.cache.setImage(self.Current, self.cache.image(self.Next))
             self.update(self.boundingRect())
 
     def paint(self, painter, exposedRect):
