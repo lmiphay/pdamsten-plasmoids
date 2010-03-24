@@ -41,7 +41,7 @@ from wallpapercache import WallpaperCache
 
 class DayAndNight(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Day, Twilight, Night = range(3)
+    Day, Current, Night = range(3)
     DayAngle, NightAngle = (50.0 / 60.0, -6.0)
 
     def __init__(self, parent, args = None):
@@ -72,6 +72,7 @@ class DayAndNight(Wallpaper):
 
         self.cache.initId(self.Day, [WallpaperCache.FromDisk, dayPath, dayColor, dayMethod])
         self.cache.initId(self.Night, [WallpaperCache.FromDisk, nightPath, nightColor, nightMethod])
+        self.cache.initId(self.Current, [WallpaperCache.Blend, (self.Day, self.Night), 0.0])
 
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()
         self.longitude = config.readEntry('longitude', 100.0).toDouble()[0]
@@ -105,16 +106,14 @@ class DayAndNight(Wallpaper):
         if QString(u'Corrected Elevation') in data:
             self.elevation = data[QString(u'Corrected Elevation')]
             # DEBUG self.elevation = -3.0
-            timeOfDay = self.timeOfDay()
-            if timeOfDay == self.Twilight or timeOfDay != self.lastTimeOfDay:
-                self.lastTimeOfDay = timeOfDay
-                if timeOfDay == self.Twilight:
-                    nightAngle = abs(self.NightAngle)
-                    n = 1.0 - (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
-                    self.cache.setOperation(self.Twilight, \
-                            [WallpaperCache.Transition, (self.Day, self.Night), n])
-                else:
-                    self.update(self.boundingRect())
+            if self.elevation > self.DayAngle:
+                n = 0.0
+            elif self.elevation > self.NightAngle:
+                nightAngle = abs(self.NightAngle)
+                n = 1.0 - (self.elevation + nightAngle) / (nightAngle + self.DayAngle)
+            else:
+                n = 1.0
+            self.cache.setOperationParam(self.Current, WallpaperCache.Amount, n)
         else:
             try:
                 self.latitude = float(data[QString(u'latitude')])
@@ -143,28 +142,11 @@ class DayAndNight(Wallpaper):
     def renderingsCompleted(self):
         self.update(self.boundingRect())
 
-    def timeOfDay(self):
-        if self.elevation:
-            if self.elevation > self.DayAngle:
-                return self.Day
-            elif self.elevation > self.NightAngle:
-                return self.Twilight
-            else:
-                return self.Night
-        return None
-
     def paint(self, painter, exposedRect):
         self.checkGeometry()
-        pixmap = None
 
         # get pixmap
-        timeOfDay = self.timeOfDay()
-        if timeOfDay == self.Twilight:
-            pixmap = self.cache.pixmap(self.Twilight)
-        if timeOfDay == self.Day or (timeOfDay == self.Twilight and pixmap == None):
-            pixmap = self.cache.pixmap(self.Day)
-        if timeOfDay == self.Night or (timeOfDay == self.Twilight and pixmap == None):
-            pixmap = self.cache.pixmap(self.Night)
+        pixmap = self.cache.pixmap(self.Current)
 
         # paint
         if pixmap:
