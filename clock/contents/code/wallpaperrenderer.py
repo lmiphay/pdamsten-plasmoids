@@ -264,3 +264,11 @@ class BlendJob(WallpaperJob):
         p.drawImage(0, 0, image2)
         p.end()
         return image1
+
+
+class DummyJob(WallpaperJob):
+    def __init__(self, jobId):
+        WallpaperJob.__init__(self, jobId)
+
+    def do(self):
+        return QImage()

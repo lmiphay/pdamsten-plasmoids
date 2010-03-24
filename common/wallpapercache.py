@@ -23,7 +23,7 @@ from copy import copy
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
-from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob
+from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob, DummyJob
 from helpers import *
 
 class WallpaperCache(QObject):
@@ -211,6 +211,10 @@ class WallpaperCache(QObject):
         elif operation[self.OperationId] == self.Blend:
             job = BlendJob(cacheId, self._img(operation[self.Images][0]), \
                            self._img(operation[self.Images][1]), operation[self.Amount])
+
+        else:
+            job = DummyJob(cacheId)
+
         return job
 
     def doJob(self, cacheId):
