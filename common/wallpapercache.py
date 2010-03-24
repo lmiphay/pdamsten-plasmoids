@@ -23,30 +23,33 @@ from copy import copy
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
-from wallpaperrenderer import WallpaperRenderer, SingleImageJob
+from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob
+from helpers import *
 
 class WallpaperCache(QObject):
     All = -sys.maxint - 1                             # id
-    Operation, Dirty, Pixmap, Data = range(4)         # id properties
-    FromDisk, Transition, Combine, Manual = range(4)  # operations
+    Operation, Dirty, Image, Data = range(4)         # id properties
+    FromDisk, Blend, Combine, Manual = range(4)  # operations
     OperationId = 0
     Path, Color, Method = range(1, 4)                 # FromDisk operation
-    Pixmaps, Amount = range(1, 3)                     # Transition operation
-    Pixmaps = 1                                       # Combine operation
-    pixmapOperations = [Transition, Combine]
+    Images, Amount = range(1, 3)                     # Blend operation
+    Images = 1                                       # Combine operation
+    imageOperations = [Blend, Combine]
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
         self.cache = {}
         self.wallpaper = wallpaper
-        self.rendering = None
+        self.rendering = False
         self._size = None
+        self.currentPixmap = None
+        self.currentPixmapId = -1
         self.dirtyTimer = QTimer(self)
         self.dirtyTimer.setInterval(0)
         self.dirtyTimer.setSingleShot(True)
-        self.connect(self.dirtyTimer, SIGNAL('timeout()'), self.checkDirtyPixmaps)
+        self.connect(self.dirtyTimer, SIGNAL('timeout()'), self.checkDirtyImages)
         self.renderer = WallpaperRenderer(self)
-        self.connect(self.renderer, SIGNAL('renderCompleted(const QImage&)'), \
+        self.connect(self.renderer, SIGNAL('renderCompleted(int, const QImage&)'), \
                      self.renderCompleted, Qt.QueuedConnection)
 
     def checkId(self, id):
@@ -85,13 +88,13 @@ class WallpaperCache(QObject):
         return self.value(id, self.Dirty)
 
     def setDirty(self, id, dirty = True):
-        #print '### setDirty', id
+        print '### setDirty', id
         r = self.setValue(id, self.Dirty, dirty)
         if dirty:
             for key in self.cache.keys():
-                if self.operationParam(key, self.OperationId) in self.pixmapOperations and \
-                    id in self.operationParam(key, self.Pixmaps):
-                    #print '   ### And setDirty', key
+                if self.operationParam(key, self.OperationId) in self.imageOperations and \
+                    id in self.operationParam(key, self.Images):
+                    print '   ### And setDirty', key
                     self.setDirty(key)
             self.dirtyTimer.start()
         return r
@@ -103,14 +106,25 @@ class WallpaperCache(QObject):
         return self.setValue(id, self.Data, data)
 
     def pixmap(self, id):
-        pixmap = self.value(id, self.Pixmap)
-        if pixmap == None and self.operationParam(id, self.OperationId) != self.Manual:
-            self.setDirty(id)
-        return pixmap
+        print '### pixmap', self.currentPixmapId, id
+        if self.currentPixmapId != id:
+            img = self.image(id)
+            if img:
+                self.currentPixmapId = id
+                self.currentPixmap = QPixmap(self.image(id))
+            else:
+                if self.operationParam(id, self.OperationId) != self.Manual:
+                    self.setDirty(id)
+                self.currentPixmap = None
+        return self.currentPixmap
 
-    def setPixmap(self, id, pixmap):
+    def image(self, id):
+        image = self.value(id, self.Image)
+        return image
+
+    def setImage(self, id, image):
         self.setDirty(id, False)
-        return self.setValue(id, self.Pixmap, pixmap)
+        return self.setValue(id, self.Image, image)
 
     def operation(self, id):
         return self.value(id, self.Operation)
@@ -154,20 +168,52 @@ class WallpaperCache(QObject):
     def init(self):
         self.checkGeometry()
 
-    def checkPixmaps(self, ids):
+    def checkImages(self, ids):
         for id in ids:
-            if self.pixmap(id) == None or self.dirty(id):
+            if self.image(id) == None or self.dirty(id):
                 #print '   ### dirty', id
                 return False
         return True
 
+    def _img(self, img):
+        if isinstance(img, int):
+            if self.image(img) == None or self.dirty(img):
+                return self._job(img)
+            else:
+                return self.image(img)
+
+        if isinstance(img, QImage):
+            return img
+
+        if os.path.isdir(img):
+            package = Plasma.Package(img, \
+                                     self.wallpaper.packageStructure(self.wallpaper.wallpaper))
+            img = package.filePath('preferred')
+
+        return U(img)
+
+    def _job(self, cacheId):
+        operation = self.cache[cacheId][self.Operation]
+        operationId = operation[self.OperationId]
+
+        if operation[self.OperationId] == self.FromDisk:
+            job = SingleImageJob(cacheId, self._size, operation[self.Color],
+                                 operation[self.Method], self._img(operation[self.Path]))
+
+        elif operation[self.OperationId] == self.Blend:
+            job = BlendJob(cacheId, self._img(operation[self.Images][0]), \
+                           self._img(operation[self.Images][1]), operation[self.Amount])
+        return job
+
+    def doJob(self, cacheId):
+        self.renderer.render(self._job(cacheId))
+
     def doOperation(self, operation):
         #print '### doOperation', self.rendering, operation[self.OperationId],
         if operation[self.OperationId] == self.Manual:
-            #print '*'
             self.setDirty(self.rendering, False)
-            if self.pixmap(self.rendering) == None:
-                self.setPixmap(self.rendering, QPixmap())
+            if self.image(self.rendering) == None:
+                self.setImage(self.rendering, QImage())
             return True
 
         elif operation[self.OperationId] == self.FromDisk:
@@ -182,69 +228,65 @@ class WallpaperCache(QObject):
             if path:
                 #print '   ### Rendering'
                 self.setDirty(self.rendering, False)
-                job = SingleImageJob(self._size, operation[self.Color],
+                job = SingleImageJob(self.rendering, self._size, operation[self.Color],
                                      operation[self.Method], path)
                 self.renderer.render(job)
                 return False
             else:
                 #print '   ### Does not exist'
-                self.setPixmap(self.rendering, QPixmap())
+                self.setImage(self.rendering, QImage())
                 return True
 
-        elif operation[self.OperationId] == self.Transition:
-            #print operation[self.Pixmaps]
-            if self.checkPixmaps(operation[self.Pixmaps]):
+        elif operation[self.OperationId] == self.Blend:
+            #print operation[self.Images]
+            if self.checkImages(operation[self.Images]):
                 #print '   ### transition'
-                self.setPixmap(self.rendering,
-                        Plasma.PaintUtils.transition(self.pixmap(operation[self.Pixmaps][0]), \
-                        self.pixmap(operation[self.Pixmaps][1]), operation[self.Amount]))
+                self.setImage(self.rendering,
+                        Plasma.PaintUtils.transition(self.image(operation[self.Images][0]), \
+                        self.image(operation[self.Images][1]), operation[self.Amount]))
             return True
 
         elif operation[self.OperationId] == self.Combine:
-            #print operation[self.Pixmaps]
-            if self.checkPixmaps(operation[self.Pixmaps]):
+            #print operation[self.Images]
+            if self.checkImages(operation[self.Images]):
                 #print '   ### combine'
-                pixmap = QPixmap(self._size)
-                p = QPainter(pixmap)
+                image = QImage(self._size)
+                p = QPainter(image)
                 p.resetTransform()
                 p.setCompositionMode(QPainter.CompositionMode_SourceOver)
-                for id in operation[self.Pixmaps]:
-                    pix = self.pixmap(id)
+                for id in operation[self.Images]:
+                    pix = self.image(id)
                     if not pix.isNull():
                         #print '      ### combine draw', id
-                        p.drawPixmap(0, 0, pix)
+                        p.drawImage(0, 0, pix)
                 p.end()
-                self.setPixmap(self.rendering, pixmap)
+                self.setImage(self.rendering, image)
             return True
 
         return True
 
-    def renderCompleted(self, image):
-        #print '### renderCompleted', self.rendering, self.dirty(self.rendering)
-        if not self.dirty(self.rendering):
-            self.setPixmap(self.rendering, QPixmap(image))
-        self.rendering = None
+    def renderCompleted(self, jobId, image):
+        print '### renderCompleted', jobId, self.rendering, self.dirty(self.rendering)
+        if not self.dirty(jobId):
+            self.setImage(jobId, image)
+        self.rendering = False
         self.dirtyTimer.start()
 
-    def checkDirtyPixmaps(self):
-        #print '### checkDirtyPixmaps', self.rendering
-        if self.rendering != None:
+    def checkDirtyImages(self):
+        print '### checkDirtyImages', self.rendering
+        if self.rendering:
             return
         if self._size == None:
             return
 
-        while True:
-            dirty = False
-            for id in self.cache.keys():
-                #print '### ID', id, self.cache[id][self.Dirty]
-                if self.cache[id][self.Dirty]:
-                    dirty = True
-                    self.rendering = id
-                    if not self.doOperation(self.cache[id][self.Operation]):
-                        #print '   ### Waiting...'
-                        return
-            if dirty == False: # Handling dirty might set other pixmaps dirty
-                self.rendering = None
-                break
+        for id in self.cache.keys():
+            print '### ID', id, self.dirty(id)
+            if self.dirty(id):
+                self.setDirty(id, False)
+                self.rendering = True
+                self.doJob(id)
+                print '   ### Waiting... ', id, self.dirty(id)
+                return
         self.dirtyTimer.stop()
+        print '### renderingsCompleted'
         self.emit(SIGNAL('renderingsCompleted()'))
