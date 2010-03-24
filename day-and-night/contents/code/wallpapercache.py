@@ -119,6 +119,9 @@ class WallpaperCache(QObject):
         return self.currentPixmap
 
     def image(self, id):
+        if id == self.currentPixmapId:
+            self.currentPixmapId = -1
+            self.currentPixmap = None
         image = self.value(id, self.Image)
         return image
 
