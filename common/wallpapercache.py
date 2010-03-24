@@ -59,12 +59,11 @@ class WallpaperCache(QObject):
         return True
 
     def initId(self, id, operation, data = None):
-        dirty = self.checkId(id)
+        self.checkId(id)
         self.cache[id][self.Operation] = operation
         self.cache[id][self.Dirty] = False
         self.cache[id][self.Data] = data
-        if dirty:
-            self.setDirty(dirty)
+        self.cache[id][self.Image] = None
 
     def value(self, id, type):
         self.checkId(id)
@@ -113,14 +112,12 @@ class WallpaperCache(QObject):
         print '### pixmap', self.currentPixmapId, id
         if self.currentPixmapId != id:
             img = self.image(id)
-            print img
             if img:
                 self.currentPixmapId = id
-                self.currentPixmap = QPixmap(self.image(id))
+                self.currentPixmap = QPixmap(img)
             else:
                 if self.operationParam(id, self.OperationId) != self.Manual:
                     self.setDirty(id)
-                self.currentPixmap = None
         return self.currentPixmap
 
     def image(self, id):
@@ -131,7 +128,6 @@ class WallpaperCache(QObject):
         print '### setImage', id, self.currentPixmapId, self._size
         if id == self.currentPixmapId:
             self.currentPixmapId = -1
-            self.currentPixmap = None
         self.setDirty(id, False)
         return self.setValue(id, self.Image, image)
 
@@ -177,6 +173,7 @@ class WallpaperCache(QObject):
 
     def init(self):
         print '### init'
+        self.currentPixmapId = -1
         self.checkGeometry()
 
     def checkImages(self, ids):
