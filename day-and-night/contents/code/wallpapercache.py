@@ -55,12 +55,16 @@ class WallpaperCache(QObject):
     def checkId(self, id):
         if id not in self.cache.keys():
             self.cache[id] = [[self.Manual], True, None, None]
+            return False
+        return True
 
     def initId(self, id, operation, data = None):
-        self.checkId(id)
+        dirty = self.checkId(id)
         self.cache[id][self.Operation] = operation
         self.cache[id][self.Dirty] = False
         self.cache[id][self.Data] = data
+        if dirty:
+            self.setDirty(dirty)
 
     def value(self, id, type):
         self.checkId(id)
@@ -109,6 +113,7 @@ class WallpaperCache(QObject):
         print '### pixmap', self.currentPixmapId, id
         if self.currentPixmapId != id:
             img = self.image(id)
+            print img
             if img:
                 self.currentPixmapId = id
                 self.currentPixmap = QPixmap(self.image(id))
@@ -119,13 +124,14 @@ class WallpaperCache(QObject):
         return self.currentPixmap
 
     def image(self, id):
-        if id == self.currentPixmapId:
-            self.currentPixmapId = -1
-            self.currentPixmap = None
         image = self.value(id, self.Image)
         return image
 
     def setImage(self, id, image):
+        print '### setImage', id, self.currentPixmapId, self._size
+        if id == self.currentPixmapId:
+            self.currentPixmapId = -1
+            self.currentPixmap = None
         self.setDirty(id, False)
         return self.setValue(id, self.Image, image)
 
@@ -162,6 +168,7 @@ class WallpaperCache(QObject):
             return self._size.width() / float(self._size.height())
 
     def checkGeometry(self):
+        print '### checkGeometry', self._size, self.wallpaper.boundingRect().size().toSize()
         if self._size != self.wallpaper.boundingRect().size().toSize():
             self._size = self.wallpaper.boundingRect().size().toSize()
             self.setDirty(self.All)
@@ -169,6 +176,7 @@ class WallpaperCache(QObject):
         return False
 
     def init(self):
+        print '### init'
         self.checkGeometry()
 
     def checkImages(self, ids):
