@@ -23,7 +23,7 @@ from copy import copy
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
-from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob, DummyJob
+from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob, EmptyJob
 from helpers import *
 
 class WallpaperCache(QObject):
@@ -205,15 +205,15 @@ class WallpaperCache(QObject):
         operationId = operation[self.OperationId]
 
         if operation[self.OperationId] == self.FromDisk:
-            job = SingleImageJob(cacheId, self._size, operation[self.Color],
-                                 operation[self.Method], self._img(operation[self.Path]))
+            job = SingleImageJob(cacheId, self._size, self._img(operation[self.Path]), \
+                                 QColor(operation[self.Color]), operation[self.Method])
 
         elif operation[self.OperationId] == self.Blend:
-            job = BlendJob(cacheId, self._img(operation[self.Images][0]), \
+            job = BlendJob(cacheId, self._size, self._img(operation[self.Images][0]), \
                            self._img(operation[self.Images][1]), operation[self.Amount])
 
         else:
-            job = DummyJob(cacheId)
+            job = EmptyJob(cacheId, self._size)
 
         return job
 

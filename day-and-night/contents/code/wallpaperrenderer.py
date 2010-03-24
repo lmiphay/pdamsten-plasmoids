@@ -84,13 +84,16 @@ class WallpaperRenderer(QThread):
 
 
 class WallpaperJob():
-    def __init__(self, jobId):
+    def __init__(self, jobId, size, color, method):
         self.jobId = jobId
+        self.size = size
+        self.color = color
+        self.method = method
 
     def do(self):
         pass
 
-    def load(self, img, size = None, color = None, method = None):
+    def load(self, img):
         if isinstance(img, QImage):
             return img
 
@@ -98,11 +101,11 @@ class WallpaperJob():
             return img.do()
 
         if len(img) == 0 or not QFile.exists(img):
-            image = QImage(size, QImage.Format_ARGB32_Premultiplied)
-            image.fill(color.rgba())
+            image = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
+            image.fill(self.color.rgba())
         else:
             if img.endswith(u'svg') or img.endswith(u'svgz'):
-                image = QImage(size, QImage.Format_ARGB32_Premultiplied)
+                image = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
                 p = QPainter(image)
                 svg = QSvgRenderer(fileName)
                 svg.render(p)
@@ -110,16 +113,16 @@ class WallpaperJob():
                 image = QImage(img)
         return image
 
-    def scale(self, img, size, color, method):
-        if img.size() == size:
+    def scale(self, img):
+        if img.size() == self.size:
             return img
-        result = QImage(size, QImage.Format_ARGB32_Premultiplied)
-        result.fill(color.rgba())
+        result = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
+        result.fill(self.color.rgba())
 
         pos = QPoint(0, 0)
         tiled = False
         scaledSize = QSize()
-        ratio = float(size.width()) / size.height()
+        ratio = float(self.size.width()) / self.size.height()
 
         # otherwise, use the natural size of the loaded image
         imgSize = img.size()
@@ -135,70 +138,70 @@ class WallpaperJob():
             ratio = 1
 
         # set render parameters according to resize mode
-        if method == Plasma.Wallpaper.ScaledResize:
-            scaledSize = size
+        if self.method == Plasma.Wallpaper.ScaledResize:
+            scaledSize = self.size
 
-        elif method == Plasma.Wallpaper.CenteredResize:
+        elif self.method == Plasma.Wallpaper.CenteredResize:
             scaledSize = imgSize
-            pos = QPoint((size.width() - scaledSize.width()) / 2,
-                         (size.height() - scaledSize.height()) / 2)
+            pos = QPoint((self.size.width() - scaledSize.width()) / 2,
+                         (self.size.height() - scaledSize.height()) / 2)
 
             # If the picture is bigger than the screen, shrink it
-            if (size.width() < imgSize.width()) and (imgSize.width() > imgSize.height()):
-                width = size.width()
+            if (self.size.width() < imgSize.width()) and (imgSize.width() > imgSize.height()):
+                width = self.size.width()
                 height = width * scaledSize.height() / imgSize.width()
                 scaledSize = QSize(width, height)
-                pos = QPoint((size.width() - scaledSize.width()) / 2,
-                             (size.height() - scaledSize.height()) / 2)
-            elif size.height() < imgSize.height():
-                height = size.height()
+                pos = QPoint((self.size.width() - scaledSize.width()) / 2,
+                             (self.size.height() - scaledSize.height()) / 2)
+            elif self.size.height() < imgSize.height():
+                height = self.size.height()
                 width = height * imgSize.width() / imgSize.height()
                 scaledSize = QSize(width, height)
-                pos = QPoint((size.width() - scaledSize.width()) / 2,
-                             (size.height() - scaledSize.height()) / 2)
+                pos = QPoint((self.size.width() - scaledSize.width()) / 2,
+                             (self.size.height() - scaledSize.height()) / 2)
 
-        elif method == Plasma.Wallpaper.MaxpectResize:
-            xratio = float(size.width()) / imgSize.width()
-            yratio = float(size.height()) / imgSize.height()
+        elif self.method == Plasma.Wallpaper.MaxpectResize:
+            xratio = float(self.size.width()) / imgSize.width()
+            yratio = float(self.size.height()) / imgSize.height()
 
             if xratio > yratio:
-                height = size.height()
+                height = self.size.height()
                 width = height * imgSize.width() / imgSize.height()
                 scaledSize = QSize(width, height)
             else:
-                width = size.width()
+                width = self.size.width()
                 height = width * imgSize.height() / imgSize.width()
                 scaledSize = QSize(width, height)
 
-            pos = QPoint((size.width() - scaledSize.width()) / 2,
-                         (size.height() - scaledSize.height()) / 2)
+            pos = QPoint((self.size.width() - scaledSize.width()) / 2,
+                         (self.size.height() - scaledSize.height()) / 2)
 
-        elif method == Plasma.Wallpaper.ScaledAndCroppedResize:
-            xratio = float(size.width()) / imgSize.width()
-            yratio = float(size.height()) / imgSize.height()
+        elif self.method == Plasma.Wallpaper.ScaledAndCroppedResize:
+            xratio = float(self.size.width()) / imgSize.width()
+            yratio = float(self.size.height()) / imgSize.height()
 
             if xratio > yratio:
-                width = size.width()
+                width = self.size.width()
                 height = width * imgSize.height() / imgSize.width()
                 scaledSize = QSize(width, height)
             else:
-                height = size.height()
+                height = self.size.height()
                 width = height * imgSize.width() / imgSize.height()
                 scaledSize = QSize(width, height)
 
-            pos = QPoint((size.width() - scaledSize.width()) / 2,
-                         (size.height() - scaledSize.height()) / 2)
+            pos = QPoint((self.size.width() - scaledSize.width()) / 2,
+                         (self.size.height() - scaledSize.height()) / 2)
 
-        elif method == Plasma.Wallpaper.TiledResize:
+        elif self.method == Plasma.Wallpaper.TiledResize:
             scaledSize = imgSize
             tiled = True
 
-        elif method == Plasma.Wallpaper.CenterTiledResize:
+        elif self.method == Plasma.Wallpaper.CenterTiledResize:
             scaledSize = imgSize
             pos = QPoint(-scaledSize.width() +
-                         ((size.width() - scaledSize.width()) / 2) % scaledSize.width(),
+                         ((self.size.width() - scaledSize.width()) / 2) % scaledSize.width(),
                          -scaledSize.height() +
-                         ((size.height() - scaledSize.height()) / 2) % scaledSize.height())
+                         ((self.size.height() - scaledSize.height()) / 2) % scaledSize.height())
             tiled = True
 
         p = QPainter(result)
@@ -210,8 +213,8 @@ class WallpaperJob():
         #    return result
 
         if tiled:
-            for x in range(pos.x(), size.width(), scaledSize.width()):
-                for y in range(pos.y(), size.height(), scaledSize.height()):
+            for x in range(pos.x(), self.size.width(), scaledSize.width()):
+                for y in range(pos.y(), self.size.height(), scaledSize.height()):
                     p.drawImage(QPoint(x, y), img)
                     #if self.restart:
                     #    return result
@@ -222,21 +225,19 @@ class WallpaperJob():
 
 
 class SingleImageJob(WallpaperJob):
-    def __init__(self, jobId, size, color, method, img):
-        WallpaperJob.__init__(self, jobId)
+    def __init__(self, jobId, size, img,
+                 color = QColor(Qt.black), method = Plasma.Wallpaper.ScaledResize):
+        WallpaperJob.__init__(self, jobId, size, color, method)
         self.img = img
-        self.size = size
-        self.color = color
-        self.method = method
 
     def do(self):
-        return self.scale(self.load(self.img, self.size, self.color, self.method),
-                          self.size, self.color, self.method)
+        return self.scale(self.load(self.img))
 
 
 class BlendJob(WallpaperJob):
-    def __init__(self, jobId, img1, img2, amount):
-        WallpaperJob.__init__(self, jobId)
+    def __init__(self, jobId, size, img1, img2, amount,
+                 color = QColor(Qt.black), method = Plasma.Wallpaper.ScaledResize):
+        WallpaperJob.__init__(self, jobId, size, color, method)
         self.img1 = img1
         self.img2 = img2
         self.amount = amount
@@ -247,8 +248,8 @@ class BlendJob(WallpaperJob):
         if self.amount >= 1.0:
             return self.load(self.img2)
 
-        image1 = QImage(self.load(self.img1))
-        image2 = QImage(self.load(self.img2))
+        image1 = QImage(self.scale(self.load(self.img1)))
+        image2 = QImage(self.scale(self.load(self.img2)))
 
         color = QColor()
         color.setAlphaF(self.amount)
@@ -266,9 +267,10 @@ class BlendJob(WallpaperJob):
         return image1
 
 
-class DummyJob(WallpaperJob):
-    def __init__(self, jobId):
-        WallpaperJob.__init__(self, jobId)
+class EmptyJob(WallpaperJob):
+    def __init__(self, jobId, size,
+                 color = QColor(Qt.black), method = Plasma.Wallpaper.ScaledResize):
+        WallpaperJob.__init__(self, jobId, size, color, method)
 
     def do(self):
-        return QImage()
+        return self.load('')
