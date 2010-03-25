@@ -247,6 +247,8 @@ class WallpaperCache(QObject):
     def renderCompleted(self, jobId, image):
         print '### renderCompleted', jobId, self.rendering, self.dirty(jobId), image.size()
         #image.save('/home/damu/test%d.png' % jobId)
+        if image.isNull():
+            image = None
         if not self.dirty(jobId):
             self.setImage(jobId, image)
         self.rendering -= 1

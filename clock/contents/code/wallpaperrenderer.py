@@ -98,6 +98,11 @@ class WallpaperJob():
     def done(self, image):
         self.renderThread.emit(SIGNAL('renderCompleted(int, const QImage&)'), self.jobId, image)
 
+    def unused(self, img):
+        if isinstance(img, WallpaperJob):
+            img.renderThread = self.renderThread
+            img.done(QImage())
+
     def load(self, img):
         if isinstance(img, QImage):
             return img
@@ -265,7 +270,9 @@ class BlendJob(WallpaperJob):
         scaleAll = False
         if self.amount <= 0.0:
             image = self.load(self.img1)
+            self.unused(self.img2)
         elif self.amount >= 1.0:
+            self.unused(self.img1)
             image = self.load(self.img2)
         else:
             images = [self.load(self.img1), self.load(self.img2)]
