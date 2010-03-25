@@ -41,7 +41,7 @@ from wallpapercache import WallpaperCache
 
 class DayAndNight(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Day, Current, Night = range(3)
+    Current, Day, Night = range(3)
     DayAngle, NightAngle = (50.0 / 60.0, -6.0)
 
     def __init__(self, parent, args = None):
@@ -70,8 +70,8 @@ class DayAndNight(Wallpaper):
         dayPath = self.checkIfEmpty(config.readEntry('daywallpaper', '').toString())
         nightPath = self.checkIfEmpty(config.readEntry('nightwallpaper', '').toString())
 
-        self.cache.initId(self.Day, [WallpaperCache.FromDisk, dayPath, dayColor, dayMethod])
-        self.cache.initId(self.Night, [WallpaperCache.FromDisk, nightPath, nightColor, nightMethod])
+        self.cache.initId(self.Day, [WallpaperCache.SingleImage, dayPath, dayColor, dayMethod])
+        self.cache.initId(self.Night, [WallpaperCache.SingleImage, nightPath, nightColor, nightMethod])
         self.cache.initId(self.Current, [WallpaperCache.Blend, (self.Day, self.Night), 0.0])
 
         self.usersWallpapers = config.readEntry('userswallpapers', []).toStringList()

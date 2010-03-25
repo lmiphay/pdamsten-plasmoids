@@ -93,10 +93,7 @@ class Moon:
 
 class Clock(Wallpaper):
     UpdateInterval = 1.0 # minutes
-    Current, Next, Background, BackgroundHour, \
-            Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm  = range(12)
-    HourItems = (Background, Zodiac, Moon, Month, WeekDay, Day, Hour, AmPm)
-    DiscItems = (Background, Zodiac, Moon, Month, WeekDay, Day, Hour, Minute, AmPm)
+    Current, Next, BackgroundHour = range(3)
 
     def __init__(self, parent, args = None):
         Wallpaper.__init__(self, parent)
@@ -120,8 +117,8 @@ class Clock(Wallpaper):
         self.clockPackage = ClockPackage(self,
                 self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString()))
         self.cache.initId(self.Current, [WallpaperCache.Manual])
-        self.cache.initId(self.Next, [WallpaperCache.Combine, [self.BackgroundHour, self.Minute]])
-        self.cache.initId(self.BackgroundHour, [WallpaperCache.Combine, self.HourItems])
+        self.cache.initId(self.Next, [WallpaperCache.Stack, [self.BackgroundHour, '']])
+        self.cache.initId(self.BackgroundHour, [WallpaperCache.Stack, []])
         engine = self.dataEngine('time')
         Moon.timeEngine = engine
         engine.disconnectSource('Local', self)
@@ -149,35 +146,25 @@ class Clock(Wallpaper):
 
     def updateImages(self, next):
         path = self.clockPackage.path()
-        self.cache.setOperation(self.Background, [WallpaperCache.FromDisk, \
-                path + 'bg.jpg', self.color, self.method])
-        self.cache.setOperation(self.Zodiac, [WallpaperCache.FromDisk, \
-                path + 'zodiac%s.png' % Zodiac(next.date()), Qt.transparent, self.method])
-        self.cache.setOperation(self.Moon, [WallpaperCache.FromDisk, \
-                path + 'moonphase%s.png' % Moon(next.date()), Qt.transparent, self.method])
-        self.cache.setOperation(self.Month, [WallpaperCache.FromDisk, \
-                path + 'month%d.png' % next.date().month(), Qt.transparent, self.method])
-        self.cache.setOperation(self.WeekDay, [WallpaperCache.FromDisk, \
-                path + 'weekday%d.png' % next.date().dayOfWeek(), Qt.transparent, self.method])
-        self.cache.setOperation(self.Day, [WallpaperCache.FromDisk, \
-                path + 'day%d.png' % next.date().day(), Qt.transparent, self.method])
-        self.cache.setOperation(self.Minute, [WallpaperCache.FromDisk,
-                path + 'minute%d.png' % next.time().minute(), Qt.transparent, self.method])
-
         if self.clockPackage.ampmEnabled() and self.ampm:
             h = ((next.time().hour() - 1) % 12) + 1
         elif self.clockPackage.hourImages() == 60:
             h = next.time().hour() * next.time().minutes() / 12
         else:
             h = next.time().hour()
-        self.cache.setOperation(self.Hour, [WallpaperCache.FromDisk, \
-                path + 'hour%d.png' % h, Qt.transparent, self.method])
-
+        files = [path + 'bg.jpg',
+                 path + 'zodiac%s.png' % Zodiac(next.date()),
+                 path + 'moonphase%s.png' % Moon(next.date()),
+                 path + 'month%d.png' % next.date().month(),
+                 path + 'weekday%d.png' % next.date().dayOfWeek(),
+                 path + 'day%d.png' % next.date().day(),
+                 path + 'hour%d.png' % h]
         if self.clockPackage.ampmEnabled() and self.ampm:
-            self.cache.setOperation(self.AmPm, [WallpaperCache.FromDisk, \
-                    path + '%s.png' % next.time().toString('ap'), Qt.transparent, self.method])
-        else:
-            self.cache.setOperation(self.AmPm, [WallpaperCache.Manual])
+            files.append(path + '%s.png' % next.time().toString('ap'))
+        self.cache.setOperationParam(self.BackgroundHour, WallpaperCache.Images, files)
+
+        self.cache.setOperationParam(self.Next, WallpaperCache.Images, \
+                [self.BackgroundHour, path + 'minute%d.png' % next.time().minute()])
 
     def checkIfEmpty(self, wallpaper):
         #print '### checkIfEmpty'
