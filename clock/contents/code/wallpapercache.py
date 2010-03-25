@@ -27,14 +27,14 @@ from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob, Dummy
 from helpers import *
 
 class WallpaperCache(QObject):
-    All = -sys.maxint - 1                            # id
-    Operation, Dirty, Image, Data = range(4)         # id properties
-    SingleImage, Blend, Stack, Manual = range(4)     # operations
+    All = -sys.maxint - 1                                       # id
+    Operation, Dirty, Image, Color, Method, Data = range(6)     # id properties
+    SingleImage, Blend, Stack, Manual = range(4)                # operations
     OperationId = 0
-    Path, Color, Method = range(1, 4)                # SingleImage operation
-    Images, Amount = range(1, 3)                     # Blend operation
-    Images = 1                                       # Stack operation
-    imageOperations = [Blend, Stack]
+    Images = 1                                                  # SingleImage operation
+    Images, Amount = range(1, 3)                                # Blend operation
+    Images = 1                                                  # Stack operation
+    ImageOperations = [Blend, Stack]
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
@@ -54,13 +54,17 @@ class WallpaperCache(QObject):
 
     def checkId(self, id):
         if id not in self.cache.keys():
-            self.cache[id] = [[self.Manual], True, None, None]
+            self.cache[id] = [[self.Manual], True, None, Qt.black, \
+                              Plasma.Wallpaper.ScaledResize, None]
             return False
         return True
 
-    def initId(self, id, operation, data = None):
+    def initId(self, id, operation, color = Qt.black, \
+               method = Plasma.Wallpaper.ScaledResize, data = None):
         self.checkId(id)
         self.cache[id][self.Operation] = operation
+        self.cache[id][self.Color] = color
+        self.cache[id][self.Method] = method
         self.cache[id][self.Dirty] = False
         self.cache[id][self.Data] = data
         self.cache[id][self.Image] = None
@@ -91,11 +95,11 @@ class WallpaperCache(QObject):
         return self.value(id, self.Dirty)
 
     def setDirty(self, id, dirty = True):
-        print '### setDirty', id
+        print '### setDirty', id, dirty
         r = self.setValue(id, self.Dirty, dirty)
         if dirty:
             for key in self.cache.keys():
-                if self.operationParam(key, self.OperationId) in self.imageOperations and \
+                if self.operationParam(key, self.OperationId) in self.ImageOperations and \
                     id in self.operationParam(key, self.Images):
                     print '   ### And setDirty', key
                     self.setDirty(key)
@@ -107,6 +111,18 @@ class WallpaperCache(QObject):
 
     def setData(self, id, data):
         return self.setValue(id, self.Data, data)
+
+    def color(self, id):
+        return self.value(id, self.Color)
+
+    def setColor(self, id, color):
+        return self.setValue(id, self.Color, color)
+
+    def method(self, id):
+        return self.value(id, self.Method)
+
+    def setMethod(self, id, method):
+        return self.setValue(id, self.Method, method)
 
     def pixmap(self, id):
         print '### pixmap', self.currentPixmapId, id
@@ -205,15 +221,17 @@ class WallpaperCache(QObject):
         operationId = operation[self.OperationId]
 
         if operation[self.OperationId] == self.SingleImage:
-            job = SingleImageJob(cacheId, self._size, self._img(operation[self.Path]), \
-                                 QColor(operation[self.Color]), operation[self.Method])
+            job = SingleImageJob(cacheId, self._size, self._img(operation[self.Images]), \
+                                 QColor(self.color(cacheId)), self.method(cacheId))
 
         elif operation[self.OperationId] == self.Blend:
             job = BlendJob(cacheId, self._size, self._img(operation[self.Images][0]), \
-                           self._img(operation[self.Images][1]), operation[self.Amount])
+                           self._img(operation[self.Images][1]), operation[self.Amount],
+                           QColor(self.color(cacheId)), self.method(cacheId))
 
         elif operation[self.OperationId] == self.Stack:
-            job = StackJob(cacheId, self._size, [self._img(x) for x in operation[self.Images]])
+            job = StackJob(cacheId, self._size, [self._img(x) for x in operation[self.Images]], \
+                           QColor(self.color(cacheId)), self.method(cacheId))
 
         else:
             job = DummyJob(cacheId, self._size)
@@ -224,7 +242,7 @@ class WallpaperCache(QObject):
         self.renderer.render(self._job(cacheId))
 
     def renderCompleted(self, jobId, image):
-        print '### renderCompleted', jobId, self.rendering, self.dirty(self.rendering)
+        print '### renderCompleted', jobId, self.rendering, self.dirty(jobId)
         if not self.dirty(jobId):
             self.setImage(jobId, image)
         self.rendering = False

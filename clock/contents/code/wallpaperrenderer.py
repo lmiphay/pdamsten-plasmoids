@@ -252,8 +252,7 @@ class BlendJob(WallpaperJob):
         self.amount = amount
 
     def do(self):
-        # DEBUG
-        self.amount = 0.5
+        # DEBUG self.amount = 0.5
         if self.amount <= 0.0:
             return self.load(self.img1)
         if self.amount >= 1.0:

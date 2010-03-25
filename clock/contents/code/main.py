@@ -116,9 +116,10 @@ class Clock(Wallpaper):
         self.ampm = config.readEntry('ampm', False).toBool()
         self.clockPackage = ClockPackage(self,
                 self.checkIfEmpty(config.readEntry('clockwallpaper', '').toString()))
-        self.cache.initId(self.Current, [WallpaperCache.Manual])
-        self.cache.initId(self.Next, [WallpaperCache.Stack, [self.BackgroundHour, '']])
-        self.cache.initId(self.BackgroundHour, [WallpaperCache.Stack, []])
+        self.cache.initId(self.Current, [WallpaperCache.Manual], self.color, self.method)
+        self.cache.initId(self.Next, [WallpaperCache.Stack, [self.BackgroundHour, '']], \
+                          self.color, self.method)
+        self.cache.initId(self.BackgroundHour, [WallpaperCache.Stack, []], self.color, self.method)
         engine = self.dataEngine('time')
         Moon.timeEngine = engine
         engine.disconnectSource('Local', self)
@@ -298,13 +299,13 @@ class Clock(Wallpaper):
         self.settingsChanged(True)
         self.method = index
         self.immediateRepaint = True
-        self.cache.setOperationParam(self.DiscItems, WallpaperCache.Method, self.method)
+        self.cache.setMethod(self.All, self.method)
 
     def colorChanged(self, color):
         self.settingsChanged(True)
         self.color = color
         self.immediateRepaint = True
-        self.cache.setOperationParam(self.DiscItems, WallpaperCache.Color, self.color)
+        self.cache.setColor(self.All, self.color)
 
     def ampmChanged(self, state):
         self.settingsChanged(True)
