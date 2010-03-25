@@ -79,8 +79,9 @@ class WallpaperRenderer(QThread):
                 job = copy(self.job)
             finally:
                 self.mutex.unlock()
-
-            self.emit(SIGNAL('renderCompleted(int, const QImage&)'), job.jobId, job.do())
+            job.renderThread = self
+            job.do()
+            job = None
 
 
 class WallpaperJob():
@@ -89,15 +90,21 @@ class WallpaperJob():
         self.size = size
         self.color = color
         self.method = method
+        self.renderThread = None
 
     def do(self):
         pass
+
+    def done(self, image):
+        print 'done', image.size()
+        self.renderThread.emit(SIGNAL('renderCompleted(int, const QImage&)'), self.jobId, image)
 
     def load(self, img):
         if isinstance(img, QImage):
             return img
 
         if isinstance(img, WallpaperJob):
+            img.renderThread = self.renderThread
             return img.do()
 
         print '###', img
@@ -240,7 +247,9 @@ class SingleImageJob(WallpaperJob):
         self.img = img
 
     def do(self):
-        return self.scale(self.load(self.img))
+        img = self.scale(self.load(self.img))
+        self.done(img)
+        return img
 
 
 class BlendJob(WallpaperJob):
@@ -253,37 +262,42 @@ class BlendJob(WallpaperJob):
 
     def do(self):
         # DEBUG self.amount = 0.5
+        image = None
+        scaleAll = False
         if self.amount <= 0.0:
-            return self.load(self.img1)
-        if self.amount >= 1.0:
-            return self.load(self.img2)
-
-        images = [self.load(self.img1), self.load(self.img2)]
-        scaleAll = not self.allHaveSameSize(images)
-        if scaleAll:
-            image1 = QImage(self.scale(images[0]))
-            image2 = QImage(self.scale(images[1]))
+            image = self.load(self.img1)
+        elif self.amount >= 1.0:
+            image = self.load(self.img2)
         else:
-            image1 = QImage(images[0])
-            image2 = QImage(images[1])
-        color = QColor()
-        color.setAlphaF(self.amount)
+            images = [self.load(self.img1), self.load(self.img2)]
+            scaleAll = not self.allHaveSameSize(images)
+            if scaleAll:
+                image = QImage(self.scale(images[0]))
+                image2 = QImage(self.scale(images[1]))
+            else:
+                image = QImage(images[0])
+                image2 = QImage(images[1])
+            color = QColor()
+            color.setAlphaF(self.amount)
 
-        p = QPainter()
-        p.begin(image2)
-        p.setCompositionMode(QPainter.CompositionMode_DestinationIn)
-        p.fillRect(image2.rect(), color)
-        p.end()
+            p = QPainter()
+            p.begin(image2)
+            p.setCompositionMode(QPainter.CompositionMode_DestinationIn)
+            p.fillRect(image2.rect(), color)
+            p.end()
 
-        p.begin(image1)
-        p.setCompositionMode(QPainter.CompositionMode_DestinationOut)
-        p.fillRect(image1.rect(), color)
-        p.setCompositionMode(QPainter.CompositionMode_Plus);
-        p.drawImage(0, 0, image2)
-        p.end()
+            p.begin(image)
+            p.setCompositionMode(QPainter.CompositionMode_DestinationOut)
+            p.fillRect(image.rect(), color)
+            p.setCompositionMode(QPainter.CompositionMode_Plus);
+            p.drawImage(0, 0, image2)
+            p.end()
+
         if not scaleAll:
-            image1 = self.scale(image1)
-        return image1
+            image = self.scale(image)
+        self.done(image)
+        return image
+
 
 class StackJob(WallpaperJob):
     def __init__(self, jobId, size, images,
@@ -313,6 +327,7 @@ class StackJob(WallpaperJob):
         p.end()
         if not scaleAll:
             img = self.scale(img)
+        self.done(img)
         return img
 
 
@@ -322,4 +337,6 @@ class DummyJob(WallpaperJob):
         WallpaperJob.__init__(self, jobId, size, color, method)
 
     def do(self):
-        return QImage()
+        img = QImage()
+        self.done(img)
+        return img
