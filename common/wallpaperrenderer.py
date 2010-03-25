@@ -102,7 +102,7 @@ class WallpaperJob():
 
         print '###', img
         if len(img) == 0 or not QFile.exists(img):
-            image = None
+            image = QImage()
         else:
             if img.endswith(u'svg') or img.endswith(u'svgz'):
                 image = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
@@ -228,7 +228,7 @@ class WallpaperJob():
     def allHaveSameSize(self, images):
         img = images[0]
         for image in images[1:]:
-            if image and img.size() != image.size():
+            if not image.isNull() and img.size() != image.size():
                 return False
         return True
 
@@ -305,7 +305,7 @@ class StackJob(WallpaperJob):
         p.resetTransform()
         p.setCompositionMode(QPainter.CompositionMode_SourceOver)
         for image in images[1:]:
-            if image:
+            if image.isNull():
                 if scaleAll:
                     p.drawImage(0, 0, self.scale(image))
                 else:
@@ -322,4 +322,4 @@ class DummyJob(WallpaperJob):
         WallpaperJob.__init__(self, jobId, size, color, method)
 
     def do(self):
-        return None
+        return QImage()
