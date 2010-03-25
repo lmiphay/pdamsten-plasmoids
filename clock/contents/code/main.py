@@ -137,7 +137,7 @@ class Clock(Wallpaper):
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
         #print '### dataUpdated'
-        if self.cache.pixmap(self.Next) != None:
+        if self.cache.image(self.Next) != None:
             self.cache.setImage(self.Current, self.cache.image(self.Next))
             self.update(self.boundingRect())
 
