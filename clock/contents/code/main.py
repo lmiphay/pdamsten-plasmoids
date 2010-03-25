@@ -299,13 +299,13 @@ class Clock(Wallpaper):
         self.settingsChanged(True)
         self.method = index
         self.immediateRepaint = True
-        self.cache.setMethod(self.All, self.method)
+        self.cache.setMethod(WallpaperCache.All, self.method)
 
     def colorChanged(self, color):
         self.settingsChanged(True)
         self.color = color
         self.immediateRepaint = True
-        self.cache.setColor(self.All, self.color)
+        self.cache.setColor(WallpaperCache.All, self.color)
 
     def ampmChanged(self, state):
         self.settingsChanged(True)
