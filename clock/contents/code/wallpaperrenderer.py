@@ -96,7 +96,6 @@ class WallpaperJob():
         pass
 
     def done(self, image):
-        print 'done', image.size()
         self.renderThread.emit(SIGNAL('renderCompleted(int, const QImage&)'), self.jobId, image)
 
     def load(self, img):
@@ -220,7 +219,7 @@ class WallpaperJob():
         #if self.restart:
         #    return result
 
-        p.setCompositionMode(QPainter.CompositionMode_Source)
+        #p.setCompositionMode(QPainter.CompositionMode_Source)
         if tiled:
             for x in range(pos.x(), self.size.width(), scaledSize.width()):
                 for y in range(pos.y(), self.size.height(), scaledSize.height()):

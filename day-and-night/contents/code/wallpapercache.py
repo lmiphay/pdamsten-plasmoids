@@ -40,7 +40,7 @@ class WallpaperCache(QObject):
         QObject.__init__(self, wallpaper)
         self.cache = {}
         self.wallpaper = wallpaper
-        self.rendering = False
+        self.rendering = 0
         self._size = None
         self.currentPixmap = None
         self.currentPixmapId = -1
@@ -236,21 +236,25 @@ class WallpaperCache(QObject):
         else:
             job = DummyJob(cacheId, self._size)
 
+        self.setDirty(cacheId, False)
+        self.rendering += 1
+        print '++++++++++++++++', self.rendering
         return job
 
     def doJob(self, cacheId):
         self.renderer.render(self._job(cacheId))
 
     def renderCompleted(self, jobId, image):
-        print '### renderCompleted', jobId, self.rendering, self.dirty(jobId)
+        print '### renderCompleted', jobId, self.rendering, self.dirty(jobId), image.size()
         if not self.dirty(jobId):
             self.setImage(jobId, image)
-        self.rendering = False
+        self.rendering -= 1
+        print '----------------', self.rendering
         self.dirtyTimer.start()
 
     def checkDirtyImages(self):
         print '### checkDirtyImages', self.rendering
-        if self.rendering:
+        if self.rendering > 0:
             return
         if self._size == None:
             return
@@ -258,8 +262,6 @@ class WallpaperCache(QObject):
         for id in self.cache.keys():
             print '### ID', id, self.dirty(id)
             if self.dirty(id):
-                self.setDirty(id, False)
-                self.rendering = True
                 self.doJob(id)
                 print '   ### Waiting... ', id, self.dirty(id)
                 return

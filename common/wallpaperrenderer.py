@@ -96,7 +96,6 @@ class WallpaperJob():
         pass
 
     def done(self, image):
-        print 'done', image.size()
         self.renderThread.emit(SIGNAL('renderCompleted(int, const QImage&)'), self.jobId, image)
 
     def load(self, img):
