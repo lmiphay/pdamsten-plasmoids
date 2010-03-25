@@ -318,7 +318,7 @@ class StackJob(WallpaperJob):
         p.resetTransform()
         p.setCompositionMode(QPainter.CompositionMode_SourceOver)
         for image in images[1:]:
-            if image.isNull():
+            if not image.isNull():
                 if scaleAll:
                     p.drawImage(0, 0, self.scale(image))
                 else:

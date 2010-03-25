@@ -219,7 +219,7 @@ class WallpaperJob():
         #if self.restart:
         #    return result
 
-        #p.setCompositionMode(QPainter.CompositionMode_Source)
+        p.setCompositionMode(QPainter.CompositionMode_Source)
         if tiled:
             for x in range(pos.x(), self.size.width(), scaledSize.width()):
                 for y in range(pos.y(), self.size.height(), scaledSize.height()):
@@ -318,7 +318,7 @@ class StackJob(WallpaperJob):
         p.resetTransform()
         p.setCompositionMode(QPainter.CompositionMode_SourceOver)
         for image in images[1:]:
-            if image.isNull():
+            if not image.isNull():
                 if scaleAll:
                     p.drawImage(0, 0, self.scale(image))
                 else:
