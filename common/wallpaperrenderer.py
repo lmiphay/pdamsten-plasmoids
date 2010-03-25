@@ -125,7 +125,7 @@ class WallpaperJob():
         return image
 
     def scale(self, img):
-        if img.size() == self.size:
+        if img.isNull() or img.size() == self.size:
             return img
         print '### Scaling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', img.size(), self.size
         result = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
