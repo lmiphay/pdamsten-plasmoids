@@ -28,7 +28,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
 
-# TODO handle abort & restart better
+# TODO handle abort & restart
 
 class WallpaperRenderer(QThread):
     def __init__(self, parent):
@@ -100,9 +100,9 @@ class WallpaperJob():
         if isinstance(img, WallpaperJob):
             return img.do()
 
+        print '###', img
         if len(img) == 0 or not QFile.exists(img):
-            image = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
-            image.fill(self.color.rgba())
+            image = None
         else:
             if img.endswith(u'svg') or img.endswith(u'svgz'):
                 image = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
@@ -116,6 +116,7 @@ class WallpaperJob():
     def scale(self, img):
         if img.size() == self.size:
             return img
+        print '### Scaling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', img.size(), self.size
         result = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
         result.fill(self.color.rgba())
 
@@ -212,6 +213,7 @@ class WallpaperJob():
         #if self.restart:
         #    return result
 
+        p.setCompositionMode(QPainter.CompositionMode_Source)
         if tiled:
             for x in range(pos.x(), self.size.width(), scaledSize.width()):
                 for y in range(pos.y(), self.size.height(), scaledSize.height()):
@@ -266,11 +268,46 @@ class BlendJob(WallpaperJob):
         p.end()
         return image1
 
+class StackJob(WallpaperJob):
+    def __init__(self, jobId, size, images,
+                 color = QColor(Qt.black), method = Plasma.Wallpaper.ScaledResize):
+        WallpaperJob.__init__(self, jobId, size, color, method)
+        self.images = images
 
-class EmptyJob(WallpaperJob):
+    def do(self):
+        images = []
+        for image in self.images:
+            images.append(self.load(image))
+        img = images[0]
+        scaleAll = False
+        for image in images[1:]:
+            if image and img.size() != image.size():
+                scaleAll = True
+                break
+
+        print '### Scale all !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', scaleAll
+        img = QImage(images[0])
+        if scaleAll:
+            img = self.scale(img)
+        p = QPainter(img)
+        p.resetTransform()
+        p.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        for image in images[1:]:
+            if image:
+                if scaleAll:
+                    p.drawImage(0, 0, self.scale(image))
+                else:
+                    p.drawImage(0, 0, image)
+        p.end()
+        if not scaleAll:
+            img = self.scale(img)
+        return img
+
+
+class DummyJob(WallpaperJob):
     def __init__(self, jobId, size,
                  color = QColor(Qt.black), method = Plasma.Wallpaper.ScaledResize):
         WallpaperJob.__init__(self, jobId, size, color, method)
 
     def do(self):
-        return self.load('')
+        return None

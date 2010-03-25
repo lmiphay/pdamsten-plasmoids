@@ -23,18 +23,18 @@ from copy import copy
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyKDE4.plasma import Plasma
-from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob, EmptyJob
+from wallpaperrenderer import WallpaperRenderer, SingleImageJob, BlendJob, DummyJob, StackJob
 from helpers import *
 
 class WallpaperCache(QObject):
-    All = -sys.maxint - 1                             # id
+    All = -sys.maxint - 1                            # id
     Operation, Dirty, Image, Data = range(4)         # id properties
-    FromDisk, Blend, Combine, Manual = range(4)  # operations
+    SingleImage, Blend, Stack, Manual = range(4)     # operations
     OperationId = 0
-    Path, Color, Method = range(1, 4)                 # FromDisk operation
+    Path, Color, Method = range(1, 4)                # SingleImage operation
     Images, Amount = range(1, 3)                     # Blend operation
-    Images = 1                                       # Combine operation
-    imageOperations = [Blend, Combine]
+    Images = 1                                       # Stack operation
+    imageOperations = [Blend, Stack]
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
@@ -204,7 +204,7 @@ class WallpaperCache(QObject):
         operation = self.cache[cacheId][self.Operation]
         operationId = operation[self.OperationId]
 
-        if operation[self.OperationId] == self.FromDisk:
+        if operation[self.OperationId] == self.SingleImage:
             job = SingleImageJob(cacheId, self._size, self._img(operation[self.Path]), \
                                  QColor(operation[self.Color]), operation[self.Method])
 
@@ -212,70 +212,16 @@ class WallpaperCache(QObject):
             job = BlendJob(cacheId, self._size, self._img(operation[self.Images][0]), \
                            self._img(operation[self.Images][1]), operation[self.Amount])
 
+        elif operation[self.OperationId] == self.Stack:
+            job = StackJob(cacheId, self._size, [self._img(x) for x in operation[self.Images]])
+
         else:
-            job = EmptyJob(cacheId, self._size)
+            job = DummyJob(cacheId, self._size)
 
         return job
 
     def doJob(self, cacheId):
         self.renderer.render(self._job(cacheId))
-
-    def doOperation(self, operation):
-        #print '### doOperation', self.rendering, operation[self.OperationId],
-        if operation[self.OperationId] == self.Manual:
-            self.setDirty(self.rendering, False)
-            if self.image(self.rendering) == None:
-                self.setImage(self.rendering, QImage())
-            return True
-
-        elif operation[self.OperationId] == self.FromDisk:
-            #print operation[self.Path]
-            path = None
-            if os.path.isdir(operation[self.Path]):
-                package = Plasma.Package(operation[self.Path], \
-                                     self.wallpaper.packageStructure(self.wallpaper.wallpaper))
-                path = package.filePath('preferred')
-            elif os.path.isfile(operation[self.Path]):
-                path = operation[self.Path]
-            if path:
-                #print '   ### Rendering'
-                self.setDirty(self.rendering, False)
-                job = SingleImageJob(self.rendering, self._size, operation[self.Color],
-                                     operation[self.Method], path)
-                self.renderer.render(job)
-                return False
-            else:
-                #print '   ### Does not exist'
-                self.setImage(self.rendering, QImage())
-                return True
-
-        elif operation[self.OperationId] == self.Blend:
-            #print operation[self.Images]
-            if self.checkImages(operation[self.Images]):
-                #print '   ### transition'
-                self.setImage(self.rendering,
-                        Plasma.PaintUtils.transition(self.image(operation[self.Images][0]), \
-                        self.image(operation[self.Images][1]), operation[self.Amount]))
-            return True
-
-        elif operation[self.OperationId] == self.Combine:
-            #print operation[self.Images]
-            if self.checkImages(operation[self.Images]):
-                #print '   ### combine'
-                image = QImage(self._size)
-                p = QPainter(image)
-                p.resetTransform()
-                p.setCompositionMode(QPainter.CompositionMode_SourceOver)
-                for id in operation[self.Images]:
-                    pix = self.image(id)
-                    if not pix.isNull():
-                        #print '      ### combine draw', id
-                        p.drawImage(0, 0, pix)
-                p.end()
-                self.setImage(self.rendering, image)
-            return True
-
-        return True
 
     def renderCompleted(self, jobId, image):
         print '### renderCompleted', jobId, self.rendering, self.dirty(self.rendering)
