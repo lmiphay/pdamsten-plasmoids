@@ -225,6 +225,13 @@ class WallpaperJob():
         p.end()
         return result
 
+    def allHaveSameSize(self, images):
+        img = images[0]
+        for image in images[1:]:
+            if image and img.size() != image.size():
+                return False
+        return True
+
 
 class SingleImageJob(WallpaperJob):
     def __init__(self, jobId, size, img,
@@ -245,14 +252,21 @@ class BlendJob(WallpaperJob):
         self.amount = amount
 
     def do(self):
+        # DEBUG
+        self.amount = 0.5
         if self.amount <= 0.0:
             return self.load(self.img1)
         if self.amount >= 1.0:
             return self.load(self.img2)
 
-        image1 = QImage(self.scale(self.load(self.img1)))
-        image2 = QImage(self.scale(self.load(self.img2)))
-
+        images = [self.load(self.img1), self.load(self.img2)]
+        scaleAll = not self.allHaveSameSize(images)
+        if scaleAll:
+            image1 = QImage(self.scale(images[0]))
+            image2 = QImage(self.scale(images[1]))
+        else:
+            image1 = QImage(images[0])
+            image2 = QImage(images[1])
         color = QColor()
         color.setAlphaF(self.amount)
 
@@ -263,9 +277,13 @@ class BlendJob(WallpaperJob):
         p.end()
 
         p.begin(image1)
+        p.setCompositionMode(QPainter.CompositionMode_DestinationOut)
+        p.fillRect(image1.rect(), color)
         p.setCompositionMode(QPainter.CompositionMode_Plus);
         p.drawImage(0, 0, image2)
         p.end()
+        if not scaleAll:
+            image1 = self.scale(image1)
         return image1
 
 class StackJob(WallpaperJob):
@@ -278,12 +296,7 @@ class StackJob(WallpaperJob):
         images = []
         for image in self.images:
             images.append(self.load(image))
-        img = images[0]
-        scaleAll = False
-        for image in images[1:]:
-            if image and img.size() != image.size():
-                scaleAll = True
-                break
+        scaleAll = not self.allHaveSameSize(images)
 
         print '### Scale all !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', scaleAll
         img = QImage(images[0])
