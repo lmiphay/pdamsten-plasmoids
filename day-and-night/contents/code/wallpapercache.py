@@ -35,6 +35,7 @@ class WallpaperCache(QObject):
     Images, Amount = range(1, 3)                                # Blend operation
     Images = 1                                                  # Stack operation
     ImageOperations = [Blend, Stack]
+    TypesThatCauseDirtines = [Operation, Color, Method]
 
     def __init__(self, wallpaper):
         QObject.__init__(self, wallpaper)
@@ -80,7 +81,7 @@ class WallpaperCache(QObject):
                 self.checkId(ids)
                 if self.cache[ids][type] != value:
                     self.cache[ids][type] = value
-                    if type == self.Operation:
+                    if type in self.TypesThatCauseDirtines:
                         self.setDirty(ids)
                     return True
                 return False
