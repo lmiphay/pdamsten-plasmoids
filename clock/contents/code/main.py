@@ -225,11 +225,15 @@ class Clock(Wallpaper):
         #print '### installPackage', localPath
         package = ClockPackage(self)
         packageRoot = KStandardDirs.locateLocal("data", package.defaultPackageRoot())
-        ClockPackage.installPackage(localPath, packageRoot)
-        if self.wallpaperModel:
+        if ClockPackage.installPackage(localPath, packageRoot):
             name = os.path.splitext(os.path.basename(U(localPath)))[0]
-            package.setPath(os.path.join(U(packageRoot), U(name)))
-            self.wallpaperModel.addClockWallpaper(package)
+            packageDir = os.path.join(U(packageRoot), U(name))
+            if self.wallpaperModel:
+                package.setPath(packageDir)
+                self.wallpaperModel.addClockWallpaper(package)
+            return packageDir
+        else:
+            return ''
 
     # Url dropped
     #----------------------------------------------------------------------------------------------
@@ -237,7 +241,7 @@ class Clock(Wallpaper):
     def urlDropped(self, url):
         #print '### urlDropped', url
         if url.isLocalFile():
-            self.installPackage(url.toLocalFile())
+            self.installDropped(url.toLocalFile())
         else:
             self.tmpFile = KTemporaryFile()
             if self.tmpFile.open():
@@ -246,8 +250,15 @@ class Clock(Wallpaper):
                 self.connect(job, SIGNAL('result(KJob*)'), self.wallpaperRetrieved)
 
     def wallpaperRetrieved(self, job):
-        self.installPackage(job.destUrl().toLocalFile())
+        self.installDropped(job.destUrl().toLocalFile())
+
+    def installDropped(self, path):
+        path = self.installPackage(path)
         self.tmpFile = None
+        if len(path) > 0:
+            self.clockPackage.setPath(path)
+            self.immediateRepaint = True
+            self.updateImages(QDateTime.currentDateTime())
 
     # Configuration dialog
     #----------------------------------------------------------------------------------------------
