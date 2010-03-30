@@ -1,2 +1,9 @@
+2010-03-30  Version 0.2
+  * Add 'Get new wallpaper clocks' -dialog
+  * Select wallpaper on drop
+  * Fix analog clocks
+  * Do all renderings in threads
+  * Fix rendering on multiple screens
+
 2010-02-02  Version 0.1
   * Initial release
