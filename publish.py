@@ -70,7 +70,7 @@ config = ConfigParser.ConfigParser()
 config.read(os.path.expanduser('~/.kde-look.org/credentials'))
 user = config.get('Credentials', 'user')
 password = config.get('Credentials', 'password')
-url = 'http://www.kde-look.org/'
+url = 'http://api.opendesktop.org/'
 defaultText = 'Please send longer messages like patches, ' + \
 'bug reports with outputs, etc. to my email.'
 
@@ -137,6 +137,7 @@ def upload(cmd, params):
 
 def checkResult(result):
     try:
+        #print result
         dom = minidom.parseString(result)
         sc = dom.getElementsByTagName('statuscode')[0].childNodes[0].nodeValue
         return (sc == '100')
