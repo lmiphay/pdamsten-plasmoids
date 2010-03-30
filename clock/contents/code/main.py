@@ -63,7 +63,7 @@ class Zodiac:
             self.sign = Zodiac.last[1]
             return
         for sign in self.Signs:
-            if now.month() <= sign[1] and now.day() <= sign[2]:
+            if now.month() < sign[1] or (now.month() == sign[1] and now.day() <= sign[2]):
                 self.sign = sign[0]
                 Zodiac.last = (now, self.sign)
                 return
