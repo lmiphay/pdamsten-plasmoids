@@ -96,13 +96,13 @@ class WallpaperCache(QObject):
         return self.value(id, self.Dirty)
 
     def setDirty(self, id, dirty = True):
-        print '### setDirty', id, dirty
+        #print '### setDirty', id, dirty
         r = self.setValue(id, self.Dirty, dirty)
         if dirty:
             for key in self.cache.keys():
                 if self.operationParam(key, self.OperationId) in self.ImageOperations and \
                     id in self.operationParam(key, self.Images):
-                    print '   ### And setDirty', key
+                    #print '   ### And setDirty', key
                     self.setDirty(key)
             self.dirtyTimer.start()
         return r
@@ -126,7 +126,7 @@ class WallpaperCache(QObject):
         return self.setValue(id, self.Method, method)
 
     def pixmap(self, id):
-        print '### pixmap', self.currentPixmapId, id
+        #print '### pixmap', self.currentPixmapId, id
         if self.currentPixmapId != id:
             img = self.image(id)
             if img:
@@ -142,7 +142,7 @@ class WallpaperCache(QObject):
         return image
 
     def setImage(self, id, image):
-        print '### setImage', id, self.currentPixmapId, self._size
+        #print '### setImage', id, self.currentPixmapId, self._size
         if id == self.currentPixmapId:
             self.currentPixmapId = -1
         self.setDirty(id, False)
@@ -181,7 +181,7 @@ class WallpaperCache(QObject):
             return self._size.width() / float(self._size.height())
 
     def checkGeometry(self):
-        print '### checkGeometry', self._size, self.wallpaper.boundingRect().size().toSize()
+        #print '### checkGeometry', self._size, self.wallpaper.boundingRect().size().toSize()
         if self._size != self.wallpaper.boundingRect().size().toSize():
             self._size = self.wallpaper.boundingRect().size().toSize()
             self.setDirty(self.All)
@@ -189,7 +189,7 @@ class WallpaperCache(QObject):
         return False
 
     def init(self):
-        print '### init'
+        #print '### init'
         self.currentPixmapId = -1
         self.checkGeometry()
 
@@ -239,36 +239,36 @@ class WallpaperCache(QObject):
 
         self.setDirty(cacheId, False)
         self.rendering += 1
-        print '++++++++++++++++', self.rendering
+        #print '++++++++++++++++', self.rendering
         return job
 
     def doJob(self, cacheId):
         self.renderer.render(self._job(cacheId))
 
     def renderCompleted(self, jobId, image):
-        print '### renderCompleted', jobId, self.rendering, self.dirty(jobId), image.size()
+        #print '### renderCompleted', jobId, self.rendering, self.dirty(jobId), image.size()
         #image.save('/home/damu/test%d.png' % jobId)
         if image.isNull():
             image = None
         if not self.dirty(jobId):
             self.setImage(jobId, image)
         self.rendering -= 1
-        print '----------------', self.rendering
+        #print '----------------', self.rendering
         self.dirtyTimer.start()
 
     def checkDirtyImages(self):
-        print '### checkDirtyImages', self.rendering
+        #print '### checkDirtyImages', self.rendering
         if self.rendering > 0:
             return
         if self._size == None:
             return
 
         for id in self.cache.keys():
-            print '### ID', id, self.dirty(id)
+            #print '### ID', id, self.dirty(id)
             if self.dirty(id):
                 self.doJob(id)
-                print '   ### Waiting... ', id, self.dirty(id)
+                #print '   ### Waiting... ', id, self.dirty(id)
                 return
         self.dirtyTimer.stop()
-        print '### renderingsCompleted'
+        #print '### renderingsCompleted'
         self.emit(SIGNAL('renderingsCompleted()'))

@@ -111,7 +111,7 @@ class WallpaperJob():
             img.renderThread = self.renderThread
             return img.do()
 
-        print '###', img
+        #print '###', img
         if len(img) == 0 or not QFile.exists(img):
             image = QImage()
         else:
@@ -127,7 +127,7 @@ class WallpaperJob():
     def scale(self, img):
         if img.isNull() or img.size() == self.size:
             return img
-        print '### Scaling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', img.size(), self.size
+        #print '### Scaling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', img.size(), self.size
         result = QImage(self.size, QImage.Format_ARGB32_Premultiplied)
         result.fill(self.color.rgba())
 
@@ -317,7 +317,7 @@ class StackJob(WallpaperJob):
             images.append(self.load(image))
         scaleAll = not self.allHaveSameSize(images)
 
-        print '### Scale all !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', scaleAll
+        #print '### Scale all !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', scaleAll
         img = QImage(images[0])
         if scaleAll:
             img = self.scale(img)
