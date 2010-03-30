@@ -66,6 +66,7 @@ class GetNewDialog(KDialog):
         self.backButton.setText(i18n('Back'))
         self.backButton.setIcon(KIcon('go-previous'));
         self.connect(self.backButton, SIGNAL('clicked()'), self.webView.back)
+        self.connect(self.backButton, SIGNAL('clicked()'), self.label.hide)
         self.closeButton.setText(i18n('Close'))
         self.closeButton.setIcon(KIcon('dialog-close'));
         self.connect(self.closeButton, SIGNAL('clicked()'), self.close)
