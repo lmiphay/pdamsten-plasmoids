@@ -20,11 +20,86 @@
 
 import os
 from PyQt4.QtCore import *
+from PyQt4.QtWebKit import *
 from PyKDE4.plasma import Plasma
 from helpers import *
 import re
 
 # Use Plasma.PackageStructure here although it does not get installed like other package structures
+class GetNewDialog(KDialog):
+    def __init__(self, parent, package):
+        KDialog.__init__(self, parent)
+        self.package = package
+
+        self.setCaption(i18n('Get New Clock Wallpapers'))
+        self.setButtons(KDialog.ButtonCode())
+
+        self.widget = QWidget()
+        self.verticalLayout = QVBoxLayout(self.widget)
+        self.verticalLayout.setObjectName('verticalLayout')
+        self.webView = QWebView(self.widget)
+        self.verticalLayout.addWidget(self.webView)
+        self.label = QLabel(self.widget)
+        self.label.setFrameShape(QFrame.StyledPanel)
+        self.label.hide()
+        self.verticalLayout.addWidget(self.label)
+        self.horizontalLayout = QHBoxLayout()
+        self.backButton = KPushButton(self.widget)
+        self.horizontalLayout.addWidget(self.backButton)
+        self.progressBar = QProgressBar(self.widget)
+        self.horizontalLayout.addWidget(self.progressBar)
+        self.closeButton = KPushButton(self.widget)
+        self.closeButton.setAutoDefault(True)
+        self.closeButton.setDefault(True)
+        self.horizontalLayout.addWidget(self.closeButton)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.backButton.setText(i18n('Back'))
+        self.backButton.setIcon(KIcon('go-previous'));
+        self.connect(self.backButton, SIGNAL('clicked()'), self.webView.back)
+        self.closeButton.setText(i18n('Close'))
+        self.closeButton.setIcon(KIcon('dialog-close'));
+        self.connect(self.closeButton, SIGNAL('clicked()'), self.close)
+        self.setMainWidget(self.widget)
+
+        self.webView.load(KUrl('http://www.vladstudio.com/wallpaperclock/'))
+        self.webView.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+        self.connect(self.webView, SIGNAL('linkClicked(const QUrl&)'), self.linkClicked)
+        self.connect(self.webView, SIGNAL('loadProgress(int)'),  self.progressBar.setValue)
+        self.webView.show()
+
+    def linkClicked(self, url):
+        s = U(url.toString())
+        self.label.hide()
+        if not s.startswith('http://www.vladstudio.com/wallpaperclock/'):
+            s = 'http://www.vladstudio.com/wallpaperclock/'
+            self.message(i18n('No browsing outside clock wallpapers.'))
+        if s.find('download.php') >= 0:
+            self.tmpFile = KTemporaryFile()
+            self.tmpFile.setSuffix('.wcz')
+            if self.tmpFile.open():
+                job = KIO.file_copy(KUrl(s), KUrl(self.tmpFile.fileName()), -1, \
+                                    KIO.JobFlags(KIO.Overwrite | KIO.HideProgressInfo))
+                self.connect(job, SIGNAL('result(KJob*)'), self.downloaded)
+                self.connect(job, SIGNAL('percent(KJob*, unsigned long)'), self.progress)
+        else:
+            self.webView.load(KUrl(s))
+
+    def message(self, msg):
+        self.label.show()
+        self.label.setText(msg)
+
+    def progress(self, job, percent):
+        self.progressBar.setValue(percent)
+
+    def downloaded(self, job):
+        if job.error() == 0:
+            self.tmpFile = None
+            packageRoot = KStandardDirs.locateLocal("data", self.package.defaultPackageRoot())
+            self.package.installPackage(job.destUrl().toLocalFile(), packageRoot)
+            self.message(i18n('Package installed.'))
+        else:
+            self.message(job.errorString())
+
 
 class ClockPackage(Plasma.PackageStructure):
     job = None
@@ -39,6 +114,7 @@ class ClockPackage(Plasma.PackageStructure):
         self._preview = None
         self._hourImages = 24
         self.ampm = False
+        self.dlg = None
         if path:
             self.setPath(path)
 
@@ -65,11 +141,10 @@ class ClockPackage(Plasma.PackageStructure):
         ClockPackage.job = KIO.del_(KUrl(packageDir))
         return ClockPackage.job.exec_()
 
-    """
-    @staticmethod
     def createNewWidgetBrowser(self, parent = None):
-        pass
-    """
+        if not self.dlg:
+            self.dlg = GetNewDialog(parent, self)
+        self.dlg.show()
 
     def preview(self):
         return self._preview
