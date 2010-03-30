@@ -123,7 +123,8 @@ class Clock(Wallpaper):
         engine = self.dataEngine('time')
         Moon.timeEngine = engine
         engine.disconnectSource('Local', self)
-        engine.connectSource('Local', self, int(self.UpdateInterval * 60 * 1000))
+        engine.connectSource('Local', self, int(self.UpdateInterval * 60 * 1000), \
+                             Plasma.AlignToMinute)
         self.immediateRepaint = True
 
     def save(self, config):
@@ -161,6 +162,7 @@ class Clock(Wallpaper):
                  path + 'weekday%d.png' % next.date().dayOfWeek(),
                  path + 'day%d.png' % next.date().day(),
                  path + 'hour%d.png' % h]
+        #print files, next, next.time(), h
         if self.clockPackage.ampmEnabled() and self.ampm:
             files.append(path + '%s.png' % next.time().toString('ap'))
         self.cache.setOperationParam(self.BackgroundHour, WallpaperCache.Images, files)
