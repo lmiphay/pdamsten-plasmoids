@@ -150,7 +150,8 @@ class Clock(Wallpaper):
         if self.clockPackage.ampmEnabled() and self.ampm:
             h = ((next.time().hour() - 1) % 12) + 1
         elif self.clockPackage.hourImages() == 60:
-            h = next.time().hour() * next.time().minutes() / 12
+            h = next.time().hour() % 12
+            h = (h * 5) + (next.time().minute() / 12)
         else:
             h = next.time().hour()
         files = [path + 'bg.jpg',

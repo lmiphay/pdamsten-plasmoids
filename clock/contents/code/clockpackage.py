@@ -222,6 +222,6 @@ class ClockPackage(Plasma.PackageStructure):
         self._metadata.setEmail(dict['email'])
         self._metadata.setDescription(dict['description'])
         self._metadata.setWebsite(dict['homepageURL'])
-        self.refreshHourInterval = dict['refreshhourinterval']
-        self._hourImages = dict['hourimages']
+        self.refreshHourInterval = I(dict['refreshhourinterval'])
+        self._hourImages = I(dict['hourimages'])
         self.ampm = (dict['ampmenabled'] == '1')
