@@ -91,6 +91,8 @@ class GetNewDialog(KDialog):
             self.tmpFile = KTemporaryFile()
             self.tmpFile.setSuffix('.wcz')
             if self.tmpFile.open():
+                self.message(i18n('Downloading package...'))
+                self.progressBar.setValue(0)
                 job = KIO.file_copy(KUrl(s), KUrl(self.tmpFile.fileName()), -1, \
                                     KIO.JobFlags(KIO.Overwrite | KIO.HideProgressInfo))
                 self.connect(job, SIGNAL('result(KJob*)'), self.downloaded)
@@ -112,7 +114,7 @@ class GetNewDialog(KDialog):
             if self.package.installPackage(job.destUrl().toLocalFile(), packageRoot):
                 self.message(i18n('Package installed.'))
             else:
-                self.message(i18n('Package install Failed.'))
+                self.message(i18n('Package install failed.'))
             self.tmpFile = None
         else:
             self.message(job.errorString())
