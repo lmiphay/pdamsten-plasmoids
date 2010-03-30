@@ -25,6 +25,8 @@ from PyKDE4.plasma import Plasma
 from helpers import *
 import re
 
+CLOCK_WALLPAPERS_URL = 'http://www.vladstudio.com/wallpaperclock/browse.php'
+
 # Use Plasma.PackageStructure here although it does not get installed like other package structures
 class GetNewDialog(KDialog):
     def __init__(self, parent, package):
@@ -72,7 +74,7 @@ class GetNewDialog(KDialog):
         self.connect(self.closeButton, SIGNAL('clicked()'), self.close)
         self.setMainWidget(self.widget)
 
-        self.webView.load(KUrl('http://www.vladstudio.com/wallpaperclock/browse.php'))
+        self.webView.load(KUrl(CLOCK_WALLPAPERS_URL))
         self.webView.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
         self.connect(self.webView, SIGNAL('linkClicked(const QUrl&)'), self.linkClicked)
         self.connect(self.webView, SIGNAL('loadProgress(int)'),  self.progressBar.setValue)
@@ -83,7 +85,7 @@ class GetNewDialog(KDialog):
         self.label.hide()
         if not s.startswith('http://www.vladstudio.com/wallpaperclock/') and \
            not s.startswith('http://www.google.com/'):
-            s = 'http://www.vladstudio.com/wallpaperclock/'
+            s = CLOCK_WALLPAPERS_URL
             self.message(i18n('No browsing outside clock wallpapers.'))
         if s.find('download.php') >= 0:
             self.tmpFile = KTemporaryFile()
