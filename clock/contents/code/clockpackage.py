@@ -197,7 +197,7 @@ class ClockPackage(Plasma.PackageStructure):
         a = re.findall('(.*?)=(.*)', s)
         dict = {'name': '', 'width': 1920, 'height': 1200, 'author': '', 'email': '', \
                 'description': '', 'homepageURL': '', 'downloadURL': '', \
-                'refreshhourinterval': 60, 'hourimages': 24, 'ampm': 0}
+                'refreshhourinterval': 60, 'hourimages': 24, 'ampmenabled': 0}
         for i in a:
             dict[i[0]] = i[1]
 

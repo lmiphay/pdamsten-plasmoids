@@ -65,8 +65,12 @@ def F(f):
 def I(i):
     if isinstance(i, QVariant) or isinstance(i, QString):
         return int(i.toInt()[0])
-    else:
-        return int(i)
+    if isinstance(i, unicode) or isinstance(i, str):
+        try:
+            return int(i)
+        except:
+            pass
+    return 0
 
 class UiHelper():
     applet = None
