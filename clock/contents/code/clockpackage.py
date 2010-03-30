@@ -109,7 +109,6 @@ class GetNewDialog(KDialog):
 
     def downloaded(self, job):
         if job.error() == 0:
-            print job.metaData()
             packageRoot = KStandardDirs.locateLocal("data", self.package.defaultPackageRoot())
             if self.package.installPackage(job.destUrl().toLocalFile(), packageRoot):
                 self.message(i18n('Package installed.'))
