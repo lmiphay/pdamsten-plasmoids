@@ -1,5 +1,5 @@
 2010-03-30  Version 0.2
-  * Add 'Get new wallpaper clocks' -dialog
+  * Add "Get new wallpaper clocks" -dialog
   * Select wallpaper on drop
   * Fix analog clocks
   * Do all renderings in threads
