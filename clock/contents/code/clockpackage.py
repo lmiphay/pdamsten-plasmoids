@@ -38,9 +38,19 @@ class GetNewDialog(KDialog):
         self.verticalLayout = QVBoxLayout(self.widget)
         self.verticalLayout.setObjectName('verticalLayout')
         self.webView = QWebView(self.widget)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
+        self.webView.setSizePolicy(sizePolicy)
         self.verticalLayout.addWidget(self.webView)
         self.label = QLabel(self.widget)
         self.label.setFrameShape(QFrame.StyledPanel)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy)
         self.label.hide()
         self.verticalLayout.addWidget(self.label)
         self.horizontalLayout = QHBoxLayout()
@@ -61,7 +71,7 @@ class GetNewDialog(KDialog):
         self.connect(self.closeButton, SIGNAL('clicked()'), self.close)
         self.setMainWidget(self.widget)
 
-        self.webView.load(KUrl('http://www.vladstudio.com/wallpaperclock/'))
+        self.webView.load(KUrl('http://www.vladstudio.com/wallpaperclock/browse.php'))
         self.webView.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
         self.connect(self.webView, SIGNAL('linkClicked(const QUrl&)'), self.linkClicked)
         self.connect(self.webView, SIGNAL('loadProgress(int)'),  self.progressBar.setValue)
@@ -93,10 +103,13 @@ class GetNewDialog(KDialog):
 
     def downloaded(self, job):
         if job.error() == 0:
-            self.tmpFile = None
+            print job.metaData()
             packageRoot = KStandardDirs.locateLocal("data", self.package.defaultPackageRoot())
-            self.package.installPackage(job.destUrl().toLocalFile(), packageRoot)
-            self.message(i18n('Package installed.'))
+            if self.package.installPackage(job.destUrl().toLocalFile(), packageRoot):
+                self.message(i18n('Package installed.'))
+            else:
+                self.message(i18n('Package install Failed.'))
+            self.tmpFile = None
         else:
             self.message(job.errorString())
 
@@ -126,6 +139,7 @@ class ClockPackage(Plasma.PackageStructure):
         if not os.path.exists(packageDir):
             KStandardDirs.makeDir(packageDir)
             if not os.path.exists(packageDir):
+                print 'ERROR: Cannot make package dir:', packageDir
                 return False
 
         zip = KZip(archivePath)
@@ -133,7 +147,9 @@ class ClockPackage(Plasma.PackageStructure):
             zipDir = zip.directory()
             zipDir.copyTo(packageDir)
         else:
+            print 'ERROR: Cannot zip to dir:', archivePath, packageDir
             return False
+        return True
 
     @staticmethod
     def uninstallPackage(packageName, packageRoot):
@@ -144,7 +160,13 @@ class ClockPackage(Plasma.PackageStructure):
     def createNewWidgetBrowser(self, parent = None):
         if not self.dlg:
             self.dlg = GetNewDialog(parent, self)
+            self.connect(self.dlg, SIGNAL('finished()'), self.finished)
         self.dlg.show()
+
+    def finished(self):
+        self.dlg.deleteLater()
+        self.dlg = None
+        self.emit(SIGNAL('newWidgetBrowserFinished()'))
 
     def preview(self):
         return self._preview

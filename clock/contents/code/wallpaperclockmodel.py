@@ -148,6 +148,9 @@ class WallpaperClockModel(QAbstractListModel):
         return self.packages[index]
 
     def findAllBackgrounds(self):
+        self.beginRemoveRows(QModelIndex(), 0, len(self.packages))
+        self.packages = []
+        self.endRemoveRows()
         self.progress = KProgressDialog()
         self.progress.setAllowCancel(False)
         self.progress.setModal(True)

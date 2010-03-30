@@ -241,7 +241,8 @@ class Clock(Wallpaper):
         else:
             self.tmpFile = KTemporaryFile()
             if self.tmpFile.open():
-                job = KIO.file_copy(url, KUrl(self.tmpFile.fileName()))
+                job = KIO.file_copy(url, KUrl(self.tmpFile.fileName()) -1, \
+                                    KIO.JobFlags(KIO.Overwrite))
                 self.connect(job, SIGNAL('result(KJob*)'), self.wallpaperRetrieved)
 
     def wallpaperRetrieved(self, job):
@@ -336,11 +337,19 @@ class Clock(Wallpaper):
 
     def getNewWallpaper(self):
         self.clockPackage.createNewWidgetBrowser(self.widget)
+        self.connect(self.clockPackage, SIGNAL('newWidgetBrowserFinished()'), \
+                     self.newStuffFinished, Qt.UniqueConnection)
 
     def newStuffFinished(self):
-        # TODO
-        self.wallpaperModel.addBackground(wallpaper)
-        pass
+        path = ''
+        index = self.ui.clockWallpaperView.currentIndex()
+        if index.isValid():
+            package = self.wallpaperModel.package(index.row())
+            path = package.path()
+        self.wallpaperModel.findAllBackgrounds()
+        index = self.wallpaperModel.indexOf(path)
+        if index.isValid():
+            self.ui.clockWallpaperView.setCurrentIndex(index)
 
     # Open file
 
