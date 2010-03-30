@@ -75,7 +75,8 @@ class WallpaperCache(QObject):
         return self.cache[id][type]
 
     def setValue(self, ids, type, value):
-        #print '### setValue', ids, type, value
+        #if isinstance(ids, int) and ids != self.All:
+        #    print '### setValue', ids, type, value, self.cache[ids][type]
         if isinstance(ids, int):
             if ids != self.All:
                 self.checkId(ids)
