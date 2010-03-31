@@ -8,7 +8,7 @@ X-KDE-ServiceTypes=Plasma/Wallpaper
 X-KDE-PluginInfo-Author=Petri Damstén
 X-KDE-PluginInfo-Email=damu@iki.fi
 X-KDE-PluginInfo-Name=day-and-night
-X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-Version=0.2
 X-KDE-PluginInfo-Website=http://www.kde-look.org/content/show.php?content=118636
 X-KDE-PluginInfo-Depends=
 X-KDE-PluginInfo-License=GPLv2+
@@ -19,6 +19,6 @@ X-Plasma-DropMimeTypes=image/jpeg,image/png,image/svg+xml,image/svg+xml-compress
 
 X-PublishInfo-Depends=plasma-scriptengine-python_4.4
 X-PublishInfo-LongDescription=Wallpaper plugin that allows you to select different wallpaper for day and night. During twilight wallpapers are blended together. Using longitude and latitude information and Plasma time dataengine it can get accurate times for sun set and rise.
-X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master
+X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master/day-and-night
 X-PublishInfo-Contact=http://bit.ly/damu-email
 X-PublishInfo-Installing=http://userbase.kde.org/Plasma/Installing_Plasmoids
