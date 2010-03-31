@@ -247,7 +247,7 @@ class Clock(Wallpaper):
         else:
             self.tmpFile = KTemporaryFile()
             if self.tmpFile.open():
-                job = KIO.file_copy(url, KUrl(self.tmpFile.fileName()) -1, \
+                job = KIO.file_copy(url, KUrl(self.tmpFile.fileName()), -1, \
                                     KIO.JobFlags(KIO.Overwrite))
                 self.connect(job, SIGNAL('result(KJob*)'), self.wallpaperRetrieved)
 
