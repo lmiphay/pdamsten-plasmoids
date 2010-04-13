@@ -76,11 +76,11 @@ class Main < PlasmaScripting::Applet
                     else # Test for >= KDE 4.4
                         i = Qt::Internal.cast_object_to(item, Qt::GraphicsWidget)
                         # TODO Handle Plasma::DesktopToolBox & Plasma::PanelToolBox separately
-                        if i.inherits("Plasma::InternalToolBox"):
+                        if i.inherits("Plasma::InternalToolBox")
                             cashew = true
                         end
                     end
-                    if cashew:
+                    if cashew
                         item.setOpacity(opacity)
                         item.setFlag(Qt::GraphicsItem::ItemDoesntPropagateOpacityToChildren, true)
                     end
