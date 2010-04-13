@@ -8,7 +8,7 @@ X-KDE-ServiceTypes=Plasma/Applet
 X-KDE-PluginInfo-Author=Petri Damstén
 X-KDE-PluginInfo-Email=damu@iki.fi
 X-KDE-PluginInfo-Name=stealth-cashew
-X-KDE-PluginInfo-Version=0.3
+X-KDE-PluginInfo-Version=0.4
 X-KDE-PluginInfo-Website=http://www.kde-look.org/content/show.php?content=108460
 X-KDE-PluginInfo-Category=Utilities
 X-KDE-PluginInfo-Depends=
@@ -19,6 +19,6 @@ X-Plasma-MainScript=code/main.rb
 X-Plasma-DefaultSize=1,1
 
 X-PublishInfo-Depends=plasma-scriptengine-ruby
-X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master
+X-PublishInfo-VCS=http://www.gitorious.org/pdamsten/plasmoids/trees/master/stealth-cashew
 X-PublishInfo-Contact=http://bit.ly/damu-email
 X-PublishInfo-Installing=http://userbase.kde.org/Plasma/Installing_Plasmoids
