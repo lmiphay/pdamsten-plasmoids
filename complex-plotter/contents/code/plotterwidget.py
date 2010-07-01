@@ -53,11 +53,11 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.plotter.setShowLabels(self.cfg['labels'])
         f.fromString(self.cfg['font'])
         self.plotter.setFont(f)
-        self.plotter.setFontColor(QColor(self.cfg['fontcolor']))
+        self.plotter.setFontColor(stringToColor(self.cfg['fontcolor']))
         self.plotter.setShowTopBar(self.cfg['topbar'])
         if len(self.cfg['bgcolor']) > 0:
             self.plotter.setSvgBackground('')
-            self.plotter.setBackgroundColor(QColor(self.cfg['bgcolor']))
+            self.plotter.setBackgroundColor(stringToColor(self.cfg['bgcolor']))
         elif len(self.cfg['bgsvg']) > 0:
             self.plotter.setSvgBackground(self.cfg['bgsvg'])
         else:
@@ -69,12 +69,12 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.plotter.setVerticalRange(self.cfg['min'], self.cfg['max'])
         self.plotter.setUseAutoRange(self.cfg['autorange'])
         self.plotter.setShowVerticalLines(self.cfg['vlines'])
-        self.plotter.setVerticalLinesColor(QColor(self.cfg['vcolor']))
+        self.plotter.setVerticalLinesColor(stringToColor(self.cfg['vcolor']))
         self.plotter.setVerticalLinesDistance(self.cfg['vdistance'])
         self.plotter.setVerticalLinesScroll(self.cfg['vscroll'])
         self.plotter.setHorizontalScale(self.cfg['hpixels'])
         self.plotter.setShowHorizontalLines(self.cfg['hlines'])
-        self.plotter.setHorizontalLinesColor(QColor(self.cfg['hcolor']))
+        self.plotter.setHorizontalLinesColor(stringToColor(self.cfg['hcolor']))
         self.plotter.setHorizontalLinesCount(self.cfg['hcount'])
         self.plotter.scale(self.cfg['scale'])
 
@@ -107,7 +107,7 @@ class ComplexPlotterWidget(QGraphicsWidget):
         self.sourceData = {}
         self.valueArgs = {}
         for i, graph in enumerate(self.graphs):
-            self.plotter.addPlot(QColor(graph['color']))
+            self.plotter.addPlot(stringToColor(graph['color']))
             for source in graph['cfg']:
                 self.source2GraphIndex[source['source']] = i
                 self.sourceData[source['source']] = source

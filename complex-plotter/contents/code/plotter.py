@@ -42,6 +42,11 @@ class PlotterDialog(KDialog, UiHelper):
         self.connect(self.valuePlacementCombo, SIGNAL('currentIndexChanged(int)'), self.enableItems)
         self.connect(self.valueFormatEdit, SIGNAL('textChanged(const QString&)'), self.setExample)
         self.connect(self.valueLabelFont, SIGNAL('fontSelected(const QFont&)'), self.setExample)
+        if isKDEVersion(4,4,90):
+            self.fontColorCombo.setAlphaChannelEnabled(True)
+            self.bgColorCombo.setAlphaChannelEnabled(True)
+            self.vcolorCombo.setAlphaChannelEnabled(True)
+            self.hcolorCombo.setAlphaChannelEnabled(True)
         self.enableItems()
         self.bgSvgCombo.comboBox().addItem(i18n('Default'))
 
@@ -60,13 +65,13 @@ class PlotterDialog(KDialog, UiHelper):
         f = QFont()
         f.fromString(data['font'])
         self.labelFont.setFont(f)
-        self.fontColorCombo.setColor(QColor(data['fontcolor']))
+        self.fontColorCombo.setColor(stringToColor(data['fontcolor']))
         self.topbarCheck.setChecked(data['topbar'])
         if len(data['bgcolor']) == 0 and len(data['bgsvg']) == 0:
             self.backgroundCombo.setCurrentIndex(0)
         elif len(data['bgcolor']) != 0:
             self.backgroundCombo.setCurrentIndex(1)
-            self.bgColorCombo.setColor(QColor(data['bgcolor']))
+            self.bgColorCombo.setColor(stringToColor(data['bgcolor']))
         else:
             self.backgroundCombo.setCurrentIndex(2)
             if data['bgsvg'] == u'widgets/plot-background':
@@ -78,12 +83,12 @@ class PlotterDialog(KDialog, UiHelper):
         self.maxEdit.setText(U(data['max']))
         self.minEdit.setText(U(data['min']))
         self.vlinesCheck.setChecked(data['vlines'])
-        self.vcolorCombo.setColor(QColor(data['vcolor']))
+        self.vcolorCombo.setColor(stringToColor(data['vcolor']))
         self.vdistanceSpin.setValue(data['vdistance'])
         self.vscrollCheck.setChecked(data['vscroll'])
         self.hpixelsSpin.setValue(data['hpixels'])
         self.hlinesCheck.setChecked(data['hlines'])
-        self.hcolorCombo.setColor(QColor(data['hcolor']))
+        self.hcolorCombo.setColor(stringToColor(data['hcolor']))
         self.hcountSpin.setValue(data['hcount'])
         self.valuePlacementCombo.setCurrentIndex(data['valueplace'])
         self.valueFormatEdit.setText(data['valueformat'])

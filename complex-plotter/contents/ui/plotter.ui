@@ -215,7 +215,7 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="KColorCombo" name="fontColorCombo">
+        <widget class="KColorButton" name="fontColorCombo">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -302,7 +302,7 @@
         </widget>
        </item>
        <item row="8" column="1">
-        <widget class="KColorCombo" name="bgColorCombo">
+        <widget class="KColorButton" name="bgColorCombo">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -633,7 +633,7 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="KColorCombo" name="vcolorCombo">
+        <widget class="KColorButton" name="vcolorCombo">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -776,7 +776,7 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="KColorCombo" name="hcolorCombo">
+        <widget class="KColorButton" name="hcolorCombo">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -844,9 +844,9 @@ p, li { white-space: pre-wrap; }
    <header>kurlrequester.h</header>
   </customwidget>
   <customwidget>
-   <class>KColorCombo</class>
-   <extends>QComboBox</extends>
-   <header>kcolorcombo.h</header>
+   <class>KColorButton</class>
+   <extends>QPushButton</extends>
+   <header>kcolorbutton.h</header>
   </customwidget>
   <customwidget>
    <class>KComboBox</class>

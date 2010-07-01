@@ -35,7 +35,7 @@ DEFAULTCFG = {
     'scale': 1,
     'labels': True,
     'font': 'Sans,8,-1,5,50,0,0,0,0,0',
-    'fontcolor': '#000000',
+    'fontcolor': '#000000FF',
     'topbar': False,
     'bgcolor': '',
     'bgsvg': U(i18n('Default')),
@@ -44,12 +44,12 @@ DEFAULTCFG = {
     'max': 100,
     'min': 0,
     'vlines': False,
-    'vcolor': '#000000',
+    'vcolor': '#000000FF',
     'vdistance': 50,
     'vscroll': False,
     'hpixels': 1,
     'hlines': True,
-    'hcolor': '#000000',
+    'hcolor': '#000000FF',
     'hcount': 5,
     'valueplace': 0,
     'valueformat': '{value0:1.1f} {unit0}',
@@ -67,7 +67,7 @@ class ComplexDelegate(QStyledItemDelegate):
             if len(color) > 0:
                 rc = option.rect
                 rc.adjust(2, 5, -2, -5)
-                painter.fillRect(rc, QColor(color))
+                painter.fillRect(rc, stringToColor(color))
 
     def isGraph(self, index):
         return index.parent().isValid()
@@ -75,7 +75,10 @@ class ComplexDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         if index.column() == 1:
             if self.isGraph(index):
-                return KColorCombo(parent)
+                btn = KColorButton(parent)
+                if isKDEVersion(4,4,90):
+                    btn.setAlphaChannelEnabled(True)
+                return btn
             else:
                 return None
         else:
@@ -83,7 +86,7 @@ class ComplexDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 1 and self.isGraph(index):
-            editor.setColor(QColor(U(index.data())))
+            editor.setColor(stringToColor(U(index.data())))
         else:
             return QStyledItemDelegate.setEditorData(self, editor, index)
 
