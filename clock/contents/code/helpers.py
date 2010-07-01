@@ -42,13 +42,13 @@ def U(s):
     elif isinstance(s, QFont):
         return unicode(s.toString())
     elif isinstance(s, QColor):
-        return unicode(s.name())
+        return unicode(colorToString(s))
     elif isinstance(s, QLineEdit) or isinstance(s, KLineEdit) or \
          isinstance(s, QStandardItem) or isinstance(s, QListWidgetItem) or \
          isinstance(s, KUrlComboRequester):
         return unicode(s.text())
-    elif isinstance(s, KColorCombo):
-        return unicode(s.color().name())
+    elif isinstance(s, KColorCombo) or isinstance(s, KColorButton):
+        return unicode(colorToString(s.color()))
     elif s == None:
         return u''
     else:
@@ -71,6 +71,24 @@ def I(i):
         except:
             pass
     return 0
+
+def stringToColor(s):
+    s = unicode(s)
+    result = QColor()
+
+    if len(s) == 0:
+        result.setRgb(0)
+    elif s.isdigit():
+        result.setRgb(long(s))
+    elif s[0] == '#' and len(s) == 9:
+        result.setRgba(qRgba(int(s[1:3], 16), int(s[3:5], 16), int(s[5:7], 16), int(s[7:9], 16)))
+    else:
+        result.setNamedColor(s)
+    return result
+
+def colorToString(c):
+    return u'#%2.2X%2.2X%2.2X%2.2X' % (c.red(), c.green(), c.blue(), c.alpha())
+
 
 class UiHelper():
     applet = None
