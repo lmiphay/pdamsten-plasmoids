@@ -68,23 +68,32 @@ class Main < PlasmaScripting::Applet
             opacity = cg.readEntry("lockedOpacity", 100) / 100.0
         end
         for containment in containment().corona().containments()
-            for item in containment.childItems()
-                if item.zValue() == 10000000.0
-                    cashew = false
-                    if item.isWidget() == false # <= KDE 4.3
-                        cashew = true
-                    else # Test for >= KDE 4.4
-                        i = Qt::Internal.cast_object_to(item, Qt::GraphicsWidget)
-                        # TODO Handle Plasma::DesktopToolBox & Plasma::PanelToolBox separately
-                        if i.inherits("Plasma::InternalToolBox")
+            cashew = false
+            begin # KDE 4.5
+                item = containment.toolBox
+                if item
+                    cashew = true
+                end
+            rescue
+                for item in containment.childItems()
+                    if item.zValue() == 10000000.0
+                        if item.isWidget() == false # KDE 4.3
                             cashew = true
+                            break
+                        else # KDE 4.4
+                            i = Qt::Internal.cast_object_to(item, Qt::GraphicsWidget)
+                            # TODO Handle Plasma::DesktopToolBox & Plasma::PanelToolBox separately
+                            if i.inherits("Plasma::InternalToolBox")
+                                cashew = true
+                                break
+                            end
                         end
                     end
-                    if cashew
-                        item.setOpacity(opacity)
-                        item.setFlag(Qt::GraphicsItem::ItemDoesntPropagateOpacityToChildren, true)
-                    end
                 end
+            end
+            if cashew
+                item.setOpacity(opacity)
+                item.setFlag(Qt::GraphicsItem::ItemDoesntPropagateOpacityToChildren, true)
             end
         end
     end
