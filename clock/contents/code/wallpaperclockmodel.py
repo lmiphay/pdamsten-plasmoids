@@ -52,7 +52,7 @@ class WallpaperClockFinder(QObject): # (QThread): TODO
                     continue
                 print '   ### directory', cwp.fileName()
                 package = ClockPackage(None, cwp.canonicalFilePath())
-                self.emit(SIGNAL('newClockWallpaper(ClockPackage*)'), package)
+                self.emit(SIGNAL('newClockWallpaper'), package)
         self.emit(SIGNAL('finished()'))
 
 
@@ -158,7 +158,7 @@ class WallpaperClockModel(QAbstractListModel):
         self.progress.progressBar().setRange(0, 0)
 
         self.finder = WallpaperClockFinder(self)
-        self.connect(self.finder, SIGNAL('newClockWallpaper(ClockPackage*)'), self.addClockWallpaper)
+        self.connect(self.finder, SIGNAL('newClockWallpaper'), self.addClockWallpaper)
         self.connect(self.finder, SIGNAL('finished()'), self.finderFinished)
         #self.finder.start() # TODO
         self.finder.run()
