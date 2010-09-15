@@ -83,8 +83,7 @@ class GetNewDialog(KDialog):
     def linkClicked(self, url):
         s = U(url.toString())
         self.label.hide()
-        if not s.startswith('http://www.vladstudio.com/wallpaperclock/') and \
-           not s.startswith('http://www.google.com/'):
+        if not re.match("^http://www.vladstudio.com/([^/]+?/)?wallpaperclock/|^http://www.google.com/", s):
             s = CLOCK_WALLPAPERS_URL
             self.message(i18n('No browsing outside clock wallpapers.'))
         if s.find('download.php') >= 0:
