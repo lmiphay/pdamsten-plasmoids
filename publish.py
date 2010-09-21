@@ -86,6 +86,7 @@ def _(cmd):
                     close_fds = True, stderr = STDOUT)
     process.wait()
     output = unicode(process.stdout.read().strip(), 'utf-8')
+    #print output
     if process.returncode != 0:
         print output
     return (process.returncode, output)
@@ -93,19 +94,19 @@ def _(cmd):
 def appendToFrontOfFile(name, s):
     f = codecs.open(name, 'r+', 'utf-8')
     content = f.read()
+    content = s + content
     f.truncate(0)
     f.seek(0)
-    content = s + content
-    f.write(content.encode('utf-8'))
+    f.write(content)
     f.close()
 
 def replaceInFile(name, old, new):
     f = codecs.open(name, 'r+', 'utf-8')
     content = f.read()
+    content = content.replace(old, new)
     f.truncate(0)
     f.seek(0)
-    content = content.replace(old, new)
-    f.write(content.encode('utf-8'))
+    f.write(content)
     f.close()
 
 def inputWithDefault(prompt, default = None):
@@ -162,6 +163,7 @@ def gitLog(s):
         if 'commit ' in line or 'Author:' in line or 'Date:' in line:
             continue
         result.append('  * ' + line)
+    #print result
     return '\n'.join(result)
 
 def gitTag(s):
