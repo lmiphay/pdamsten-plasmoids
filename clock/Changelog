@@ -1,3 +1,7 @@
+2010-09-21  Version 0.5
+  * Fix non english browsing (patch from Gökçen).
+  * Fix model signals (patch from Gökçen).
+
 2010-03-31  Version 0.4
   * Support dropping wallpapers directly from browser
   * Get new wallpaper dialog tweaks
