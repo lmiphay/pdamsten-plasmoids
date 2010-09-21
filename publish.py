@@ -85,7 +85,7 @@ def _(cmd):
     process = Popen([cmd], shell = True, stdin = PIPE, stdout = PIPE, bufsize = 512 * 1024,
                     close_fds = True, stderr = STDOUT)
     process.wait()
-    output = process.stdout.read().strip()
+    output = unicode(process.stdout.read().strip(), 'utf-8')
     if process.returncode != 0:
         print output
     return (process.returncode, output)
@@ -96,7 +96,7 @@ def appendToFrontOfFile(name, s):
     f.truncate(0)
     f.seek(0)
     content = s + content
-    f.write(content)
+    f.write(content.encode('utf-8'))
     f.close()
 
 def replaceInFile(name, old, new):
@@ -105,7 +105,7 @@ def replaceInFile(name, old, new):
     f.truncate(0)
     f.seek(0)
     content = content.replace(old, new)
-    f.write(content)
+    f.write(content.encode('utf-8'))
     f.close()
 
 def inputWithDefault(prompt, default = None):
@@ -220,12 +220,12 @@ def updateVersion():
     plasmoidData['version'] = inputWithDefault('New version', plasmoidData['version'])
     if (plasmoidData['origVersion'] != plasmoidData['version']):
         # RawConfigParser messes file don't use that for writing
-        replaceInFile('./%s/metadata.desktop' % plasmoid, \
-                      'X-KDE-PluginInfo-Version=%s' % plasmoidData['origVersion'], \
-                      'X-KDE-PluginInfo-Version=%s' % plasmoidData['version'])
+        replaceInFile(u'./%s/metadata.desktop' % plasmoid, \
+                      u'X-KDE-PluginInfo-Version=%s' % plasmoidData['origVersion'], \
+                      u'X-KDE-PluginInfo-Version=%s' % plasmoidData['version'])
         log = gitLog(plasmoidData['name'] + ' ' + plasmoidData['origVersion'])
-        appendToFrontOfFile('./%s/Changelog' % plasmoid, \
-                '%s  Version %s\n%s\n\n' % \
+        appendToFrontOfFile(u'./%s/Changelog' % plasmoid, \
+                u'%s  Version %s\n%s\n\n' % \
                 (datetime.today().strftime('%Y-%m-%d'), plasmoidData['version'], log))
     editor = os.environ['EDITOR']
     os.system(editor + ' ./%s/Changelog' % plasmoid)
