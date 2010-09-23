@@ -97,7 +97,7 @@ class UiHelper():
         if QDir.isAbsolutePath(uifile) or QFile.exists(uifile):
             self.ui = uic.loadUi(uifile, base)
         else:
-            self.ui = uic.loadUi(self.applet.package().filePath('ui', uifile), base)
+            self.ui = uic.loadUi(U(self.applet.package().filePath('ui', uifile)), base)
         self.addChildrenAsMembers(self.ui)
 
     def addChildrenAsMembers(self, widget):
