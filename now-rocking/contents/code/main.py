@@ -105,8 +105,6 @@ class Rocking(Applet):
         self.coverLayout = Layout(self.cover)
         self.readConfig()
 
-        self.connectToEngine()
-
         action = QAction(KIcon('transform-scale'), i18n('Make cover &square'), self)
         self.connect(action, SIGNAL('triggered(bool)'), self.makeSquare)
         self.actions.append(action)
@@ -123,6 +121,9 @@ class Rocking(Applet):
         self.connect(self.hoverTimer, SIGNAL('timeout()'), self.showBar)
         self.connect(self.leaveTimer, SIGNAL('timeout()'), self.hideBar)
 
+        self.constraintsEvent(Plasma.FormFactorConstraint)
+        self.connectToEngine()
+
     def themeChanged(self):
         if self.artistWidget != None:
             self.artistWidget.setColor(Plasma.Theme.defaultTheme().color(Plasma.Theme.TextColor))
@@ -134,12 +135,14 @@ class Rocking(Applet):
         self.applet.resize(self.applet.size().width() - w, self.applet.size().height())
 
     def deleteArtistAndTitle(self):
-        self.layout.removeItem(self.artistWidget)
-        self.layout.removeItem(self.titleWidget)
-        del self.artistWidget
-        del self.titleWidget
-        self.artistWidget = None
-        self.titleWidget = None
+        if self.artistWidget != None:
+            self.layout.removeItem(self.artistWidget)
+            self.layout.removeItem(self.titleWidget)
+            del self.artistWidget
+            del self.titleWidget
+            self.artistWidget = None
+            self.titleWidget = None
+            self.layout.invalidate()
 
     def createArtistAndTitle(self):
         if self.artistWidget == None:
@@ -149,6 +152,7 @@ class Rocking(Applet):
             self.titleWidget = Label(self.applet)
             self.layout.addItem(self.titleWidget)
 
+            self.layout.invalidate()
             self.readConfig()
 
     def formatArtistAndTitle(self, s):
@@ -385,7 +389,7 @@ class Rocking(Applet):
         self.controller.startOperationCall(operation)
 
     def constraintsEvent(self, constraints):
-        #print ('main.py constraintsEvent')
+        #print ('** Rocking.constraintsEvent')
         if constraints & Plasma.FormFactorConstraint:
             if self.formFactor() in [Plasma.Horizontal, Plasma.Vertical]:
                 self.setAspectRatioMode(Plasma.Square)
@@ -409,7 +413,7 @@ class Rocking(Applet):
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
-        #print data
+        #print '** Rocking.dataUpdated', data, self.layout, self.artistWidget
         changed = False
         state = Rocking.Stopped
         if QString('State') in data:
