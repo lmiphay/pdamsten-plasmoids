@@ -39,6 +39,7 @@ class Label(Fader, QGraphicsWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     def setText(self, text):
+        #print '** Label.setText', self._text, text
         if self._text == text:
             return
         if self.isVisible():
@@ -76,13 +77,16 @@ class Label(Fader, QGraphicsWidget):
             if txt == '':
                 txt = u'Äg'
             fm = QFontMetricsF(self.font())
+            hint.setWidth(fm.width(txt))
             if not self._tight:
                 hint.setHeight(fm.boundingRect(txt).height())
             else:
                 hint.setHeight(fm.tightBoundingRect(txt).height())
+        #print '** Label.sizeHint', hint, self._text, which, Qt.PreferredSize
         return hint
 
     def paint(self, painter, option, widget = None):
+        #print '** Label.paint', self._text, self.contentsRect()
         if self._text != '':
             painter.setPen(self._color)
             painter.setFont(self.font())

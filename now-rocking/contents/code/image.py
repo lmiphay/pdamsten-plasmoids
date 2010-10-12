@@ -37,6 +37,7 @@ class ImagePainter(Fader):
 
     def paint(self, painter, option, widget = None):
         if isinstance(self.img, QPixmap):
+            #print type(self.img), self.img.isNull(), self.img.size(), self.boundingRect()
             if self.img.isNull():
                 return
             p = self.boundingRect().topLeft()
@@ -46,7 +47,7 @@ class ImagePainter(Fader):
             p.setY(p.y() + ((s.height() - pixmap.height()) / 2.0))
             painter.drawPixmap(p, pixmap)
         elif isinstance(self.img, Plasma.Svg):
-            #print type(self), self.svgElement(), self.boundingRect(), self.imageSize()
+            #print type(self.img), self.svgElement(), self.boundingRect(), self.imageSize()
             elem = self.svgElement()
             self.img.paint(painter, self.boundingRect(), elem)
             try:
@@ -75,7 +76,7 @@ class ImagePainter(Fader):
         self.cache = {}
         if self.isVisible():
             self.startFade(Fader.Slow)
-        self.setPreferredSize(QSizeF(self.imageSize()))
+        self.updateGeometry()
 
     def image(self):
         return self.imgPath
@@ -153,3 +154,15 @@ class Image(ImagePainter, QGraphicsWidget):
             self.emit(SIGNAL('clicked()'))
         else:
             QGraphicsWidget.mouseReleaseEvent(self, event)
+
+    def sizeHint(self, which, constraint):
+        if which == Qt.MinimumSize:
+            hint = QSizeF(16,16)
+        elif which == Qt.PreferredSize:
+            hint = QSizeF(self.imageSize())
+            if not hint.isValid():
+                hint = QSizeF(16,16)
+        else:
+            hint = QGraphicsWidget.sizeHint(self, which, constraint)
+        #print '** Image.sizeHint', hint, which, Qt.PreferredSize
+        return hint
