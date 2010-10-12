@@ -542,11 +542,10 @@ class Rocking(Applet):
             pass
 
     def hoverLeaveEvent(self, event):
-        if self.bar.isVisible():
-            if self.hoverTimer.isActive():
-                self.hoverTimer.stop()
-            else:
-                self.leaveTimer.start()
+        if self.hoverTimer.isActive():
+            self.hoverTimer.stop()
+        else:
+            self.leaveTimer.start()
         try:
             self.applet.hoverLeaveEvent(event)
         except:
