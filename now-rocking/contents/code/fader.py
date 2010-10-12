@@ -37,6 +37,7 @@ import traceback
 # Fader cannot be QObject
 class FaderHelper(QObject):
     def __init__(self, fader):
+        QObject.__init__(self)
         self.fader = fader
 
     def valueChanged(self, value):
@@ -65,11 +66,11 @@ class Fader():
         self.enabled = True
         self.hideAfterFade = False
         self.fadeChildren = True
-        self.connect(Fader.timeline, SIGNAL('valueChanged(qreal)'), self.helper.valueChanged)
-        self.connect(Fader.timeline, SIGNAL('finished()'), self.helper.fadingFinished)
+        Fader.timeline.valueChanged.connect(self.helper.valueChanged)
+        Fader.timeline.finished.connect(self.helper.fadingFinished)
 
     def faderPaint(self, painter, option, widget = None):
-        #print self.animate, type(self), self.fadeValue
+        #print '** FaderHelper.faderPaint', self.animate, type(self), self.fadeValue
         if self.animate:
             # Some glitches on small fade values??
             if self.fadeValue < 0.1:
