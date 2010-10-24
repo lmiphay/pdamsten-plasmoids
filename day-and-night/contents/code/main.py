@@ -37,6 +37,7 @@ from PyKDE4.knewstuff import *
 from wallpapermodel import WallpaperModel
 from backgrounddelegate import BackgroundDelegate
 from wallpapercache import WallpaperCache
+from helpers import *
 
 
 class DayAndNight(Wallpaper):
@@ -191,7 +192,7 @@ class DayAndNight(Wallpaper):
     def createConfigurationInterface(self, parent):
         self.widget = QWidget(parent)
         self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
-        self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
+        self.ui = uic.loadUi(U(self.package().filePath('ui', 'config.ui')), self.widget)
         self.dayCombo = self.ui.dayCombo
 
         self.ui.latitudeEdit.setText(str(self.latitude))

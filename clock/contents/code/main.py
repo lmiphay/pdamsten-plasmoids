@@ -268,7 +268,7 @@ class Clock(Wallpaper):
     def createConfigurationInterface(self, parent):
         self.widget = QWidget(parent)
         self.connect(self.widget, SIGNAL('destroyed(QObject*)'), self.configWidgetDestroyed)
-        self.ui = uic.loadUi(self.package().filePath('ui', 'config.ui'), self.widget)
+        self.ui = uic.loadUi(U(self.package().filePath('ui', 'config.ui')), self.widget)
 
         self.ui.positioningCombo.setCurrentIndex(self.method)
         self.connect(self.ui.positioningCombo, SIGNAL('currentIndexChanged(int)'), \
