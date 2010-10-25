@@ -1,3 +1,6 @@
+2010-10-25  Version 0.3
+  * Fix string issue
+
 2010-03-31  Version 0.2
   * Separate scaling and color options for night and day
   * All rendering done in threads
