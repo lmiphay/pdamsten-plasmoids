@@ -72,7 +72,7 @@ class Label(Fader, QGraphicsWidget):
 
     def sizeHint(self, which, constraint):
         hint = QGraphicsWidget.sizeHint(self, which, constraint)
-        if which == Qt.PreferredSize or which == Qt.MinimumSize:
+        if which == Qt.PreferredSize:
             txt = self._text
             if txt == '':
                 txt = u'Äg'
@@ -90,5 +90,7 @@ class Label(Fader, QGraphicsWidget):
         if self._text != '':
             painter.setPen(self._color)
             painter.setFont(self.font())
-            painter.drawText(self.contentsRect(), self._align | Qt.AlignVCenter, self._text)
+            fm = QFontMetricsF(self.font())
+            s = fm.elidedText(self._text, Qt.ElideRight, self.contentsRect().width())
+            painter.drawText(self.contentsRect(), self._align | Qt.AlignVCenter, s)
             #painter.drawRect(self.contentsRect())
