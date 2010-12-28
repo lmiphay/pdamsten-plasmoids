@@ -323,29 +323,40 @@ class Rocking(Applet):
             self.controller.associateWidget(self.stop, 'stop')
             self.checkPlayPause()
 
+    def players(self):
+        l = self.engine.sources()
+        l.removeAll('players')
+        return l
+
     def connectToEngine(self):
         self.connected = False
-        self.engine.disconnectSource(self.player, self)
-        if not self.engine.sources().contains(self.player) and self.engine.sources().count() > 0:
-            self.player = U(self.engine.sources().first())
-        if self.engine.sources().contains(self.player):
+        if self.player != '':
+            self.engine.disconnectSource(self.player, self)
+        players = self.players()
+        if not self.player in players and len(players) > 0:
+            self.player = U(players.first())
+        if self.player in players:
             self.engine.connectSource(self.player, self, 500)
             try:
                 self.controller = self.engine.serviceForSource(self.player)
             except:
                 self.controller = None
-                return
-            self.associateWidgets()
-            self.connected = True
+            else:
+                self.associateWidgets()
+                self.connected = True
         else:
+            self.player = u''
             self.controller = None
             self.dataUpdated('', {})
+        #print '********** connectToEngine', self.player, len(self.players())
 
     def playerAdded(self, player):
-        if self.engine.sources().count() == 1:
+        #print '********** playerAdded', player, self.player, len(self.players())
+        if self.player == u'' and len(self.players()) > 0:
             self.connectToEngine()
 
     def playerRemoved(self, player):
+        #print '********** playerRemoved', player, self.player, len(self.players())
         if player == self.player:
             self.connectToEngine()
 
@@ -354,7 +365,7 @@ class Rocking(Applet):
         if self.controller == None:
             return
         # VLC needs pause even if paused. play stops current track.
-        if self.state == Rocking.Playing or self.player == 'org.mpris.vlc':
+        if self.state == Rocking.Playing or self.player == u'org.mpris.vlc':
             self.controller.startOperationCall(self.controller.operationDescription('pause'))
         else:
             self.controller.startOperationCall(self.controller.operationDescription('play'))
@@ -413,7 +424,7 @@ class Rocking(Applet):
 
     @pyqtSignature('dataUpdated(const QString&, const Plasma::DataEngine::Data&)')
     def dataUpdated(self, sourceName, data):
-        #print '** Rocking.dataUpdated', data, self.layout, self.artistWidget
+        #print '********** Rocking.dataUpdated', data
         changed = False
         state = Rocking.Stopped
         if QString('State') in data:
@@ -421,7 +432,10 @@ class Rocking(Applet):
                 state = Rocking.Playing
             elif U(data[QString('State')]) == u'paused':
                 state = Rocking.Paused
+            elif U(data[QString('State')]) == u'stopped':
+                state = Rocking.Stopped
 
+        #print '*************************', self.state, state
         if self.state != state:
             self.state = state
             self.checkPlayPause()
