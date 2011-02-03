@@ -348,7 +348,7 @@ class Rocking(Applet):
             self.player = u''
             self.controller = None
             self.dataUpdated('', {})
-        #print '********** connectToEngine', self.player, len(self.players())
+        #print '********** connectToEngine', self.player, len(players), self.controller
 
     def playerAdded(self, player):
         #print '********** playerAdded', player, self.player, len(self.players())
@@ -480,10 +480,16 @@ class Rocking(Applet):
             self.album = album
             changed = True
 
+        isSet = False
         if QString('Artwork') in data:
             if changed:
-                self.cover.setImage(QPixmap(data[QString('Artwork')]))
-        else:
+                pixmap = QPixmap(data[QString('Artwork')])
+                if not pixmap.isNull():
+                    self.cover.setImage(pixmap)
+                    isSet = True
+            else:
+                isSet = True
+        if not isSet:
             img = None
             if album != '':
                 key = artist + '|' + album
