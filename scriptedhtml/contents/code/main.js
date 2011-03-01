@@ -84,11 +84,20 @@ plasmoid.formFactorChanged = function()
 plasmoid.configChanged = function()
 {
     //print('configChanged');
-    g_useScript = plasmoid.readConfig("htmlScriptRadio");
+    print(g_script)
+    print(g_html)
+    g_useScript = plasmoid.readConfig("htmlScriptRadio", false);
     g_script = plasmoid.readConfig("htmlScript");
     g_html = plasmoid.readConfig("htmlUrl");
-    g_interval = plasmoid.readConfig("interval");
-    g_intervalUnit = plasmoid.readConfig("intervalUnit");
+    g_interval = plasmoid.readConfig("interval", 1);
+    g_intervalUnit = plasmoid.readConfig("intervalUnit", 1);
+
+    if (typeof(g_script) != "string") {
+        g_script = "";
+    }
+    if (typeof(g_html) != "string") {
+        g_html = "";
+    }
 
     if ((g_useScript && g_script == "") || (!g_useScript && g_html == "")) {
         plasmoid.setConfigurationRequired(true);
