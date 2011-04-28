@@ -163,7 +163,7 @@ class ComplexPlotter(Applet):
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
         name = U(sourceName)
-        #print name
+        #print '### ComplexPlotter.dataUpdated ' + name
         if name in self.plotters:
             plotter = self.plotters[name]
             # Hack for correctly update 'systemmonitor' dataengine ---------------------
@@ -176,6 +176,8 @@ class ComplexPlotter(Applet):
                                 self, plotter.interval())
             # --------------------------------------------------------------------------
             plotter.dataUpdated(name, data)
+        else:
+            print '*** COMPLEX PLOTTER: ' + name + ' not found from plotters'
 
     @pyqtSignature("configAccepted()")
     def configAccepted(self):

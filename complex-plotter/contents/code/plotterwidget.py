@@ -123,7 +123,7 @@ class ComplexPlotterWidget(QGraphicsWidget):
         return self.sourceData
 
     def dataUpdated(self, name, data):
-        #print name
+        #print '### ComplexPlotterWidget.dataUpdated ' + name
         graphIndex = self.source2GraphIndex[name]
         source = self.sourceData[name]
         valueName = QString(source['value'])
@@ -140,6 +140,7 @@ class ComplexPlotterWidget(QGraphicsWidget):
                 self.valueArgs['min%d' % graphIndex] = F(data[QString(source['min'])])
                 self.valueArgs['unit%d' % graphIndex] = U(data[QString(source['unit'])])
                 self.valueArgs['name%d' % graphIndex] = source['name']
+            #print '###', valueName, source, graphIndex, self.current, self.allUpdated
             if self.current == self.allUpdated:
                 self.plotter.addSample(self.values)
                 if self.valueLabel:
@@ -149,3 +150,5 @@ class ComplexPlotterWidget(QGraphicsWidget):
                         pass
                 self.current = list(self.initial)
                 self.values = [0.0] * len(self.initial)
+        else:
+            print '*** COMPLEX PLOTTER: ' + valueName + ' not found from data'
