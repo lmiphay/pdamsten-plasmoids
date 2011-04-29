@@ -1,3 +1,6 @@
+2011-04-29  Version 0.7
+  * Also accept direct html output from script.
+
 2011-04-28  Version 0.6
   * Handle url values from config correctly
 
