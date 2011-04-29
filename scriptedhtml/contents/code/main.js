@@ -121,7 +121,16 @@ plasmoid.dataUpdated = function(source, data)
         if (typeof(data["stdout"]) != "string") {
             return;
         }
-        g_web.url = Url(data["stdout"].replace("\n", ""));
+        a = data["stdout"].split("\n", 3);
+        if (a.length < 3) {
+          // If we have only one line (and possibly empty line after that) consider it url
+          if (a.length < 2 || a[1] == "") { 
+            g_web.url = Url(data["stdout"].replace("\n", ""));
+            return;
+          }
+        }
+        // Otherwise it is html
+        g_web.html = data["stdout"];
     } else {
         g_web.url = Url(g_html);
     }
