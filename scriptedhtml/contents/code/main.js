@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http:www.gnu.org/licenses/>.
  */
 
 var g_useScript = false;
@@ -34,11 +34,11 @@ plasmoid.init = function()
 
 plasmoid.connectEngine = function()
 {
-    //print("connectEngine")
+    //print("connectEngine. Unit: " + g_intervalUnit)
     plasmoid.busy = true;
-    var script = g_script.replace("file://", "");
     var interval;
 
+    //print(typeof(g_intervalUnit));
     switch (g_intervalUnit) {
         case 0:
             interval = g_interval;
@@ -50,11 +50,12 @@ plasmoid.connectEngine = function()
             interval = g_interval * 60 * 60;
             break;
     }
-
     if (g_useScript) {
+        //print('Using executable dataengine: ' + interval * 1000);
         var engine = dataEngine("executable");
-        engine.connectSource(script, this, interval * 1000);
+        engine.connectSource(g_script, this, interval * 1000);
     } else  {
+        //print('Using time dataengine: '  + interval * 1000);
         var engine = dataEngine("time");
         engine.connectSource("Local", this, interval * 1000);
     }
@@ -84,28 +85,13 @@ plasmoid.formFactorChanged = function()
 plasmoid.configChanged = function()
 {
     //print('configChanged');
-    g_useScript = plasmoid.readConfig("htmlScriptRadio", false);
-    g_script = plasmoid.readConfig("htmlScript");
-    g_html = plasmoid.readConfig("htmlUrl");
-    g_interval = plasmoid.readConfig("interval", 1);
-    g_intervalUnit = plasmoid.readConfig("intervalUnit", 1);
-    //print(typeof(g_html))
-    //print(typeof(g_script))
+    g_useScript = (plasmoid.readConfig("htmlScriptRadio", false) == true);
+    g_script = plasmoid.readConfig("htmlScript").path;
+    g_html = plasmoid.readConfig("htmlUrl").toString;
+    g_interval = parseInt(plasmoid.readConfig("interval", 1));
+    g_intervalUnit = parseInt(plasmoid.readConfig("intervalUnit", 1));
+    //print('Using script: ' + g_useScript)
 
-    if (typeof(g_script) == "object") {
-        g_script = g_script.path;
-    }
-    if (typeof(g_script) != "string") {
-        g_script = "";
-    }
-    if (typeof(g_html) == "object") {
-        g_html = g_html.path;
-    }
-    if (typeof(g_html) != "string") {
-        g_html = "";
-    }
-    //print(g_script)
-    //print(g_html)
     if ((g_useScript && g_script == "") || (!g_useScript && g_html == "")) {
         plasmoid.setConfigurationRequired(true);
     } else {
@@ -116,22 +102,26 @@ plasmoid.configChanged = function()
 
 plasmoid.dataUpdated = function(source, data)
 {
-    //print('dataUpdate');
+    //print('dataUpdate. Using script: ' + g_useScript);
     if (g_useScript) {
+        //print(typeof(data["stdout"]));
         if (typeof(data["stdout"]) != "string") {
             return;
         }
         a = data["stdout"].split("\n", 3);
         if (a.length < 3) {
-          // If we have only one line (and possibly empty line after that) consider it url
+          /* If we have only one line (and possibly empty line after that) consider it url */
           if (a.length < 2 || a[1] == "") { 
             g_web.url = Url(data["stdout"].replace("\n", ""));
+            //print('Using stdout as url: ' + g_web.url);
             return;
           }
         }
-        // Otherwise it is html
+        /* Otherwise it is html */
+        //print('Using stdout as html.');
         g_web.html = data["stdout"];
     } else {
+        //print('Setting URL: ' + g_html)
         g_web.url = Url(g_html);
     }
 }
