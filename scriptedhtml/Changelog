@@ -1,3 +1,6 @@
+2011-05-09  Version 0.8
+  * Try to handle config values better
+
 2011-04-29  Version 0.7
   * Also accept direct html output from script.
 
