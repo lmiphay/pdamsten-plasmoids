@@ -104,7 +104,7 @@ class ComplexDelegate(QStyledItemDelegate):
 class ConfigPage(QWidget, UiHelper):
     def __init__(self, parent, applet):
         QWidget.__init__(self, parent)
-        UiHelper.__init__(self, 'config.ui', self)
+        UiHelper.__init__(self, 'configure.ui', self)
 
         self.applet = applet
         self.plottersTreeView.setItemDelegate(ComplexDelegate(self))
