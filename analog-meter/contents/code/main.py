@@ -174,28 +174,7 @@ class AnalogMeter(Applet):
         self.activeSystemmonitorSources = self.parseSystemmonitorSources()
         self.createMeter()
 
-    def showConfigurationInterface(self):
-        if isKDEVersion(4,3,74):
-            Applet.showConfigurationInterface(self)
-            return
-
-        # KDE 4.3
-        cfgId = QString('%1settings%2script').arg(self.applet.id()).arg(self.applet.name())
-        if KConfigDialog.showDialog(cfgId):
-            return
-        self.nullManager = KConfigSkeleton()
-        self.dlg = KConfigDialog(None, cfgId, self.nullManager)
-        self.dlg.setFaceType(KPageDialog.Auto)
-        self.dlg.setWindowTitle(i18nc('@title:window', '%1 Settings', self.applet.name()))
-        self.dlg.setAttribute(Qt.WA_DeleteOnClose, True)
-        self.dlg.showButton(KDialog.Apply, False)
-        self.connect(self.dlg, SIGNAL('finished()'), self.nullManager, SLOT('deleteLater()'))
-
-        self.createConfigurationInterface(self.dlg)
-        self.dlg.show()
-
     def createConfigurationInterface(self, dlg):
-        # KDE 4.4
         self.configPage = ConfigPage(None, self.applet)
         self.configPage.setData(self.cfg)
         dlg.addPage(self.configPage, i18n('General'), 'applications-utilities')
