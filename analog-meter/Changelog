@@ -1,3 +1,7 @@
+2012-01-13  Version 0.7
+  * Remove support for KDE 4.3 and lower
+  * In KDE 4.8 we can't have config.ui if want showConfigurationInterface to be called.
+
 2009-10-08  Version 0.6
   * Handle system monitor source remove and add
 
